@@ -1,0 +1,20 @@
+{
+  "name": "dyno",
+  "version": "0.0.0",
+  "description": "Simple DynamoDB client",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/test.*.js "
+  },
+  "author": "Mick Thompson <mick@mick.im>",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.0.4",
+    "underscore": "^1.6.0"
+  },
+  "devDependencies": {
+    "dynalite": "^0.3.7",
+    "faucet": "0.0.1",
+    "tape": "^2.13.3"
+  }
+}
