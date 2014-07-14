@@ -4,7 +4,7 @@
   "description": "Simple DynamoDB client",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/test.*.js "
+    "test": "./node_modules/.bin/tap test/test.*.js"
   },
   "author": "Mick Thompson <mick@mick.im>",
   "license": "MIT",
