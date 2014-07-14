@@ -11,4 +11,13 @@ test('create Table', function(t) {
         t.end();
     });
 });
+
+test('delete Table', function(t) {
+    dyno.deleteTable(fixtures.test.TableName, function(err, resp){
+        t.equal(err, null);
+        t.deepEqual(resp, {});
+        t.end();
+    });
+});
+
 test('teardown', s.teardown);

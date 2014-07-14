@@ -17,7 +17,6 @@ test('convert numbers', function(t) {
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {id: {N: '6'}});
     t.end();
-
 });
 
 test('convert sets - strings', function(t) {
@@ -26,7 +25,6 @@ test('convert sets - strings', function(t) {
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {SS: ['a']}});
     t.end();
-
 });
 
 test('convert sets - numbers', function(t) {
@@ -35,7 +33,6 @@ test('convert sets - numbers', function(t) {
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {NS: ['6']}});
     t.end();
-
 });
 
 test('convert sets multiple items', function(t) {
@@ -44,7 +41,6 @@ test('convert sets multiple items', function(t) {
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {NS: ['6', '5', '4', '3', '2', '1']}});
     t.end();
-
 });
 
 test('convert multiple types', function(t) {
@@ -53,5 +49,28 @@ test('convert multiple types', function(t) {
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {string: {S:'a'}, number: {N:6}, set:{NS:[1,2]}, set2: {SS:['a', 'b']}});
     t.end();
+});
 
+test('convert update actions', function(t) {
+    var item = {put:{string: 'a'}, add:{count: 1}};
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, {string: {Action: 'PUT', Value:{S:'a'}}, count: {Action: 'ADD', Value:{N:'1'}}});
+    t.end();
+});
+
+test('convert update actions - delete', function(t) {
+    var item = {delete:{string: 'a'}};
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, {string: {Action: 'DELETE'}});
+    t.end();
+});
+
+test('convert update actions - NS', function(t) {
+    var item = {add:{set: [1,2]}};
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, {set: {Action: 'ADD', Value:{NS: ['1', '2']}}});
+    t.end();
 });
