@@ -1,5 +1,7 @@
 ## Dyno
 
+![](https://travis-ci.org/mapbox/dyno.svg)
+
 The aws-sdk dynamo client is very close to the API, dyno tries to help reduce the
 amount of repetitive code needed to interact with dynamodb.
 
