@@ -1,10 +1,10 @@
 {
   "name": "dyno",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Simple DynamoDB client",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/tap test/test.*.js"
+    "test": "tap test/test.*.js"
   },
   "author": "Mick Thompson <mick@mick.im>",
   "license": "MIT",
@@ -15,5 +15,15 @@
   "devDependencies": {
     "dynalite": "^0.3.7",
     "tap": "^0.4.11"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/dyno.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mapbox/dyno/issues"
+  },
+  "keywords": [
+    "dynamodb"
+  ]
 }
