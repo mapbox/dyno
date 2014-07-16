@@ -19,6 +19,15 @@ test('convert numbers', function(t) {
     t.end();
 });
 
+test('convert binary', function(t) {
+    var buffy = new Buffer('hi');
+    var item = { id: buffy };
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {id: { B: buffy }});
+    t.end();
+});
+
 test('convert sets - strings', function(t) {
     var item = {set: ['a']};
 
