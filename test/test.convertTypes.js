@@ -24,7 +24,7 @@ test('convert binary', function(t) {
     var item = { id: buffy };
 
     item = types.toDynamoTypes(item);
-    t.deepEqual(item, {id: { B: buffy }});
+    t.deepEqual(item, {id: { B: buffy.toString('base64') }});
     t.end();
 });
 
@@ -41,6 +41,15 @@ test('convert sets - numbers', function(t) {
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {NS: ['6']}});
+    t.end();
+});
+
+test('convert sets - binary', function(t) {
+    var buffy = new Buffer('hi');
+    var item = { set: [buffy] };
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {set: { BS: [buffy.toString('base64')] }});
     t.end();
 });
 
