@@ -20,7 +20,7 @@ in dyno can be written like:
 When dyno doesn't do anything to improve a command, it simply passes it through to
 [aws-sdk dynamodb client](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html).
 
-This is the case right now with commands like `scan` and `query`
+This is the case right now with commands like `scan`
 
 
 #### Installing
@@ -67,5 +67,20 @@ var key = {id: 'yo', range:5};
 var item = {put:{a: 'oh hai'}, add:{count: 1}};
 
 dyno.updateItem(key, item, function(err, resp){});
+
+```
+
+##### query
+
+```
+var query = {id: {'EQ':'yo'}, {range:{'BETWEEN':[4,6]}};
+
+dyno.query(query, function(err, resp){
+    assert.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5 }]});
+});
+
+dyno.query(query, {attributes:['range']} function(err, resp){
+    assert.deepEqual(resp, {count : 1, items : [{range : 5 }]});
+});
 
 ```
