@@ -154,6 +154,29 @@ test('scan - stream', function(t) {
     }
 
 });
+test('teardown', s.teardown);
 
+test('setup', s.setup());
+test('setup table', s.setupTable);
+test('setup items', function(t) {
+    var item = {id: 'yo', range: 5, val: new Buffer('yep', 'utf8')};
+
+    dyno.putItem(item, itemResp);
+    function itemResp(err, resp) {
+        if(item.range > 6) return t.end();
+        item.range++;
+        dyno.putItem(item, itemResp);
+    }
+});
+
+test('getItem with buffer', function(t) {
+
+    dyno.getItem({id:'yo', range:5}, function(err, data) {
+        t.equal(err, null);
+        t.deepEqual(data.Item.val.toString('utf8'), 'yep');
+        t.end();
+    });
+
+});
 
 test('teardown', s.teardown);
