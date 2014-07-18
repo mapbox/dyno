@@ -6,6 +6,7 @@ module.exports = function(c) {
     _(dyno).extend(dyno.config.dynamo);
     _(dyno).extend(require('./lib/item'));
     _(dyno).extend(require('./lib/query'));
+    _(dyno).extend(require('./lib/scan'));
     _(dyno).extend(require('./lib/table'));
     return dyno;
 }

@@ -1,5 +1,6 @@
 var test = require('tap').test;
 var s = require('./setup');
+var es = require('event-stream');
 var dyno = s.dyno;
 
 
@@ -114,5 +115,45 @@ test('query - BETWEEN - list attributes', function(t) {
     }
 
 });
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
+test('setup items', function(t) {
+    var item = {id: 'yo', range: 5};
+
+    dyno.putItem(item, itemResp);
+    function itemResp(err, resp) {
+        if(item.range > 7) return t.end();
+        item.range+=1;
+        dyno.putItem(item, itemResp);
+    }
+});
+
+test('scan - stream', function(t) {
+
+    dyno.scan().pipe(es.writeArray(function(err, data){
+        t.equal(err, null);
+        t.equal(data.length, 4);
+        t.deepEqual(data[0], {id: 'yo', range:5});
+        t.deepEqual(data[3], {id: 'yo', range:8});
+        t.end();
+    }));
+
+});
+
+test('scan - stream', function(t) {
+
+    dyno.scan(scanResp);
+    function scanResp(err, resp){
+        t.equal(err, null);
+        t.equal(resp.items.length, 4);
+        t.deepEqual(resp.items[0], {id: 'yo', range:5});
+        t.deepEqual(resp.items[3], {id: 'yo', range:8});
+        t.end();
+    }
+
+});
+
 
 test('teardown', s.teardown);
