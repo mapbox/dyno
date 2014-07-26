@@ -142,7 +142,7 @@ test('scan - stream', function(t) {
 
 });
 
-test('scan - stream', function(t) {
+test('scan - callback', function(t) {
 
     dyno.scan(scanResp);
     function scanResp(err, resp){
@@ -154,6 +154,70 @@ test('scan - stream', function(t) {
     }
 
 });
+
+test('scan - callback, paging 2 pages', function(t) {
+
+    dyno.scan({limit:1, pages:2}, scanResp);
+    function scanResp(err, resp){
+        t.equal(err, null);
+        t.equal(resp.items.length, 2);
+        t.deepEqual(resp.items[0], {id: 'yo', range:5});
+        t.deepEqual(resp.items[1], {id: 'yo', range:6});
+        t.end();
+    }
+
+});
+
+test('query - stream', function(t) {
+
+    var dr = dyno.query({id:{'EQ':'yo'}})
+        .pipe(es.writeArray(function(err, data){
+            t.equal(err, null);
+            t.equal(data.length, 4);
+            t.deepEqual(data[0], {id: 'yo', range:5});
+            t.deepEqual(data[3], {id: 'yo', range:8});
+            t.end();
+        }));
+});
+
+
+test('query - stream, with paging', function(t) {
+
+    var dr = dyno.query({id:{'EQ':'yo'}}, {limit:1})
+        .pipe(es.writeArray(function(err, data){
+            t.equal(err, null);
+            t.equal(data.length, 4);
+            t.deepEqual(data[0], {id: 'yo', range:5});
+            t.deepEqual(data[3], {id: 'yo', range:8});
+            t.end();
+        }));
+});
+
+test('query - stream, paging get 2 pages', function(t) {
+
+    var dr = dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:2 })
+        .pipe(es.writeArray(function(err, data){
+            t.equal(err, null);
+            t.equal(data.length, 2);
+            t.deepEqual(data[0], {id: 'yo', range:5});
+            t.deepEqual(data[1], {id: 'yo', range:6});
+            t.end();
+        }));
+});
+
+test('query - callback, paging get all pages', function(t) {
+
+    var dr = dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:0}, queryResp)
+
+    function queryResp(err, resp) {
+        t.equal(err, null);
+        t.equal(resp.items.length, 4);
+        t.deepEqual(resp.items[0], {id: 'yo', range:5});
+        t.deepEqual(resp.items[3], {id: 'yo', range:8});
+        t.end();
+    }
+});
+
 test('teardown', s.teardown);
 
 test('setup', s.setup());
