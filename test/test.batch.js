@@ -6,7 +6,7 @@ var dyno = s.dyno;
 test('setup', s.setup());
 test('setup table', s.setupTable);
 test('putItems', function(t) {
-    var items = randomItems(10);
+    var items = randomItems(1000);
 
     dyno.putItems(items, itemResp);
     function itemResp(err, resp) {
@@ -31,7 +31,7 @@ function randomItems(n) {
         items.push({
             id: 'id:' + i.toString(),
             range: i,
-            data: (new Array(100)).join(' '),
+            data: (new Array(10000)).join(' '),
         });
     }
     return items;

@@ -11,7 +11,8 @@
   "dependencies": {
     "aws-sdk": "^2.0.4",
     "event-stream": "^3.1.5",
-    "underscore": "^1.6.0"
+    "underscore": "^1.6.0",
+    "queue-async": "~1.0.7"
   },
   "devDependencies": {
     "dynalite": "^0.3.7",
