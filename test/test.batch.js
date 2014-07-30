@@ -11,9 +11,6 @@ test('putItems', function(t) {
     dyno.putItems(items, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, {
-            UnprocessedItems: {}
-        });
         t.end();
         // dyno.getItem(item, getItem);
     }
