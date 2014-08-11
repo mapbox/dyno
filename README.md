@@ -79,7 +79,7 @@ dyno.query(query, function(err, resp){
     assert.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5 }]});
 });
 
-dyno.query(query, {attributes:['range']} function(err, resp){
+dyno.query(query, {attributes:['range']}, function(err, resp){
     assert.deepEqual(resp, {count : 1, items : [{range : 5 }]});
 });
 
