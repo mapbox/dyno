@@ -50,6 +50,13 @@ var dyno = module.exports.dyno = require('dyno')({
 var item = {id: 'yo', range: 5};
 dyno.putItem(item, function(err, resp){});
 
+// multiple items
+var items = [
+        {id: 'yo', range: 5},
+        {id: 'guten tag', range: 5},
+        {id: 'ne hao', range: 5}
+    ];
+dyno.putItems(items, function(err, resp){})
 ```
 
 Set the table name per command:
