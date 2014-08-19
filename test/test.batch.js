@@ -15,6 +15,21 @@ test('putItems', function(t) {
         t.end();
     }
 });
+
+test('deleteItems', function(t) {
+    var itemIds = randomItems(1000).map(function(item){
+        return { 
+            id: item.id,
+            range: item.range
+        };
+    });
+
+    dyno.deleteItems(itemIds, itemResp);
+    function itemResp(err, resp) {
+        t.equal(err, null);
+        t.end();
+    }
+});
 test('teardown', s.teardown);
 
 function randomItems(n) {
