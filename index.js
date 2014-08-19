@@ -8,5 +8,6 @@ module.exports = function(c) {
     _(dyno).extend(require('./lib/query'));
     _(dyno).extend(require('./lib/scan'));
     _(dyno).extend(require('./lib/table'));
+    _(dyno).extend(require('./lib/batch'));
     return dyno;
 }

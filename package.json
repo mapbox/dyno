@@ -10,11 +10,14 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.0.4",
+    "big.js": "^2.5.1",
     "event-stream": "^3.1.5",
+    "queue-async": "~1.0.7",
     "underscore": "^1.6.0"
   },
   "devDependencies": {
     "dynalite": "^0.3.7",
+    "seedrandom": "^2.3.6",
     "tap": "^0.4.11"
   },
   "repository": {
