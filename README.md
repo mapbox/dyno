@@ -77,6 +77,17 @@ dyno.updateItem(key, item, function(err, resp){});
 
 ```
 
+##### deleteItems
+
+```
+var keys = [
+        {id: 'yo', range: 5},
+        {id: 'guten tag', range: 5},
+        {id: 'nihao', range: 5}
+    ];
+dyno.deleteItems(keys, function(err, resp){})
+```
+
 ##### query
 
 ```
