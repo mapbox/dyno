@@ -12,6 +12,14 @@ test('create Table', function(t) {
     });
 });
 
+test('list Table', function(t) {
+    dyno.listTables(function(err, res) {
+        t.equal(err, null);
+        t.deepEqual(res, { TableNames: ['test'] });
+        t.end();
+    });
+});
+
 test('delete Table', function(t) {
     dyno.deleteTable(fixtures.test.TableName, function(err, resp){
         t.equal(err, null);
