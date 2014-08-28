@@ -1,6 +1,6 @@
 {
   "name": "dyno",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Simple DynamoDB client",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "big.js": "^2.5.1",
     "event-stream": "^3.1.5",
     "queue-async": "~1.0.7",
-    "underscore": "^1.6.0"
+    "underscore": "1.6.0"
   },
   "devDependencies": {
     "dynalite": "^0.3.7",
