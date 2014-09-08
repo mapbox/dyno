@@ -12,13 +12,16 @@ test('putItems', function(t) {
     dyno.putItems(items, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.end();
+        dyno.scan({pages:0}, function(err, data){
+            t.equal(data.items.length, 1000, 'there are the right number of items in dynamo');
+            t.end();
+        });
     }
 });
 
 test('deleteItems', function(t) {
     var itemIds = randomItems(1000).map(function(item){
-        return { 
+        return {
             id: item.id,
             range: item.range
         };
@@ -27,7 +30,10 @@ test('deleteItems', function(t) {
     dyno.deleteItems(itemIds, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.end();
+        dyno.scan({pages:0}, function(err, data){
+            t.equal(data.items.length, 0, 'there are the right number of items in dynamo');
+            t.end();
+        });
     }
 });
 test('teardown', s.teardown);
