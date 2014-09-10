@@ -37,6 +37,31 @@ test('teardown', s.teardown);
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
+test('conditional put', function(t) {
+    var item = {id: 'yo', range: 5};
+
+    dyno.putItem(item, itemResp);
+    function itemResp(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, {});
+
+        var options = { expected: {} };
+        options.expected.range = {
+            ComparisonOperator: 'NE',
+            AttributeValueList: [ { N: item.range.toString() } ]
+        };
+        dyno.putItem(item, options, expectFailure)
+    }
+    function expectFailure(err, resp) {
+        t.ok(err, 'throws an error');
+        t.equal(err.code, 'ConditionalCheckFailedException', 'expected error');
+        t.end();
+    }
+});
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
 test('update', function(t) {
     var item = {put:{str: 'a', num: 12}, add:{count:1}};
     var key = {id:'yo', range:5}
