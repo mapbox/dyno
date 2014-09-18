@@ -78,7 +78,7 @@ test('convert update actions', function(t) {
 });
 
 test('convert update actions - delete', function(t) {
-    var item = {delete:{string: 'a'}};
+    var item = {delete:['string']};
 
     item = types.toAttributeUpdates(item);
     t.deepEqual(item, {string: {Action: 'DELETE'}});
