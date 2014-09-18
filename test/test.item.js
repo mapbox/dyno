@@ -64,7 +64,7 @@ test('teardown', s.teardown);
 test('setup', s.setup());
 test('setup table', s.setupTable);
 test('setup items', function(t) {
-    var item = {id: 'yo', range: 5};
+    var item = {id: 'yo', range: 5, extra:'hi'};
 
     dyno.putItem(item, itemResp);
     function itemResp(err, resp) {
@@ -77,7 +77,7 @@ test('query - EQ', function(t) {
     dyno.query({id:{'EQ':'yo'}, range:{'EQ':5}}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5 }]})
+        t.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5, extra: 'hi' }]})
         t.end();
     }
 
@@ -88,7 +88,7 @@ test('query - BETWEEN', function(t) {
     dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5 }]})
+        t.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5, extra: 'hi' }]})
         t.end();
     }
 
@@ -104,6 +104,31 @@ test('query - BETWEEN - list attributes', function(t) {
     }
 
 });
+
+test('query - BETWEEN - list attributes - query filter match', function(t) {
+
+    dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}},
+    {filter:{extra:{EQ:'hi'}}}, itemResp);
+    function itemResp(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5, extra: 'hi' }]})
+        t.end();
+    }
+});
+
+test('query - BETWEEN - list attributes - query filter doesnt match', function(t) {
+
+    dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}},
+    {filter:{extra:{EQ:'hello'}}}, itemResp);
+    function itemResp(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, {count : 0, items : []})
+        t.end();
+    }
+
+});
+
+
 test('teardown', s.teardown);
 
 test('setup', s.setup());
