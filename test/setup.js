@@ -3,8 +3,8 @@ var Dynalite = require('dynalite');
 var dynalite;
 
 var dyno = module.exports.dyno = require('../')({
-    awsKey: 'fake',
-    awsSecret: 'fake',
+    accessKeyId: 'fake',
+    secretAccessKey: 'fake',
     region: 'us-east-1',
     table: 'test',
     endpoint: 'http://localhost:4567'

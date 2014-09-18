@@ -36,8 +36,8 @@ This is the case right now with commands like `scan`
 
 ```
 var dyno = module.exports.dyno = require('dyno')({
-    awsKey: 'XXX',
-    awsSecret: 'XXX',
+    accessKeyId: 'XXX',
+    secretAccessKey: 'XXX',
     region: 'us-east-1',
     table: 'test'
 });
