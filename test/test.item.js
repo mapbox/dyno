@@ -47,6 +47,30 @@ test('conditional put', function(t) {
 
         var options = {
             expected:{
+                a:{'NULL': []}
+            }
+        };
+        dyno.putItem(item, options, itemPut)
+    }
+    function itemPut(err, resp) {
+        t.notOk(err, 'no error');
+        t.end();
+    }
+});
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
+test('conditional put', function(t) {
+    var item = {id: 'yo', range: 5};
+
+    dyno.putItem(item, itemResp);
+    function itemResp(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, {});
+
+        var options = {
+            expected:{
                 range:{'NE': [ { N: item.range.toString() } ]}
             }
         };
