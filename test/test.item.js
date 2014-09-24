@@ -285,42 +285,6 @@ test('teardown', s.teardown);
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
-test('put error, throughput', function(t) {
-    var items = require('../lib/item');
-    var types = require('../lib/types');
-    var config = require('../lib/config')();
-    var item = types.toDynamoTypes({id: 'yo', range: 5});
-    var params = {
-        TableName: config.table,
-        Item: item
-    };
-
-    var handleResp = items._response(
-            config.dynamo.putItem,
-            params,
-            {errors:{throughput:10}},
-            itemResp
-        );
-    // Send it a fake bad response.
-    handleResp({code:'ProvisionedThroughputExceededException'}, {})
-
-    function itemResp(err, resp) {
-        t.equal(err, null);
-        t.deepEqual(resp, {});
-        dyno.getItem(item, getItem);
-    }
-    function getItem(err, resp) {
-        t.equal(err, null);
-        t.deepEqual(resp, {Item:{id: 'yo', range: 5}});
-        t.end();
-    }
-});
-test('teardown', s.teardown);
-
-
-
-test('setup', s.setup());
-test('setup table', s.setupTable);
 test('update', function(t) {
     var item = {put:{str: 'a', num: 12}, add:{count:1}};
     var key = {id:'yo', range:5}
