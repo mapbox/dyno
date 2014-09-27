@@ -1,7 +1,6 @@
 var test = require('tap').test;
 var types = require('../lib/types');
 
-
 test('convert strings', function(t) {
     var item = {id: 'yo'};
 

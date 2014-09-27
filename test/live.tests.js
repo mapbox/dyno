@@ -1,4 +1,4 @@
-require('./setup')();
+require('./setup')(true);
 require('./test.batch');
 require('./test.convertTypes');
 require('./test.item');
