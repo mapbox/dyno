@@ -1,8 +1,18 @@
 language: node_js
 node_js:
-  - '0.10'
+- '0.10'
 sudo: false
 cache:
   directories:
-    - node_modules
-script: './node_modules/.bin/tap test/index.js'
+  - node_modules
+before_install:
+- MSG=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
+- LIVE=false
+- if test "${MSG#*'[live test]'}" != "$MSG"; then LIVE=true; fi
+script:
+- if [ "$LIVE" == "false" ]; then ./node_modules/.bin/tap test/index.js; fi
+- if [ "$LIVE" == "true" ]; then node test/live.tests.js; fi
+env:
+  global:
+  - secure: 0IoS5aWIlFm2InuHTMsqssnWH0zp/SXTHzQPjDvxqGWIuulPdZBd0WM17R7nxo/Msp6FG7QMMSWBAnePuPBTrs77iLEHHok/uqApsh/rLy1PQu4WZE5mlBBruZJftN/WO+2IV7WsmK0XeVrAxG7C875z/6zK/AGsJYLpyHP2jnM=
+  - secure: HSxpg9/84xgfCwzojeu2Z7AGhIWTLudMVbNIRelVBTDSO+ksLFKCb0nyeGCj6q+LcXKu7sX4ZgdQomllrNNxhl02xsO5Ux+Z4HRWFcIZolpTcFXhjW2dNOgi+JnaiK7Y5PmnNpCKbPqvjWMct4GFazWFmS1X9Jcg/h1GBgdtzk0=

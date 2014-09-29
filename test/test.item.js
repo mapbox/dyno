@@ -1,5 +1,5 @@
-var test = require('tap').test;
-var s = require('./setup');
+var s = require('./setup')();
+var test = s.test;
 var es = require('event-stream');
 var dyno = s.dyno;
 

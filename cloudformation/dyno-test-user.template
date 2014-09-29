@@ -1,0 +1,62 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Travis user for testing dyno",
+    "Resources": {
+        "DynoTestUser": {
+            "Type": "AWS::IAM::User",
+            "Properties": {
+                "Path": "/service/",
+                "Policies": [
+                    {
+                        "PolicyName": "dyno-test",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "dynamodb:*"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:dynamodb:us-east-1:",
+                                                    { "Ref": "AWS::AccountId" },
+                                                    ":table/dyno-test-*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "DynoTestKey": {
+            "Type": "AWS::IAM::AccessKey",
+            "Properties": {
+                "UserName": {
+                    "Ref": "DynoTestUser"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "TestAccessKeyId": {
+            "Value": {
+                "Ref": "DynoTestKey"
+            }
+        },
+        "TestSecretAccessKey": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "DynoTestKey",
+                    "SecretAccessKey"
+                ]
+            }
+        }
+    }
+}
