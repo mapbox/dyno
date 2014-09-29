@@ -13,6 +13,7 @@ module.exports = function(live) {
     setup = {};
 
     var tableName = setup.tableName = 'dyno-test-' + Math.ceil(1000 * Math.random());
+    var tableExists = false;
 
     var table = live ?
         _({}).extend(fixtures.live, {TableName: tableName}) :
@@ -63,17 +64,33 @@ module.exports = function(live) {
     };
 
     setup.setupTable = function(t) {
+        if (live && tableExists) return t.end();
+
         dyno.createTable(table, function(err, resp){
             t.ifError(err, 'created table');
+            tableExists = true;
             t.end();
         });
     };
 
     setup.teardown = function(t) {
-        if (live) return dyno.deleteTable(table, function(err) {
-            t.ifError(err, 'deleted live DynamoDB table');
-            t.end();
-        });
+        if (live) {
+            // throw errors to force-quit on failure
+            return dyno.scan({ pages: 0 }, function(err, res) {
+                if (err) throw err;
+                var keys = res.items.map(function(item) {
+                    return {
+                        id: item.id,
+                        range: item.range
+                    };
+                });
+                dyno.deleteItems(keys, function(err) {
+                    t.ifError(err, 'truncated live table');
+                    if (err) throw err;
+                    t.end();
+                });
+            });
+        }
 
         dynalite.close();
         t.end();
