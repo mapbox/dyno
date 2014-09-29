@@ -24,7 +24,7 @@ module.exports.live = {
         {'AttributeName': 'range', 'KeyType': 'RANGE'}
     ],
     'ProvisionedThroughput': {
-        'ReadCapacityUnits': 1000,
-        'WriteCapacityUnits': 1000
+        'ReadCapacityUnits': 5000,
+        'WriteCapacityUnits': 5000
     }
 };
