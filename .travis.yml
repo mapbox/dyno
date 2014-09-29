@@ -11,7 +11,7 @@ before_install:
 - if test "${MSG#*'[live test]'}" != "$MSG"; then LIVE=true; fi
 script:
 - if [ "$LIVE" == "false" ]; then ./node_modules/.bin/tap test/index.js; fi
-- if [ "$LIVE" == "true" ]; then ./node_modules/.bin/tap test/live.tests.js; fi
+- if [ "$LIVE" == "true" ]; then node test/live.tests.js; fi
 env:
   global:
   - secure: 0IoS5aWIlFm2InuHTMsqssnWH0zp/SXTHzQPjDvxqGWIuulPdZBd0WM17R7nxo/Msp6FG7QMMSWBAnePuPBTrs77iLEHHok/uqApsh/rLy1PQu4WZE5mlBBruZJftN/WO+2IV7WsmK0XeVrAxG7C875z/6zK/AGsJYLpyHP2jnM=
