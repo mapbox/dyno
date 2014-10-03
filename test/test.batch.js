@@ -13,7 +13,7 @@ test('putItems', function(t) {
     function itemResp(err, resp) {
         t.equal(err, null);
         dyno.scan({pages:0}, function(err, data){
-            t.equal(data.items.length, 1000, 'there are the right number of items in dynamo');
+            t.equal(data.length, 1000, 'there are the right number of items in dynamo');
             t.end();
         });
     }
@@ -31,7 +31,7 @@ test('deleteItems', function(t) {
     function itemResp(err, resp) {
         t.equal(err, null);
         dyno.scan({pages:0}, function(err, data){
-            t.equal(data.items.length, 0, 'there are the right number of items in dynamo');
+            t.equal(data.length, 0, 'there are the right number of items in dynamo');
             t.end();
         });
     }
