@@ -40,7 +40,7 @@ module.exports = function(live) {
             opts = {};
         }
 
-        opts.timeout = live ? 120000 : 30000;
+        if (!opts.timeout) opts.timeout = live ? 120000 : 30000;
 
         test(name, opts, callback);
     };
@@ -94,6 +94,13 @@ module.exports = function(live) {
 
         dynalite.close();
         t.end();
+    };
+
+    setup.deleteTable = function(t) {
+        dyno.deleteTable(tableName, function(err) {
+            t.ifError(err, 'deleted table');
+            t.end();
+        });
     };
 
     return setup;
