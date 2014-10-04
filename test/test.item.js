@@ -2,6 +2,7 @@ var s = require('./setup')();
 var test = s.test;
 var es = require('event-stream');
 var dyno = s.dyno;
+var _ = require('underscore');
 
 
 test('setup', s.setup());
@@ -386,6 +387,60 @@ test('update Item - with condition. fail conditions', function(t) {
         t.equal(err.code, 'ConditionalCheckFailedException');
         t.end();
     });
+});
+
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
+
+test('putItem return values', function(t) {
+    var item = {id: 'yo', range: 5};
+
+    dyno.putItem(item, { capacity: 'TOTAL' }, response);
+
+    function response(err, result, meta) {
+        t.ifError(err, 'completed request');
+        if (err) return t.end();
+
+        t.deepEqual(result, item, 'item matches result');
+        t.ok(meta, 'metadata returned');
+        t.ok(meta.capacity, 'capacity returned');
+        t.end();
+    }
+});
+
+test('updateItem return values', function(t) {
+    var item = {id: 'yo', range: 5};
+    var update = {put: { newkey: 'hi' }};
+
+    dyno.updateItem(item, update, { capacity: 'TOTAL' }, response);
+
+    function response(err, result, meta) {
+        t.ifError(err, 'completed request');
+        if (err) return t.end();
+
+        t.deepEqual(result, _({newkey: 'hi'}).extend(item), 'updated item matches result');
+        t.ok(meta, 'metadata returned');
+        t.ok(meta.capacity, 'capacity returned');
+        t.end();
+    }
+});
+
+test('getItem return values', function(t) {
+    var key = {id: 'yo', range: 5};
+
+    dyno.getItem(key, { capacity: 'TOTAL' }, response);
+
+    function response(err, result, meta) {
+        t.ifError(err, 'completed request');
+        if (err) return t.end();
+
+        t.deepEqual(result, _({newkey: 'hi'}).extend(key), 'item matches result');
+        t.ok(meta, 'metadata returned');
+        t.ok(meta.capacity, 'capacity returned');
+        t.end();
+    }
 });
 
 test('teardown', s.teardown);

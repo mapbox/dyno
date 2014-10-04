@@ -9,11 +9,18 @@ test('setup table', s.setupTable);
 test('putItems', function(t) {
     var items = randomItems(1000);
 
-    dyno.putItems(items, itemResp);
-    function itemResp(err, resp) {
+    dyno.putItems(items, { capacity: 'TOTAL' }, itemResp);
+    function itemResp(err, resp, metas) {
         t.equal(err, null);
-        dyno.scan({pages:0}, function(err, data){
-            t.equal(data.length, 1000, 'there are the right number of items in dynamo');
+        t.ok(metas, 'returned metadata object');
+        t.ok(metas[0].capacity, 'returned capacity info');
+
+        dyno.scan({pages:0, capacity: 'TOTAL'}, function(err, items, metas){
+            t.ifError(err, 'completed scan');
+            if (err) return t.end();
+            t.equal(items.length, 1000, 'there are the right number of items in dynamo');
+            t.ok(metas, 'returned metadata object');
+            t.ok(metas[0].capacity, 'returned capacity info');
             t.end();
         });
     }
@@ -27,11 +34,16 @@ test('deleteItems', function(t) {
         };
     });
 
-    dyno.deleteItems(itemIds, itemResp);
-    function itemResp(err, resp) {
+    dyno.deleteItems(itemIds, { capacity: 'TOTAL' }, itemResp);
+    function itemResp(err, resp, metas) {
         t.equal(err, null);
-        dyno.scan({pages:0}, function(err, data){
-            t.equal(data.length, 0, 'there are the right number of items in dynamo');
+        t.ok(metas, 'returned metadata object');
+        t.ok(metas[0].capacity, 'returned capacity info');
+
+        dyno.scan({pages:0, capacity: 'TOTAL'}, function(err, items, metas){
+            t.equal(items.length, 0, 'there are the right number of items in dynamo');
+            t.ok(metas, 'returned metadata object');
+            t.ok(metas[0].capacity, 'returned capacity info');
             t.end();
         });
     }
