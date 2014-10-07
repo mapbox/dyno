@@ -24,7 +24,7 @@ test('slow enough', function(t) {
 
     function put() {
         setTimeout(function() {
-            dyno.putItem(item, { capacity: true }, function(err, res, capacity) {
+            dyno.putItem(item, { capacity: 'TOTAL' }, function(err, res, capacity) {
                 t.ifError(err, 'put item ' + attempts);
                 attempts++;
                 if (attempts < max) put();
@@ -41,7 +41,7 @@ test('too fast', { timeout: Infinity }, function(t) {
     var q = queue();
 
     items.forEach(function(item) {
-        q.defer(dyno.putItem, item);
+        q.defer(dyno.putItem, item, { throughputAttempts: 1 });
     });
 
     q.awaitAll(function(err, results) {

@@ -76,9 +76,9 @@ module.exports = function(live) {
     setup.teardown = function(t) {
         if (live) {
             // throw errors to force-quit on failure
-            return dyno.scan({ pages: 0 }, function(err, res) {
+            return dyno.scan({ pages: 0 }, function(err, items) {
                 if (err) throw err;
-                var keys = res.items.map(function(item) {
+                var keys = items.map(function(item) {
                     return {
                         id: item.id,
                         range: item.range
