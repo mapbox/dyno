@@ -366,13 +366,31 @@ test('update Item - with condition', function(t) {
 
     var actions = {put: {anotherkey: 'hello'}, delete: ['otherrange'], add: {counter: 1}};
     var d = dyno.updateItem(key, actions, {
-        expects: { "range": {"EQ" : [5] }}
+        expected: { 'range': {'EQ' : [5] }}
     }, function(err, resp){
         t.notOk(err);
+        t.equal(resp.anotherkey, 'hello', 'item has new attribute');
         t.end();
     });
 });
 
+
+test('update Item - with NOT_NULL condition', function(t) {
+
+    var key = { id: 'yo', range: 5 };
+
+    var actions = {put: {anotherkey2: 'hello2'}, delete: ['otherrange'], add: {counter: 1}};
+    var d = dyno.updateItem(key, actions, {
+        expected: {
+            'range': 'NOT_NULL',
+            'id': {'EQ': 'yo'}
+        }
+    }, function(err, resp){
+        t.notOk(err, 'no error');
+        t.equal(resp.anotherkey2, 'hello2', 'item has new attribute');
+        t.end();
+    });
+});
 
 test('update Item - with condition. fail conditions', function(t) {
 
@@ -380,7 +398,7 @@ test('update Item - with condition. fail conditions', function(t) {
 
     var actions = {put: {anotherkey: 'hello'}};
     var d = dyno.updateItem(key, actions, {
-    expected: { "anotherkey": { "EQ" : ['hi'] }}
+    expected: { 'anotherkey': { 'EQ' : ['hi'] }}
     }, function(err, resp){
         t.ok(err, 'should return error');
         t.equal(err.message, 'The conditional request failed');
