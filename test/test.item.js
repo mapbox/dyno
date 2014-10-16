@@ -257,6 +257,31 @@ test('query - callback, paging get all pages', function(t) {
     }
 });
 
+test('query - callback, paging via prev/next', function(t) {
+    
+    dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:1}, firstResp);
+    
+    function firstResp(err, items, metas) {
+        t.equal(err, null);
+        t.equal(items.length, 1);
+        t.deepEqual(items[0], {id: 'yo', range:5});
+        next = metas.pop().last;
+        t.ok(next, 'last evaluated key is not null');
+        nextQuery(next);
+    }
+
+    function nextQuery(next) {
+        dyno.query({id:{'EQ':'yo'}}, {start:next, limit:1, pages:2}, function(err, items) {
+            t.equal(err, null);
+            t.equal(items.length, 2);
+            t.deepEqual(items[0], {id: 'yo', range:6});
+            t.deepEqual(items[1], {id: 'yo', range:7});
+            t.end();
+        });
+    }
+
+});
+
 test('teardown', s.teardown);
 
 test('setup', s.setup());
