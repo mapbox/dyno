@@ -265,7 +265,7 @@ test('query - callback, paging via prev/next', function(t) {
         t.equal(err, null);
         t.equal(items.length, 1);
         t.deepEqual(items[0], {id: 'yo', range:5});
-        next = metas.pop().last;
+        var next = metas.pop().last;
         t.ok(next, 'last evaluated key is not null');
         nextQuery(next);
     }

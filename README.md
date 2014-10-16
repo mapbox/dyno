@@ -102,3 +102,23 @@ dyno.query(query, {attributes:['range']}, function(err, resp){
 });
 
 ```
+
+The last key evaluated by dynamodb can be found in the query callback's third
+argument.
+
+```
+dyno.query(query, {pages: 1}, function(err, resp, metas) {
+    next = metas.pop().last;
+    ...
+});
+```
+
+This key can be passed back in to another query to get the next page of 
+results.
+
+```
+dyno.query(query, {start: next, pages: 1}, function(err, resp, metas) {
+    ...
+});
+```
+
