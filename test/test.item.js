@@ -258,9 +258,9 @@ test('query - callback, paging get all pages', function(t) {
 });
 
 test('query - callback, paging via prev/next', function(t) {
-    
+
     dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:1}, firstResp);
-    
+
     function firstResp(err, items, metas) {
         t.equal(err, null);
         t.equal(items.length, 1);
@@ -369,7 +369,7 @@ test('update Item ', function(t) {
 test('update Item ', function(t) {
 
     var key = { id: 'yo', range: 5 };
-    var actions = {put: { anothernewkey: 'hi' }, delete: ['newkey'], add: {counter: 1}};
+    var actions = {put: { newset: ['a', 'b'] }, delete: ['newkey'], add: {counter: 1}};
     var d = dyno.updateItem(key, actions, function(err, resp){
         t.notOk(err);
         dyno.getItem(key, function(err, data){
@@ -377,8 +377,27 @@ test('update Item ', function(t) {
             t.deepEqual(data, {
                 "id" : "yo",
                 "range" : 5,
-                "anothernewkey" : "hi",
+                "newset" : ['a', 'b'],
                 "counter" : 1
+            }, 'item was really updated');
+            t.end();
+        });
+    });
+});
+
+
+test('update Item - delete from set', function(t) {
+
+    var key = { id: 'yo', range: 5 };
+    var actions = {delete: {newset: ['a'], 'counter':null}};
+    var d = dyno.updateItem(key, actions, function(err, resp){
+        t.notOk(err);
+        dyno.getItem(key, function(err, data){
+            t.notOk(err, 'no error');
+            t.deepEqual(data, {
+                "id" : "yo",
+                "range" : 5,
+                "newset" : ['b'],
             }, 'item was really updated');
             t.end();
         });
