@@ -9,7 +9,7 @@
   "author": "Mick Thompson <mick@mick.im>",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.0.4",
+    "aws-sdk": "^2.1.5",
     "big.js": "^2.5.1",
     "event-stream": "^3.1.5",
     "queue-async": "~1.0.7",
