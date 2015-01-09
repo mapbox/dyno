@@ -1,6 +1,6 @@
 {
   "name": "dyno",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Simple DynamoDB client",
   "main": "index.js",
   "scripts": {
