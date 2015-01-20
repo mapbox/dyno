@@ -41,8 +41,20 @@ var dyno = module.exports.dyno = require('dyno')({
     region: 'us-east-1',
     table: 'test'
 });
-
 ```
+
+If you want to send updates to Amazon Kinesis, configure it like this:
+
+```javascript
+var dyno = module.exports.dyno = require('dyno')({
+    // ...
+    kinesisEndpoint: 'kinesis.us-east-1.amazonaws.com',
+    kinesisPartitionAttribute: 'id',
+    kinesisStream: 'test'
+});
+```
+
+Dyno uses an attribute of the item as partition key for Kinesis, so you can make e.g. sure that an item with a specific id always ends up on the same Kinesis shard.
 
 ##### putItem
 
