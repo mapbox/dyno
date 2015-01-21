@@ -16,7 +16,7 @@
     "underscore": "1.6.0"
   },
   "devDependencies": {
-    "dynalite": "https://github.com/mick/dynalite/archive/queryfilters.tar.gz",
+    "dynalite": "git+https://github.com/mick/dynalite.git#queryFilters",
     "seedrandom": "^2.3.6",
     "tap": "^0.4.11"
   },

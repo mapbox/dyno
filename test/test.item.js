@@ -159,10 +159,11 @@ test('teardown', s.teardown);
 test('setup', s.setup());
 test('setup table', s.setupTable);
 test('setup items', function(t) {
-    var item = {id: 'yo', range: 5};
+    var item = {id: 'yo', range: 5, blob: new Buffer(300000)};
 
     dyno.putItem(item, itemResp);
     function itemResp(err, resp) {
+        t.equal(err, null, 'no errors')
         if(item.range > 7) return t.end();
         item.range+=1;
         dyno.putItem(item, itemResp);
@@ -172,10 +173,10 @@ test('setup items', function(t) {
 test('scan - stream', function(t) {
 
     dyno.scan().pipe(es.writeArray(function(err, data){
-        t.equal(err, null);
-        t.equal(data.length, 4);
-        t.deepEqual(data[0], {id: 'yo', range:5});
-        t.deepEqual(data[3], {id: 'yo', range:8});
+        t.equal(err, null, 'no errors');
+        t.equal(data.length, 4, 'right number of items');
+        t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5}, 'first item');
+        t.deepEqual(_(data[3]).omit('blob'), {id: 'yo', range:8}, 'last item');
         t.end();
     }));
 
@@ -187,8 +188,8 @@ test('scan - callback', function(t) {
     function scanResp(err, items){
         t.equal(err, null);
         t.equal(items.length, 4);
-        t.deepEqual(items[0], {id: 'yo', range:5});
-        t.deepEqual(items[3], {id: 'yo', range:8});
+        t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
+        t.deepEqual(_(items[3]).omit('blob'), {id: 'yo', range:8});
         t.end();
     }
 
@@ -200,8 +201,8 @@ test('scan - callback, paging 2 pages', function(t) {
     function scanResp(err, items){
         t.equal(err, null);
         t.equal(items.length, 2);
-        t.deepEqual(items[0], {id: 'yo', range:5});
-        t.deepEqual(items[1], {id: 'yo', range:6});
+        t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
+        t.deepEqual(_(items[1]).omit('blob'), {id: 'yo', range:6});
         t.end();
     }
 
@@ -213,8 +214,8 @@ test('query - stream', function(t) {
         .pipe(es.writeArray(function(err, data){
             t.equal(err, null);
             t.equal(data.length, 4);
-            t.deepEqual(data[0], {id: 'yo', range:5});
-            t.deepEqual(data[3], {id: 'yo', range:8});
+            t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5});
+            t.deepEqual(_(data[3]).omit('blob'), {id: 'yo', range:8});
             t.end();
         }));
 });
@@ -226,8 +227,8 @@ test('query - stream, with paging', function(t) {
         .pipe(es.writeArray(function(err, data){
             t.equal(err, null);
             t.equal(data.length, 4);
-            t.deepEqual(data[0], {id: 'yo', range:5});
-            t.deepEqual(data[3], {id: 'yo', range:8});
+            t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5});
+            t.deepEqual(_(data[3]).omit('blob'), {id: 'yo', range:8});
             t.end();
         }));
 });
@@ -238,8 +239,8 @@ test('query - stream, paging get 2 pages', function(t) {
         .pipe(es.writeArray(function(err, data){
             t.equal(err, null);
             t.equal(data.length, 2);
-            t.deepEqual(data[0], {id: 'yo', range:5});
-            t.deepEqual(data[1], {id: 'yo', range:6});
+            t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5});
+            t.deepEqual(_(data[1]).omit('blob'), {id: 'yo', range:6});
             t.end();
         }));
 });
@@ -251,8 +252,8 @@ test('query - callback, paging get all pages', function(t) {
     function queryResp(err, items) {
         t.equal(err, null);
         t.equal(items.length, 4);
-        t.deepEqual(items[0], {id: 'yo', range:5});
-        t.deepEqual(items[3], {id: 'yo', range:8});
+        t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
+        t.deepEqual(_(items[3]).omit('blob'), {id: 'yo', range:8});
         t.end();
     }
 });
@@ -264,7 +265,7 @@ test('query - callback, paging via prev/next', function(t) {
     function firstResp(err, items, metas) {
         t.equal(err, null);
         t.equal(items.length, 1);
-        t.deepEqual(items[0], {id: 'yo', range:5});
+        t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
         var next = metas.pop().last;
         t.ok(next, 'last evaluated key is not null');
         nextQuery(next);
@@ -274,8 +275,8 @@ test('query - callback, paging via prev/next', function(t) {
         dyno.query({id:{'EQ':'yo'}}, {start:next, limit:1, pages:2}, function(err, items) {
             t.equal(err, null);
             t.equal(items.length, 2);
-            t.deepEqual(items[0], {id: 'yo', range:6});
-            t.deepEqual(items[1], {id: 'yo', range:7});
+            t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:6});
+            t.deepEqual(_(items[1]).omit('blob'), {id: 'yo', range:7});
             t.end();
         });
     }
