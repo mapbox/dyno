@@ -43,18 +43,18 @@ var dyno = module.exports.dyno = require('dyno')({
 });
 ```
 
-If you want to send updates to Amazon Kinesis, configure it like this:
+dyno can send a notification containing the modified table and primary key attribute to Amazon Kinesis when a record is updated. The following shows how to configure this.
 
 ```javascript
 var dyno = module.exports.dyno = require('dyno')({
     // ...
     kinesisEndpoint: 'kinesis.us-east-1.amazonaws.com',
-    kinesisPartitionAttribute: 'id',
+    kinesisPrimaryKey: 'id',
     kinesisStream: 'test'
 });
 ```
 
-Dyno uses an attribute of the item as partition key for Kinesis, so you can make e.g. sure that an item with a specific id always ends up on the same Kinesis shard.
+Dyno uses the primary key as partitionKey for Kinesis, so the same item always ends up on the same Kinesis shard.
 
 ##### putItem
 
