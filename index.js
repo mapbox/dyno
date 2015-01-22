@@ -9,5 +9,6 @@ module.exports = function(c) {
     _(dyno).extend(require('./lib/scan')(config));
     _(dyno).extend(require('./lib/table')(config));
     _(dyno).extend(require('./lib/batch')(config));
+    _(dyno).extend(require('./lib/describe')(config));
     return dyno;
 };
