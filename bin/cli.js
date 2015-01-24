@@ -88,7 +88,7 @@ var es = require('event-stream');
                         this.resume();
                     }.bind(this));
                 } else {
-                    q.defer(dyno.putItem, data, {raw:true});
+                    q.defer(dyno.putItem, data);
                 }
             }))
             .on('error', function(err){
@@ -106,12 +106,14 @@ var es = require('event-stream');
             .pipe(es.parse())
             .pipe(es.through(function(data) {
                 q.defer(dyno.putItem, data);
-            }));
+            }))
+            .on('error', function(err){
+                error(err);
+            })
         q.awaitAll(function(err) {
             if (err) error(err);
         });
     }
-
 
 })();
 

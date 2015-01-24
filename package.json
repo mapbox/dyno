@@ -6,6 +6,9 @@
   "scripts": {
     "test": "node test/index.js"
   },
+  "bin": {
+    "dyno": "./bin/cli.js"
+  },
   "author": "Mick Thompson <mick@mick.im>",
   "license": "MIT",
   "dependencies": {
