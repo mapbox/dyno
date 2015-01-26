@@ -4,6 +4,9 @@ var Dyno = require('../index.js');
 var queue = require('queue-async');
 var es = require('event-stream');
 
+process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || 'fake';
+process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
+
 (function() {
     var params = {};
     if (argv.e) params.endpoint = argv.e;
