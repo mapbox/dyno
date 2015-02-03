@@ -31,6 +31,90 @@ This is the case right now with commands like `scan`
 
 ### Usage
 
+#### CLI
+
+Dyno includes a cli for working with DynamoDB tables.
+
+##### Setup
+
+Dyno assumes that credentials for AWS will be provided in the ENVIRONMENT as [described in the aws-sdk docs](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html#Credentials_from_Environment_Variables)
+
+##### Common flags:
+
+```
+dyno <region> <sub command> -e <Endpoint URL>
+
+dyno us-east-1 tables
+
+dyno local tables
+// setting the region to local, will set the endpoint to http://localhost:4567
+
+```
+
+
+##### List tables:
+
+```
+dyno local tables
+
+{"TableNames":['my-table', 'my-other-table']}
+
+```
+
+##### Describe a table:
+
+```
+dyno local table my-table
+
+{"Table":{"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},....]}}
+
+```
+
+##### Scan a table:
+
+Outputs line delimited JSON for every item in the table.
+
+```
+dyno local scan my-table
+
+{"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
+{"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
+{"id":"0.9447696127463132","collection":"somethign:0","attr":"moredata 48"}
+{"id":"0.9472108569461852","collection":"somethign:0","attr":"moredata 84"}
+....
+
+```
+
+##### Export a table:
+
+Outputs the table schema then does a scan (like above)
+
+```
+dyno local export my-table
+
+{"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},...]}
+{"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
+{"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
+{"id":"0.9447696127463132","collection":"somethign:0","attr":"moredata 48"}
+{"id":"0.9472108569461852","collection":"somethign:0","attr":"moredata 84"}
+....
+
+```
+
+##### Import a table:
+
+Receives an exported table on stdin. Expects the first line to be the table schema, and
+the rest of the lines to be items.
+
+```
+dyno us-west-1 export my-table | dyno local import my-table-copy
+
+```
+
+
+
+#### JS api:
+
 
 ##### Setup
 
@@ -113,7 +197,7 @@ dyno.query(query, {pages: 1}, function(err, resp, metas) {
 });
 ```
 
-This key can be passed back in to another query to get the next page of 
+This key can be passed back in to another query to get the next page of
 results.
 
 ```
@@ -121,4 +205,3 @@ dyno.query(query, {start: next, pages: 1}, function(err, resp, metas) {
     ...
 });
 ```
-
