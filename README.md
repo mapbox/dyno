@@ -42,16 +42,20 @@ Dyno assumes that credentials for AWS will be provided in the ENVIRONMENT as [de
 ##### Common flags:
 
 ```
-dyno tables -e <Endpoint URL> -r <region>
+dyno <region> <sub command> -e <Endpoint URL>
 
-dyno tables -e http://localhost:4567
+dyno us-east-1 tables
+
+dyno local tables
+// setting the region to local, will set the endpoint to http://localhost:4567
+
 ```
 
 
 ##### List tables:
 
 ```
-dyno tables
+dyno local tables
 
 {"TableNames":['my-table', 'my-other-table']}
 
@@ -60,7 +64,7 @@ dyno tables
 ##### Describe a table:
 
 ```
-dyno table my-table
+dyno local table my-table
 
 {"Table":{"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},....]}}
 
@@ -71,7 +75,7 @@ dyno table my-table
 Outputs line delimited JSON for every item in the table.
 
 ```
-dyno scan my-table
+dyno local scan my-table
 
 {"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
 {"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
@@ -86,7 +90,7 @@ dyno scan my-table
 Outputs the table schema then does a scan (like above)
 
 ```
-dyno export my-table
+dyno local export my-table
 
 {"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},...]}
 {"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
@@ -103,7 +107,7 @@ Receives an exported table on stdin. Expects the first line to be the table sche
 the rest of the lines to be items.
 
 ```
-dyno export my-table | dyno import my-table-copy
+dyno us-west-1 export my-table | dyno local import my-table-copy
 
 ```
 

@@ -9,29 +9,28 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
 
 (function() {
     var params = {};
-    if (argv.e) params.endpoint = argv.e;
-    if (process.env.AWS_DEFAULT_REGION) params.region = process.env.AWS_DEFAULT_REGION;
-    if (argv.r) params.region = argv.r;
 
-    if (argv._[0] === 'tables') {
+    params.region = argv._[0];
+    if (argv._[0] === 'local') params.endpoint = 'http://localhost:4567';
+    if (argv.e) params.endpoint = argv.e;
+
+    if (argv._[1] === 'tables') {
         dyno = Dyno(params);
         return dyno.listTables(output);
     }
 
-    if (!argv._[1]) error('No table set');
-    params.table = argv._[1];
+    if (!argv._[2]) error('No table set');
+    params.table = argv._[2];
 
     dyno = Dyno(params);
 
     // dyno table -t
-    if (argv._[0] === 'table') {
+    if (argv._[1] === 'table') {
         return dyno.describeTable(output);
     }
 
-
-
     //describes the table, then scans and outputs all the data.
-    if(argv._[0] === 'export') {
+    if(argv._[1] === 'export') {
         dyno.describeTable(describedTable);
         function describedTable(err, resp){
             if(err) return error(err);
@@ -64,7 +63,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
         }
     }
 
-    if(argv._[0] === 'scan') {
+    if(argv._[1] === 'scan') {
         dyno.scan()
         .pipe(es.stringify())
         .pipe(process.stdout)
@@ -75,7 +74,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
     }
 
     //describes the table, then scans and outputs all the data.
-    if(argv._[0] === 'import') {
+    if(argv._[1] === 'import') {
         var q = queue(10);
         var firstline = true;
         process.stdin
@@ -102,7 +101,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
         });
     }
 
-    if(argv._[0] === 'put') {
+    if(argv._[1] === 'put') {
         var q = queue(10);
         process.stdin
             .pipe(es.split())
