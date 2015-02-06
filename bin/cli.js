@@ -42,7 +42,9 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
                 'ItemCount',
                 'NumberOfDecreasesToday',
                 'TableSizeBytes',
-                'TableStatus'
+                'TableStatus',
+                'LastDecreaseDateTime',
+                'LastIncreaseDateTime'
             ];
 
             function replacer(key, value) {
