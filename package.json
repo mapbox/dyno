@@ -33,5 +33,9 @@
   },
   "keywords": [
     "dynamodb"
-  ]
+  ],
+  "jscsConfig": {
+    "preset": "airbnb",
+    "validateIndentation": 4
+  }
 }
