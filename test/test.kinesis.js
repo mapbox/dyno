@@ -102,7 +102,7 @@ test('kinesis params', function(t) {
     });
 
     function clean(params) {
-        params.Data = params.Data.replace(/"eventId":"(.+?)",/, '"eventId":"[EVENTID]",');
+        params.Data = params.Data.replace(/"eventID":"(.+?)",/, '"eventID":"[EVENTID]",');
         return params;
     }
 
@@ -115,7 +115,7 @@ test('kinesis params', function(t) {
     t.deepEqual(clean(found), {
         Data: JSON.stringify({
             awsRegion: 'us-east-1',
-            eventId: '[EVENTID]',
+            eventID: '[EVENTID]',
             eventName: 'MODIFY',
             eventSource: 'aws:dynamodb',
             eventVersion: '1.0',
@@ -137,7 +137,7 @@ test('kinesis params', function(t) {
     t.deepEqual(clean(found), {
         Data: JSON.stringify({
             awsRegion: 'us-east-1',
-            eventId: '[EVENTID]',
+            eventID: '[EVENTID]',
             eventName: 'INSERT',
             eventSource: 'aws:dynamodb',
             eventVersion: '1.0',
@@ -159,7 +159,7 @@ test('kinesis params', function(t) {
     t.deepEqual(clean(found), {
         Data: JSON.stringify({
             awsRegion: 'us-east-1',
-            eventId: '[EVENTID]',
+            eventID: '[EVENTID]',
             eventName: 'REMOVE',
             eventSource: 'aws:dynamodb',
             eventVersion: '1.0',
@@ -210,7 +210,7 @@ test('kinesis put: disabled', function(t) {
 
 test('kinesis put: updateItem', function(t) {
     function clean(params) {
-        params.Data = params.Data.replace(/"eventId":"(.+?)",/, '"eventId":"[EVENTID]",');
+        params.Data = params.Data.replace(/"eventID":"(.+?)",/, '"eventID":"[EVENTID]",');
         return params;
     }
 
@@ -224,7 +224,7 @@ test('kinesis put: updateItem', function(t) {
                     StreamName: 'stream-id',
                     Data: JSON.stringify({
                         awsRegion: 'us-east-1',
-                        eventId: '[EVENTID]',
+                        eventID: '[EVENTID]',
                         eventName: 'MODIFY',
                         eventSource: 'aws:dynamodb',
                         eventVersion: '1.0',
@@ -266,7 +266,7 @@ test('kinesis put: updateItem', function(t) {
 
 test('kinesis put: putItem', function(t) {
     function clean(params) {
-        params.Data = params.Data.replace(/"eventId":"(.+?)",/, '"eventId":"[EVENTID]",');
+        params.Data = params.Data.replace(/"eventID":"(.+?)",/, '"eventID":"[EVENTID]",');
         return params;
     }
 
@@ -280,7 +280,7 @@ test('kinesis put: putItem', function(t) {
                     StreamName: 'stream-id',
                     Data: JSON.stringify({
                         awsRegion: 'us-east-1',
-                        eventId: '[EVENTID]',
+                        eventID: '[EVENTID]',
                         eventName: 'INSERT',
                         eventSource: 'aws:dynamodb',
                         eventVersion: '1.0',
@@ -321,7 +321,7 @@ test('kinesis put: putItem', function(t) {
 
 test('kinesis put: deleteItem', function(t) {
     function clean(params) {
-        params.Data = params.Data.replace(/"eventId":"(.+?)",/, '"eventId":"[EVENTID]",');
+        params.Data = params.Data.replace(/"eventID":"(.+?)",/, '"eventID":"[EVENTID]",');
         return params;
     }
 
@@ -335,7 +335,7 @@ test('kinesis put: deleteItem', function(t) {
                     StreamName: 'stream-id',
                     Data: JSON.stringify({
                         awsRegion: 'us-east-1',
-                        eventId: '[EVENTID]',
+                        eventID: '[EVENTID]',
                         eventName: 'REMOVE',
                         eventSource: 'aws:dynamodb',
                         eventVersion: '1.0',
@@ -377,7 +377,7 @@ test('kinesis put: deleteItem', function(t) {
 test('kinesis put: batchWriteItem', function(t) {
     function clean(params) {
         params.Records = params.Records.map(function(record) {
-            record.Data = record.Data.replace(/"eventId":"(.+?)",/, '"eventId":"[EVENTID]",');
+            record.Data = record.Data.replace(/"eventID":"(.+?)",/, '"eventID":"[EVENTID]",');
             return record;
         });
         return params;
@@ -399,7 +399,7 @@ test('kinesis put: batchWriteItem', function(t) {
                         {
                             Data: JSON.stringify({
                                 awsRegion: 'us-east-1',
-                                eventId: '[EVENTID]',
+                                eventID: '[EVENTID]',
                                 eventName: 'INSERT',
                                 eventSource: 'aws:dynamodb',
                                 eventVersion: '1.0',
@@ -415,7 +415,7 @@ test('kinesis put: batchWriteItem', function(t) {
                         {
                             Data: JSON.stringify({
                                 awsRegion: 'us-east-1',
-                                eventId: '[EVENTID]',
+                                eventID: '[EVENTID]',
                                 eventName: 'REMOVE',
                                 eventSource: 'aws:dynamodb',
                                 eventVersion: '1.0',
@@ -431,7 +431,7 @@ test('kinesis put: batchWriteItem', function(t) {
                         {
                             Data: JSON.stringify({
                                 awsRegion: 'us-east-1',
-                                eventId: '[EVENTID]',
+                                eventID: '[EVENTID]',
                                 eventName: 'INSERT',
                                 eventSource: 'aws:dynamodb',
                                 eventVersion: '1.0',
