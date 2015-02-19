@@ -507,3 +507,28 @@ test('getItem return values', function(t) {
 });
 
 test('teardown', s.teardown);
+
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
+test('delete', function(t) {
+    var item = {id: 'yo', range: 5};
+
+    dyno.putItem(item, itemResp);
+    function itemResp(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, item);
+        dyno.deleteItem(item, getItem);
+    }
+    function deleteItem(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, null);
+        dyno.getItem(item, getItem);
+    }
+    function getItem(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, undefined);
+        t.end();
+    }
+});
+test('teardown', s.teardown);
