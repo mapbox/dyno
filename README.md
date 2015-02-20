@@ -205,3 +205,41 @@ dyno.query(query, {start: next, pages: 1}, function(err, resp, metas) {
     ...
 });
 ```
+
+#### multi + kinesisConfig
+
+Dyno includes a special multi-table client that let's you provide configuration
+details for both a read (replica) table and a write (primary) table. All read
+operations are performed on the read table and all write operations on the write
+table.
+
+You can supply a `kinesisConfig` object to the write . The idea is to provides
+stopgap until [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
+are out of preview. Adding `kinesisConfig` to a dyno config object will result
+in write operations being "logged" to a Kinesis stream. The Kinesis stream can
+then be utilized elsewhere to keep a follower database up-to-speed.
+
+`multi` and `kinesisConfig` are is useful when used together for setting up
+basic cross-region replication.
+
+```javascript
+var readConfig = {
+  region: 'eu-west-1',
+  table: 'follower'
+};
+
+var writeConfig = {
+  region: 'us-east-1',
+  table: 'leader',
+  kinesisConfig: {
+    stream: 'identifier-for-kinesis-stream',
+    region: 'us-east-1',
+    key: ['id', 'range']
+  }
+};
+
+var dyno = Dyno.multi(readConfig, writeConfig);
+
+dyno.getItem('...'); // reads from the follower database in eu-west-1
+dyno.putItem('...'); // writes to the leader database + kinesis stream
+```
