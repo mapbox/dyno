@@ -3,14 +3,17 @@ var fixtures = require('./fixtures');
 var Dynalite = require('dynalite');
 var Dyno = require('../');
 var _ = require('underscore');
+var queue = require('queue-async');
 var dynalite;
 
 var setup;
 
-module.exports = function(live) {
-    if (setup) return setup;
+module.exports = function(setting) {
+    if (setup && setup.setting === setting) return setup;
 
-    setup = {};
+    var live = setting === 'multi' ? false : !!setting;
+
+    setup = { setting: setting };
 
     var tableName = setup.tableName = 'dyno-test-' + Math.ceil(1000 * Math.random());
     var tableExists = false;
@@ -33,6 +36,29 @@ module.exports = function(live) {
         };
 
     var dyno = setup.dyno = Dyno(config);
+
+    if (setting === 'multi') {
+        var read = {
+            accessKeyId: 'fake',
+            secretAccessKey: 'fake',
+            region: 'us-east-1',
+            table: tableName + '-read',
+            endpoint: 'http://localhost:4567'
+        };
+
+        var write = {
+            accessKeyId: 'fake',
+            secretAccessKey: 'fake',
+            region: 'us-east-1',
+            table: tableName + '-write',
+            endpoint: 'http://localhost:4567'
+        };
+
+        dyno = setup.dyno = Dyno.multi(read, write);
+
+        setup.readDyno = Dyno(read);
+        setup.writeDyno = Dyno(write);
+    }
 
     setup.test = function(name, opts, callback) {
         if (typeof opts === 'function') {
@@ -66,11 +92,22 @@ module.exports = function(live) {
     setup.setupTable = function(t) {
         if (live && tableExists) return t.end();
 
-        dyno.createTable(table, function(err, resp){
-            t.ifError(err, 'created table');
-            tableExists = true;
-            t.end();
-        });
+        if (setting === 'multi') {
+            var tablename = table.TableName;
+            queue(1)
+                .defer(setup.readDyno.createTable, _({TableName: tablename + '-read'}).defaults(table))
+                .defer(setup.writeDyno.createTable, _({TableName: tablename + '-write'}).defaults(table))
+                .await(function(err) {
+                    t.ifError(err, 'created tables');
+                    t.end();
+                });
+        } else {
+            dyno.createTable(table, function(err, resp) {
+                t.ifError(err, 'created table');
+                tableExists = true;
+                t.end();
+            });
+        }
     };
 
     setup.teardown = function(t) {
