@@ -111,6 +111,17 @@ dyno us-west-1 export my-table | dyno local import my-table-copy
 
 ```
 
+##### Put items into a table:
+
+Receives an items as new line delimited json on stdin. 
+
+**pro tip:** That is the same as the output of [scan](#scan-a-table).
+
+```
+dyno us-west-1 scan my-table | dyno local put my-table-copy
+
+```
+
 
 
 #### JS api:
