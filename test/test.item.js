@@ -3,6 +3,7 @@ var test = s.test;
 var es = require('event-stream');
 var dyno = s.dyno;
 var _ = require('underscore');
+var fixtures = require('./fixtures');
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
@@ -281,6 +282,24 @@ test('query - callback, paging via prev/next', function(t) {
 
 test('teardown', s.teardown);
 
+test('setup', s.setup());
+test('setup table', s.setupTable);
+test('load 10000 items', function(t) {
+    var items = fixtures.randomItems(10000, 1024);
+    dyno.putItems(items, function(err) {
+        t.ifError(err, 'loaded');
+        t.end();
+    });
+});
+test('scan - parallel', function(t) {
+    var opts = { segment: 0, segments: 4, pages: 0 };
+    dyno.scan(opts, function(err, items) {
+        t.ifError(err, 'scanned table');
+        t.ok(items.length < 10000, 'performed a partial scan');
+        t.end();
+    });
+});
+test('teardown', s.teardown);
 test('setup', s.setup());
 test('setup table', s.setupTable);
 test('setup items', function(t) {
