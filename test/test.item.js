@@ -7,6 +7,38 @@ var _ = require('underscore');
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
+test('setup items', function(t) {
+    var bigItem = {id: 'hella', range: 1, blob: new Buffer(30000)};
+
+    dyno.putItem(bigItem, itemResp);
+
+    function itemResp(err, resp) {
+        t.equal(err, null, 'no errors')
+        if(bigItem.range > 99) return t.end();
+        bigItem.range+=1;
+        dyno.putItem(bigItem, itemResp);
+    }
+});
+
+test('try to query many big items', function(t) {
+    var queryOptions = {
+        id: {'EQ': 'hella' }
+    }
+
+    dyno.query(queryOptions, {}, queryResp);
+
+    function queryResp(err, resp) {
+        t.equal(err, null, 'no errors')
+        t.equal(resp.length, 100)
+        t.end()
+    }
+
+});
+
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
 test('get', function(t) {
     var item = {id: 'yo', range: 5};
 
