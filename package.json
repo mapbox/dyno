@@ -20,7 +20,7 @@
     "underscore": "1.6.0"
   },
   "devDependencies": {
-    "dynalite": "git+https://github.com/mick/dynalite.git#queryFilters",
+    "dynalite": "^0.7.1",
     "kinesalite": "^0.4.0",
     "seedrandom": "^2.3.6",
     "tap": "^0.4.11"
