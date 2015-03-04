@@ -1,3 +1,7 @@
+## 0.11.0
+
+* Adds support for parallel scan operations
+
 ## 0.7.0
 
 * Support for caller driven query paging and offset start.
