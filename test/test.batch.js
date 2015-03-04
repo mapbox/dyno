@@ -16,7 +16,7 @@ test('putItems', function(t) {
         t.ok(metas, 'returned metadata object');
         t.ok(metas[0].capacity, 'returned capacity info');
 
-        dyno.scan({pages:0, capacity: 'TOTAL'}, function(err, items, metas){
+        dyno.scan({pages:0, capacity: 'TOTAL'}, function(err, items, metas) {
             t.ifError(err, 'completed scan');
             if (err) return t.end();
             t.equal(items.length, 1000, 'there are the right number of items in dynamo');
@@ -28,7 +28,7 @@ test('putItems', function(t) {
 });
 
 test('getItems', function(t) {
-    var itemIds = randomItems(200).map(function(item){
+    var itemIds = randomItems(200).map(function(item) {
         return {
             id: item.id,
             range: item.range
@@ -38,7 +38,7 @@ test('getItems', function(t) {
     dyno.getItems(itemIds, { capacity: 'TOTAL' }, function(err, items, metas) {
         t.ifError(err, 'got items');
         if (err) return t.end();
-        
+
         t.ok(metas, 'returned metadata object');
         t.ok(metas[0].capacity, 'returned capacity info');
 
@@ -48,7 +48,7 @@ test('getItems', function(t) {
 });
 
 test('deleteItems', function(t) {
-    var itemIds = randomItems(1000).map(function(item){
+    var itemIds = randomItems(1000).map(function(item) {
         return {
             id: item.id,
             range: item.range
@@ -61,7 +61,7 @@ test('deleteItems', function(t) {
         t.ok(metas, 'returned metadata object');
         t.ok(metas[0].capacity, 'returned capacity info');
 
-        dyno.scan({pages:0, capacity: 'TOTAL'}, function(err, items, metas){
+        dyno.scan({pages:0, capacity: 'TOTAL'}, function(err, items, metas) {
             t.equal(items.length, 0, 'there are the right number of items in dynamo');
             t.ok(metas, 'returned metadata object');
             t.ok(metas[0].capacity, 'returned capacity info');

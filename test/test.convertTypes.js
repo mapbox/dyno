@@ -1,4 +1,4 @@
-var test = require('tap').test;
+var test = require('tape');
 var types = require('../lib/types');
 
 test('convert strings', function(t) {
@@ -53,7 +53,7 @@ test('convert sets - binary', function(t) {
 });
 
 test('convert sets multiple items', function(t) {
-    var item = {set: [6,5,4,3,2,1]};
+    var item = {set: [6, 5, 4, 3, 2, 1]};
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {NS: ['6', '5', '4', '3', '2', '1']}});
@@ -61,10 +61,10 @@ test('convert sets multiple items', function(t) {
 });
 
 test('convert multiple types', function(t) {
-    var item = {string: 'a', number: 6, set:[1,2], set2: ['a', 'b']};
+    var item = {string: 'a', number: 6, set:[1, 2], set2: ['a', 'b']};
 
     item = types.toDynamoTypes(item);
-    t.deepEqual(item, {string: {S:'a'}, number: {N:6}, set:{NS:[1,2]}, set2: {SS:['a', 'b']}});
+    t.deepEqual(item, {string: {S:'a'}, number: {N:'6'}, set:{NS:['1', '2']}, set2: {SS:['a', 'b']}});
     t.end();
 });
 
@@ -85,7 +85,7 @@ test('convert update actions - delete', function(t) {
 });
 
 test('convert update actions - NS', function(t) {
-    var item = {add:{set: [1,2]}};
+    var item = {add:{set: [1, 2]}};
 
     item = types.toAttributeUpdates(item);
     t.deepEqual(item, {set: {Action: 'ADD', Value:{NS: ['1', '2']}}});

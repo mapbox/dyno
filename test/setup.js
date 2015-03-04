@@ -1,4 +1,4 @@
-var test = require('tap').test;
+var test = require('tape');
 var fixtures = require('./fixtures');
 var Dynalite = require('dynalite');
 var Dyno = require('../');
@@ -7,11 +7,12 @@ var queue = require('queue-async');
 var dynalite;
 
 var setup;
+var live = false;
 
 module.exports = function(setting) {
+    if (setup && live) return setup;
+    live = setting === 'multi' ? false : !!setting;
     if (setup && setup.setting === setting) return setup;
-
-    var live = setting === 'multi' ? false : !!setting;
 
     setup = { setting: setting };
 
@@ -66,7 +67,7 @@ module.exports = function(setting) {
             opts = {};
         }
 
-        if (!opts.timeout) opts.timeout = live ? 120000 : 30000;
+        if (!opts.timeout) opts.timeout = live ? 240000 : 30000;
 
         test(name, opts, callback);
     };
@@ -76,7 +77,7 @@ module.exports = function(setting) {
             t.end();
         };
 
-        if(!opts) opts = {};
+        if (!opts) opts = {};
         return function(t) {
             dynalite = Dynalite({
                 createTableMs: opts.createTableMs || 0,

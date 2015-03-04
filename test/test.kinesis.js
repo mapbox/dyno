@@ -1,4 +1,4 @@
-var test = require('tap').test;
+var test = require('tape');
 var config = require('../lib/config');
 var Kinesis = require('../lib/kinesis');
 var Dyno = require('..');

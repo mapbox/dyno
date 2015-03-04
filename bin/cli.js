@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var argv = require('minimist')(process.argv.slice(2));;
+var argv = require('minimist')(process.argv.slice(2));
 var Dyno = require('../index.js');
 var queue = require('queue-async');
 var es = require('event-stream');
@@ -24,97 +24,98 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
 
     dyno = Dyno(params);
 
+    function describedTable(err, resp) {
+        if (err) return error(err);
+
+        var deleteAttributes = [
+            'CreationDateTime',
+            'IndexSizeBytes',
+            'IndexStatus',
+            'ItemCount',
+            'NumberOfDecreasesToday',
+            'TableSizeBytes',
+            'TableStatus',
+            'LastDecreaseDateTime',
+            'LastIncreaseDateTime'
+        ];
+
+        function replacer(key, value) {
+            if (deleteAttributes.indexOf(key) !== -1) {
+                return undefined;
+            }
+            return value;
+        }
+
+        console.log(JSON.stringify(resp.Table, replacer));
+        dyno.scan()
+            .pipe(es.stringify())
+            .pipe(process.stdout)
+            .on('error', function(err) {
+                error(err);
+            })
+            .on('end', process.exit);
+    }
+
     // dyno table -t
     if (argv._[1] === 'table') {
         return dyno.describeTable(output);
     }
 
     //describes the table, then scans and outputs all the data.
-    if(argv._[1] === 'export') {
+    if (argv._[1] === 'export') {
         dyno.describeTable(describedTable);
-        function describedTable(err, resp){
-            if(err) return error(err);
-
-            var deleteAttributes = [
-                'CreationDateTime',
-                'IndexSizeBytes',
-                'IndexStatus',
-                'ItemCount',
-                'NumberOfDecreasesToday',
-                'TableSizeBytes',
-                'TableStatus',
-                'LastDecreaseDateTime',
-                'LastIncreaseDateTime'
-            ];
-
-            function replacer(key, value) {
-                if (deleteAttributes.indexOf(key) !== -1) {
-                    return undefined;
-                }
-                return value;
-            }
-
-            console.log(JSON.stringify(resp.Table, replacer));
-            dyno.scan()
-                .pipe(es.stringify())
-                .pipe(process.stdout)
-                .on('error', function(err){
-                    error(err);
-                })
-                .on('end', process.exit);
-        }
     }
 
-    if(argv._[1] === 'scan') {
+    if (argv._[1] === 'scan') {
         dyno.scan()
         .pipe(es.stringify())
         .pipe(process.stdout)
-        .on('error', function(err){
+        .on('error', function(err) {
             error(err);
         })
         .on('end', process.exit);
     }
 
     //describes the table, then scans and outputs all the data.
-    if(argv._[1] === 'import') {
-        var q = queue(10);
+    if (argv._[1] === 'import') {
+        var importQueue = queue(10);
         var firstline = true;
         process.stdin
             .pipe(es.split())
             .pipe(es.parse())
             .pipe(es.through(function(data) {
-                if(firstline) {
+                if (firstline) {
                     firstline = false;
                     this.pause();
                     data.TableName = params.table;
                     dyno.createTable(data, function(err) {
-                        if(err) error(err);
+                        if (err) error(err);
                         this.resume();
                     }.bind(this));
                 } else {
-                    q.defer(dyno.putItem, data);
+                    importQueue.defer(dyno.putItem, data);
                 }
             }))
-            .on('error', function(err){
+            .on('error', function(err) {
                 error(err);
-            })
-        q.awaitAll(function(err) {
+            });
+        importQueue.awaitAll(function(err) {
             if (err) error(err);
         });
     }
 
-    if(argv._[1] === 'put') {
-        var q = queue(10);
+    if (argv._[1] === 'put') {
+        var putQueue = queue(10);
         process.stdin
             .pipe(es.split())
             .pipe(es.parse())
             .pipe(es.through(function(data) {
-                q.defer(dyno.putItem, data);
+                putQueue.defer(dyno.putItem, data);
             }))
-            .on('error', function(err){
+            .on('error', function(err) {
                 error(err);
-            })
-        q.awaitAll(function(err) {
+            });
+        putQueue.awaitAll(function(err) {
             if (err) error(err);
         });
     }
@@ -122,11 +123,11 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
 })();
 
 function output(err, resp) {
-    if(err) console.error(err);
-    if(resp) console.log(JSON.stringify(resp));
+    if (err) console.error(err);
+    if (resp) console.log(JSON.stringify(resp));
     process.exit(0);
 }
-function error(msg){
+function error(msg) {
     console.error(msg);
     process.exit(1);
 }

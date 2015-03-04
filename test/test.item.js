@@ -4,13 +4,12 @@ var es = require('event-stream');
 var dyno = s.dyno;
 var _ = require('underscore');
 
-
 test('setup', s.setup());
 test('setup table', s.setupTable);
 test('get', function(t) {
     var item = {id: 'yo', range: 5};
 
-    dyno.getItem(item, function (err, resp) {
+    dyno.getItem(item, function(err, resp) {
         t.equal(err, null);
         t.end();
     });
@@ -48,7 +47,7 @@ test('conditional put', function(t) {
 
         var options = {
             expected:{
-                a:{'NULL': []}
+                a:{NULL: []}
             }
         };
         dyno.putItem(item, options, itemPut);
@@ -72,7 +71,7 @@ test('conditional put', function(t) {
 
         var options = {
             expected:{
-                range:{'NE': [ { N: item.range.toString() } ]}
+                range:{NE: [{ N: item.range.toString() }]}
             }
         };
         dyno.putItem(item, options, expectFailure);
@@ -84,7 +83,6 @@ test('conditional put', function(t) {
     }
 });
 test('teardown', s.teardown);
-
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
@@ -99,10 +97,10 @@ test('setup items', function(t) {
 
 test('query - EQ', function(t) {
 
-    dyno.query({id:{'EQ':'yo'}, range:{'EQ':5}}, itemResp);
+    dyno.query({id:{EQ:'yo'}, range:{EQ:5}}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, [{id : 'yo', range : 5, extra: 'hi' }]);
+        t.deepEqual(resp, [{id: 'yo', range: 5, extra: 'hi' }]);
         t.end();
     }
 
@@ -110,10 +108,10 @@ test('query - EQ', function(t) {
 
 test('query - BETWEEN', function(t) {
 
-    dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}}, itemResp);
+    dyno.query({id:{EQ:'yo'}, range:{BETWEEN:[4, 6]}}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, [{id : 'yo', range : 5, extra: 'hi' }]);
+        t.deepEqual(resp, [{id: 'yo', range: 5, extra: 'hi' }]);
         t.end();
     }
 
@@ -121,10 +119,10 @@ test('query - BETWEEN', function(t) {
 
 test('query - BETWEEN - list attributes', function(t) {
 
-    dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}}, {attributes:['range']}, itemResp);
+    dyno.query({id:{EQ:'yo'}, range:{BETWEEN:[4, 6]}}, {attributes:['range']}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, [{range : 5 }]);
+        t.deepEqual(resp, [{range: 5 }]);
         t.end();
     }
 
@@ -132,18 +130,18 @@ test('query - BETWEEN - list attributes', function(t) {
 
 test('query - BETWEEN - list attributes - query filter match', function(t) {
 
-    dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}},
+    dyno.query({id:{EQ:'yo'}, range:{BETWEEN:[4, 6]}},
     {filter:{extra:{EQ:'hi'}}}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
-        t.deepEqual(resp, [{id : 'yo', range : 5, extra: 'hi' }]);
+        t.deepEqual(resp, [{id: 'yo', range: 5, extra: 'hi' }]);
         t.end();
     }
 });
 
 test('query - BETWEEN - list attributes - query filter doesnt match', function(t) {
 
-    dyno.query({id:{'EQ':'yo'}, range:{'BETWEEN':[4,6]}},
+    dyno.query({id:{EQ:'yo'}, range:{BETWEEN:[4, 6]}},
     {filter:{extra:{EQ:'hello'}}}, itemResp);
     function itemResp(err, resp) {
         t.equal(err, null);
@@ -152,7 +150,6 @@ test('query - BETWEEN - list attributes - query filter doesnt match', function(t
     }
 
 });
-
 
 test('teardown', s.teardown);
 
@@ -163,16 +160,16 @@ test('setup items', function(t) {
 
     dyno.putItem(item, itemResp);
     function itemResp(err, resp) {
-        t.equal(err, null, 'no errors')
-        if(item.range > 7) return t.end();
-        item.range+=1;
+        t.equal(err, null, 'no errors');
+        if (item.range > 7) return t.end();
+        item.range += 1;
         dyno.putItem(item, itemResp);
     }
 });
 
 test('scan - stream', function(t) {
 
-    dyno.scan().pipe(es.writeArray(function(err, data){
+    dyno.scan().pipe(es.writeArray(function(err, data) {
         t.equal(err, null, 'no errors');
         t.equal(data.length, 4, 'right number of items');
         t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5}, 'first item');
@@ -185,7 +182,7 @@ test('scan - stream', function(t) {
 test('scan - callback', function(t) {
 
     dyno.scan(scanResp);
-    function scanResp(err, items){
+    function scanResp(err, items) {
         t.equal(err, null);
         t.equal(items.length, 4);
         t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
@@ -198,7 +195,7 @@ test('scan - callback', function(t) {
 test('scan - callback, paging 2 pages', function(t) {
 
     dyno.scan({limit:1, pages:2}, scanResp);
-    function scanResp(err, items){
+    function scanResp(err, items) {
         t.equal(err, null);
         t.equal(items.length, 2);
         t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
@@ -210,8 +207,8 @@ test('scan - callback, paging 2 pages', function(t) {
 
 test('query - stream', function(t) {
 
-    var dr = dyno.query({id:{'EQ':'yo'}})
-        .pipe(es.writeArray(function(err, data){
+    var dr = dyno.query({id:{EQ:'yo'}})
+        .pipe(es.writeArray(function(err, data) {
             t.equal(err, null);
             t.equal(data.length, 4);
             t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5});
@@ -220,11 +217,10 @@ test('query - stream', function(t) {
         }));
 });
 
-
 test('query - stream, with paging', function(t) {
 
-    var dr = dyno.query({id:{'EQ':'yo'}}, {limit:1})
-        .pipe(es.writeArray(function(err, data){
+    var dr = dyno.query({id:{EQ:'yo'}}, {limit:1})
+        .pipe(es.writeArray(function(err, data) {
             t.equal(err, null);
             t.equal(data.length, 4);
             t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5});
@@ -235,8 +231,8 @@ test('query - stream, with paging', function(t) {
 
 test('query - stream, paging get 2 pages', function(t) {
 
-    var dr = dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:2 })
-        .pipe(es.writeArray(function(err, data){
+    var dr = dyno.query({id:{EQ:'yo'}}, {limit:1, pages:2 })
+        .pipe(es.writeArray(function(err, data) {
             t.equal(err, null);
             t.equal(data.length, 2);
             t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5});
@@ -247,7 +243,7 @@ test('query - stream, paging get 2 pages', function(t) {
 
 test('query - callback, paging get all pages', function(t) {
 
-    var dr = dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:0}, queryResp);
+    var dr = dyno.query({id:{EQ:'yo'}}, {limit:1, pages:0}, queryResp);
 
     function queryResp(err, items) {
         t.equal(err, null);
@@ -260,7 +256,7 @@ test('query - callback, paging get all pages', function(t) {
 
 test('query - callback, paging via prev/next', function(t) {
 
-    dyno.query({id:{'EQ':'yo'}}, {limit:1, pages:1}, firstResp);
+    dyno.query({id:{EQ:'yo'}}, {limit:1, pages:1}, firstResp);
 
     function firstResp(err, items, metas) {
         t.equal(err, null);
@@ -272,7 +268,7 @@ test('query - callback, paging via prev/next', function(t) {
     }
 
     function nextQuery(next) {
-        dyno.query({id:{'EQ':'yo'}}, {start:next, limit:1, pages:2}, function(err, items) {
+        dyno.query({id:{EQ:'yo'}}, {start:next, limit:1, pages:2}, function(err, items) {
             t.equal(err, null);
             t.equal(items.length, 2);
             t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:6});
@@ -292,7 +288,7 @@ test('setup items', function(t) {
 
     dyno.putItem(item, itemResp);
     function itemResp(err, resp) {
-        if(item.range > 6) return t.end();
+        if (item.range > 6) return t.end();
         item.range++;
         dyno.putItem(item, itemResp);
     }
@@ -329,7 +325,7 @@ test('update', function(t) {
     }
 });
 test('update - delete', function(t) {
-    var item = {delete:['str','num']};
+    var item = {delete:['str', 'num']};
     var key = {id:'yo', range:5};
 
     dyno.updateItem(key, item, itemResp);
@@ -352,53 +348,51 @@ test('update Item ', function(t) {
 
     var key = { id: 'yo', range: 5 };
     var actions = {put: { newkey: 'hi' }};
-    var d = dyno.updateItem(key, actions, function(err, resp){
+    var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
-        dyno.getItem(key, function(err, data){
+        dyno.getItem(key, function(err, data) {
             t.notOk(err, 'no error');
             t.deepEqual(data, {
-                "id" : "yo",
-                "range" : 5,
-                "newkey" : "hi",
+                id: 'yo',
+                range: 5,
+                newkey: 'hi'
             }, 'item was really updated');
             t.end();
         });
     });
 });
-
 
 test('update Item ', function(t) {
 
     var key = { id: 'yo', range: 5 };
     var actions = {put: { newset: ['a', 'b'] }, delete: ['newkey'], add: {counter: 1}};
-    var d = dyno.updateItem(key, actions, function(err, resp){
+    var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
-        dyno.getItem(key, function(err, data){
+        dyno.getItem(key, function(err, data) {
             t.notOk(err, 'no error');
             t.deepEqual(data, {
-                "id" : "yo",
-                "range" : 5,
-                "newset" : ['a', 'b'],
-                "counter" : 1
+                id: 'yo',
+                range: 5,
+                newset: ['a', 'b'],
+                counter: 1
             }, 'item was really updated');
             t.end();
         });
     });
 });
 
-
 test('update Item - delete from set', function(t) {
 
     var key = { id: 'yo', range: 5 };
-    var actions = {delete: {newset: ['a'], 'counter':null}};
-    var d = dyno.updateItem(key, actions, function(err, resp){
+    var actions = {delete: {newset: ['a'], counter:null}};
+    var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
-        dyno.getItem(key, function(err, data){
+        dyno.getItem(key, function(err, data) {
             t.notOk(err, 'no error');
             t.deepEqual(data, {
-                "id" : "yo",
-                "range" : 5,
-                "newset" : ['b'],
+                id: 'yo',
+                range: 5,
+                newset: ['b']
             }, 'item was really updated');
             t.end();
         });
@@ -411,14 +405,13 @@ test('update Item - with condition', function(t) {
 
     var actions = {put: {anotherkey: 'hello'}, delete: ['otherrange'], add: {counter: 1}};
     var d = dyno.updateItem(key, actions, {
-        expected: { 'range': {'EQ' : [5] }}
-    }, function(err, resp){
+        expected: {range: {EQ: [5] }}
+    }, function(err, resp) {
         t.notOk(err);
         t.equal(resp.anotherkey, 'hello', 'item has new attribute');
         t.end();
     });
 });
-
 
 test('update Item - with NOT_NULL condition', function(t) {
 
@@ -427,10 +420,10 @@ test('update Item - with NOT_NULL condition', function(t) {
     var actions = {put: {anotherkey2: 'hello2'}, delete: ['otherrange'], add: {counter: 1}};
     var d = dyno.updateItem(key, actions, {
         expected: {
-            'range': 'NOT_NULL',
-            'id': {'EQ': 'yo'}
+            range: 'NOT_NULL',
+            id: {EQ: 'yo'}
         }
-    }, function(err, resp){
+    }, function(err, resp) {
         t.notOk(err, 'no error');
         t.equal(resp.anotherkey2, 'hello2', 'item has new attribute');
         t.end();
@@ -443,8 +436,8 @@ test('update Item - with condition. fail conditions', function(t) {
 
     var actions = {put: {anotherkey: 'hello'}};
     var d = dyno.updateItem(key, actions, {
-    expected: { 'anotherkey': { 'EQ' : ['hi'] }}
-    }, function(err, resp){
+        expected: {anotherkey: { EQ: ['hi'] }}
+    }, function(err, resp) {
         t.ok(err, 'should return error');
         t.equal(err.message, 'The conditional request failed');
         t.equal(err.code, 'ConditionalCheckFailedException');
@@ -507,7 +500,6 @@ test('getItem return values', function(t) {
 });
 
 test('teardown', s.teardown);
-
 
 test('setup', s.setup());
 test('setup table', s.setupTable);

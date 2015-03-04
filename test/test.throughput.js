@@ -18,7 +18,7 @@ test('setup slow table', function(t) {
 });
 
 test('slow enough', function(t) {
-    var item = { id: "1", range: 1 };
+    var item = { id: '1', range: 1 };
     var attempts = 0;
     var max = 10;
 
@@ -36,7 +36,7 @@ test('slow enough', function(t) {
     put();
 });
 
-test('too fast', { timeout: Infinity }, function(t) {
+test('too fast', function(t) {
     var items = fixtures.randomItems(10, 63 * 1024);
     var q = queue();
 
@@ -53,7 +53,7 @@ test('too fast', { timeout: Infinity }, function(t) {
     });
 });
 
-test('should throttle', { timeout: Infinity }, function(t) {
+test('should throttle', function(t) {
     var items = fixtures.randomItems(10, 63 * 1024);
     var q = queue();
 
