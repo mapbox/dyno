@@ -3,6 +3,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var Dyno = require('../index.js');
 var queue = require('queue-async');
 var es = require('event-stream');
+var _ = require('underscore');
 
 process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || 'fake';
 process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
@@ -119,6 +120,23 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
             if (err) error(err);
         });
     }
+
+    if (argv._[1] === 'query') {
+        dyno.describeTable(doQuery);
+
+        function doQuery(err, table) {
+            if (err) error(err);
+            var query = {};
+            var hashkey = _(table.Table.KeySchema).findWhere({ KeyType: 'HASH' }).AttributeName;
+            var rangekey = _(table.Table.KeySchema).findWhere({ KeyType: 'RANGE' });
+            if (rangekey) rangekey = rangekey.AttributeName;
+
+            query[hashkey] = { EQ: argv._[3] };
+            if(argv._[4]) query[rangekey] = { EQ: argv._[4] };
+            dyno.query(query, argv, output);
+        }
+    }
+
 
 })();
 
