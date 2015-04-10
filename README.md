@@ -113,7 +113,7 @@ dyno us-west-1 export my-table | dyno local import my-table-copy
 
 ##### Put items into a table:
 
-Receives an items as new line delimited json on stdin. 
+Receives an items as new line delimited json on stdin.
 
 **pro tip:** That is the same as the output of [scan](#scan-a-table).
 
@@ -159,6 +159,29 @@ Set the table name per command:
 ```
 var item = {id: 'yo', range: 5};
 dyno.putItem(item, {table:'myothertablename'}, function(err, resp){});
+
+```
+
+##### getItem
+
+```
+var item = {id: 'yo', range: 5};
+dyno.getItem(item, function(err, resp){});
+
+// multiple items
+var items = [
+        {id: 'yo', range: 5},
+        {id: 'guten tag', range: 5},
+        {id: 'nihao', range: 5}
+    ];
+dyno.getItems(items, function(err, resp){})
+```
+
+Set the table name per command:
+
+```
+var item = {id: 'yo', range: 5};
+dyno.getItem(item, {table:'myothertablename'}, function(err, resp){});
 
 ```
 
