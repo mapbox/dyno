@@ -157,6 +157,46 @@ test('teardown', s.teardown);
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
+test('query: streaming interface', function(t) {
+    var readItems = fixtures.randomItems(4);
+    var writeItems = fixtures.randomItems(5);
+    queue(1)
+        .defer(s.readDyno.putItems, readItems)
+        .defer(s.writeDyno.putItems, writeItems)
+        .await(query);
+
+    function query(err) {
+        if (err) throw err;
+        var readResult = [];
+        var writeResult = [];
+
+        queue(1)
+            .defer(function(next) {
+                s.dyno.query({id: {EQ: readItems[0].id}, range: {EQ: readItems[0].range}})
+                    .on('data', function(item) {
+                        readResult.push(item);
+                    })
+                    .on('end', next);
+            })
+            .defer(function(next) {
+                s.dyno.query({id: {EQ: writeItems[4].id}, range: {EQ: writeItems[4].range}})
+                    .on('data', function(item) {
+                        writeResult.push(item);
+                    })
+                    .on('end', next);
+            })
+            .await(function(err) {
+                t.ifError(err, 'no error');
+                t.deepEqual(readResult, [readItems[0]], 'queried read table');
+                t.deepEqual(writeResult, [], 'did not query write table');
+                t.end();
+            });
+    }
+});
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
 test('scan', function(t) {
     var readItems = fixtures.randomItems(4);
     var writeItems = fixtures.randomItems(5);
@@ -172,6 +212,33 @@ test('scan', function(t) {
             t.equal(result.length, 4, 'scanned read table');
             t.end();
         });
+    }
+});
+test('teardown', s.teardown);
+
+test('setup', s.setup());
+test('setup table', s.setupTable);
+test('scan: streaming interface', function(t) {
+    var readItems = fixtures.randomItems(4);
+    var writeItems = fixtures.randomItems(5);
+    var result = [];
+
+    queue(1)
+        .defer(s.readDyno.putItems, readItems)
+        .defer(s.writeDyno.putItems, writeItems)
+        .await(scan);
+
+    function scan(err) {
+        if (err) throw err;
+        s.dyno.scan()
+            .on('data', function(item) {
+                result.push(item);
+            })
+            .on('end', function() {
+                t.ifError(err, 'no error');
+                t.equal(result.length, 4, 'scanned read table');
+                t.end();
+            });
     }
 });
 test('teardown', s.teardown);
