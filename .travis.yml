@@ -10,7 +10,7 @@ before_install:
 - LIVE=false
 - if test "${MSG#*'[live test]'}" != "$MSG"; then LIVE=true; fi
 script:
-- if [ "$LIVE" == "false" ]; then ./node_modules/.bin/tap test/index.js; fi
+- if [ "$LIVE" == "false" ]; then node test/index.js; fi
 - if [ "$LIVE" == "true" ]; then node test/live.tests.js; fi
 env:
   global:
