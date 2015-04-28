@@ -48,7 +48,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
 
         console.log(JSON.stringify(resp.Table, replacer));
         dyno.scan()
-            .pipe(es.stringify())
+            .pipe(stringifier)
             .pipe(process.stdout)
             .on('error', function(err) {
                 error(err);
@@ -56,6 +56,28 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
             .on('end', process.exit);
     }
 
+    // Stringifies JSON objects and base64 encodes buffers
+    var stringifier = es.through(function(record) {
+        this.emit('data', JSON.stringify(record, function(key) {
+            var val = this[key];
+            if (Buffer.isBuffer(val)) return 'base64:' + val.toString('base64');
+            return val;
+        }) + '\n');
+    });
+
+    // Parses JSON strings and base64 decodes into buffers
+    var parser = es.through(function(record) {
+        record = JSON.parse(record);
+
+        var val;
+        for (var key in record) {
+            val = record[key];
+            if (typeof val === 'string' && val.indexOf('base64:') === 0)
+                record[key] = new Buffer(val.split('base64:').pop(), 'base64');
+        }
+
+        this.emit('data', record);
+    });
     // dyno table -t
     if (argv._[1] === 'table') {
         return dyno.describeTable(output);
@@ -68,7 +90,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
 
     if (argv._[1] === 'scan') {
         dyno.scan()
-        .pipe(es.stringify())
+        .pipe(stringifier)
         .pipe(process.stdout)
         .on('error', function(err) {
             error(err);
@@ -82,7 +104,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
         var firstline = true;
         process.stdin
             .pipe(es.split())
-            .pipe(es.parse())
+            .pipe(parser)
             .pipe(es.through(function(data) {
                 if (firstline) {
                     firstline = false;
@@ -108,7 +130,7 @@ process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
         var putQueue = queue(10);
         process.stdin
             .pipe(es.split())
-            .pipe(es.parse())
+            .pipe(parser)
             .pipe(es.through(function(data) {
                 putQueue.defer(dyno.putItem, data);
             }))
