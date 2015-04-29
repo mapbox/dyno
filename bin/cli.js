@@ -42,11 +42,16 @@ if (commands.indexOf(params.command) === -1) {
     process.exit(1);
 }
 
-params.region = params._[1].split('/')[0];
+params.region = params._[1] ? params._[1].split('/')[0] : null;
+if (!params.region) {
+    console.error('Error: Specify a region');
+    usage();
+    process.exit(1);
+}
 if (params.region === 'local') params.endpoint = 'http://localhost:4567';
 if (params.e) params.endpoint = params.e;
 
-params.table = params._[1].split('/')[1];
+params.table = params._[1] ? params._[1].split('/')[1] : null;
 if (!params.table && params.command !== 'tables') {
     console.error('Error: Specify a table name');
     usage();
@@ -147,7 +152,9 @@ if (params.command === 'tables') dyno.listTables(function(err, data) {
         console.error(err);
         process.exit(1);
     }
-    console.log(JSON.stringify(data));
+    data.TableNames.forEach(function(name) {
+        console.log(name);
+    });
 });
 
 // ----------------------------------
