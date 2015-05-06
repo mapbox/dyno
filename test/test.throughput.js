@@ -1,3 +1,4 @@
+var AWS = require('aws-sdk');
 var s = require('./setup')(true);
 var test = s.test;
 var dynamoRequest = require('../lib/dynamoRequest');
@@ -38,7 +39,7 @@ test('slow enough', function(t) {
 
 test('too fast', function(t) {
     var items = fixtures.randomItems(10, 63 * 1024);
-    var q = queue();
+    var q = queue(1);
 
     items.forEach(function(item) {
         q.defer(dyno.putItem, item, { throughputAttempts: 1 });
