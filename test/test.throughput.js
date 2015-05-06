@@ -64,7 +64,7 @@ test('should throttle', function(t) {
 
     q.awaitAll(function(err, results) {
         // Couldn't throttle enough. Check that at least throttling was tried
-        if (err) t.equal(err.attempts, 2, 'tried to throttle requests');
+        if (err) t.equal(err.retryDelay, 100, 'tried to throttle requests');
 
         // Throttled enough
         else t.equal(results.length, items.length, 'all requests completed');
