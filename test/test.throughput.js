@@ -73,4 +73,23 @@ test('should throttle', function(t) {
     });
 });
 
+test('can overshoot aws default retry limits', function(t) {
+    var items = fixtures.randomItems(10, 63 * 1024);
+    var q = queue();
+
+    items.forEach(function(item) {
+        q.defer(dyno.putItem, item, { throughputAttempts: 11 });
+    });
+
+    q.awaitAll(function(err, results) {
+        // Couldn't throttle enough. Check that at least throttling was tried
+        if (err) t.equal(err.retryDelay, 51200, 'tried to throttle requests');
+
+        // Throttled enough
+        else t.equal(results.length, items.length, 'all requests completed');
+
+        t.end();
+    });
+});
+
 test('delete slow table', s.deleteTable);
