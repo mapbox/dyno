@@ -1,3 +1,4 @@
+var AWS = require('aws-sdk');
 var s = require('./setup')(true);
 var test = s.test;
 var dynamoRequest = require('../lib/dynamoRequest');
@@ -38,7 +39,7 @@ test('slow enough', function(t) {
 
 test('too fast', function(t) {
     var items = fixtures.randomItems(10, 63 * 1024);
-    var q = queue();
+    var q = queue(1);
 
     items.forEach(function(item) {
         q.defer(dyno.putItem, item, { throughputAttempts: 1 });
@@ -63,7 +64,26 @@ test('should throttle', function(t) {
 
     q.awaitAll(function(err, results) {
         // Couldn't throttle enough. Check that at least throttling was tried
-        if (err) t.equal(err.attempts, 2, 'tried to throttle requests');
+        if (err) t.equal(err.retryDelay, 100, 'tried to throttle requests');
+
+        // Throttled enough
+        else t.equal(results.length, items.length, 'all requests completed');
+
+        t.end();
+    });
+});
+
+test('can overshoot aws default retry limits', function(t) {
+    var items = fixtures.randomItems(10, 63 * 1024);
+    var q = queue();
+
+    items.forEach(function(item) {
+        q.defer(dyno.putItem, item, { throughputAttempts: 11 });
+    });
+
+    q.awaitAll(function(err, results) {
+        // Couldn't throttle enough. Check that at least throttling was tried
+        if (err) t.equal(err.retryDelay, 51200, 'tried to throttle requests');
 
         // Throttled enough
         else t.equal(results.length, items.length, 'all requests completed');
