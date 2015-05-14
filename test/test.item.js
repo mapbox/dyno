@@ -169,14 +169,19 @@ test('setup items', function(t) {
 });
 
 test('scan - stream', function(t) {
-
-    dyno.scan().pipe(es.writeArray(function(err, data) {
-        t.equal(err, null, 'no errors');
-        t.equal(data.length, 4, 'right number of items');
-        t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5}, 'first item');
-        t.deepEqual(_(data[3]).omit('blob'), {id: 'yo', range:8}, 'last item');
-        t.end();
-    }));
+    dyno.scan()
+        .on('dbrequest', function(params, response) {
+            t.pass('fires dbrequest event');
+            t.ok(params.TableName, 'provides request parameters');
+            t.equal(response.Count, response.Items.length, 'provides dynamodb response');
+        })
+        .pipe(es.writeArray(function(err, data) {
+            t.equal(err, null, 'no errors');
+            t.equal(data.length, 4, 'right number of items');
+            t.deepEqual(_(data[0]).omit('blob'), {id: 'yo', range:5}, 'first item');
+            t.deepEqual(_(data[3]).omit('blob'), {id: 'yo', range:8}, 'last item');
+            t.end();
+        }));
 
 });
 
