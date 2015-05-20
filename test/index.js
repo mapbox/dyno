@@ -1,4 +1,6 @@
 require('./setup')();
+require('./test.scan');
+require('./test.filter');
 require('./test.batch');
 require('./test.convertTypes');
 require('./test.cli');
