@@ -217,6 +217,8 @@ test('cli: import table', function(assert) {
         });
     });
 
+    proc.stdout.pipe(process.stdout);
+    proc.stderr.pipe(process.stderr);
     proc.stdin.write(serialized);
     proc.stdin.end();
 });
