@@ -6,3 +6,4 @@ require('./test.item');
 require('./test.table');
 require('./test.kinesis');
 require('./test.multi');
+require('./test.config');
