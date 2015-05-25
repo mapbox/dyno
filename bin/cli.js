@@ -4,7 +4,6 @@ var Dyno = require('../index.js');
 var queue = require('queue-async');
 var es = require('event-stream');
 var stream = require('stream');
-var zlib = require('zlib');
 var fs = require('fs');
 
 process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || 'fake';
@@ -62,9 +61,6 @@ if (!params.table && params.command !== 'tables') {
 }
 
 var dyno = Dyno(params);
-
-var input = params._[2] ?
-    fs.createReadStream(params._[2]).pipe(zlib.createGunzip()) : process.stdin;
 
 // Transform stream to stringifies JSON objects and base64 encodes buffers
 function Stringifier() {
@@ -259,7 +255,7 @@ if (params.command === 'scan') scan();
 // Import table
 // ----------------------------------
 if (params.command === 'import') {
-    input
+    process.stdin
         .pipe(es.split())
         .pipe(Parser())
         .pipe(Aggregator(true))
@@ -274,7 +270,7 @@ if (params.command === 'import') {
 // Import data
 // ----------------------------------
 if (params.command === 'put') {
-    input
+    process.stdin
         .pipe(es.split())
         .pipe(Parser())
         .pipe(Aggregator(false))
