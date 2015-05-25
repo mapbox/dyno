@@ -3,6 +3,8 @@ var params = require('minimist')(process.argv.slice(2));
 var Dyno = require('../index.js');
 var queue = require('queue-async');
 var es = require('event-stream');
+var stream = require('stream');
+var fs = require('fs');
 
 process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || 'fake';
 process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
@@ -61,31 +63,49 @@ if (!params.table && params.command !== 'tables') {
 var dyno = Dyno(params);
 
 // Transform stream to stringifies JSON objects and base64 encodes buffers
-var stringifier = es.through(function(record) {
-    var str = JSON.stringify(record, function(key, value) {
-        var val = this[key];
-        if (Buffer.isBuffer(val)) return 'base64:' + val.toString('base64');
-        return value;
-    });
+function Stringifier() {
+    var stringifier = new stream.Transform({ highWaterMark: 100 });
+    stringifier._writableState.objectMode = true;
+    stringifier._readableState.objectMode = false;
 
-    this.emit('data', str + '\n');
-});
+    stringifier._transform = function(record, enc, callback) {
+        var str = JSON.stringify(record, function(key, value) {
+            var val = this[key];
+            if (Buffer.isBuffer(val)) return 'base64:' + val.toString('base64');
+            return value;
+        });
+
+        this.push(str + '\n');
+        setImmediate(callback);
+    };
+
+    return stringifier;
+}
 
 // Transform stream parses JSON strings and base64 decodes into buffers
-var parser = es.through(function(record) {
-    if (!record) return;
+function Parser() {
+    var parser = new stream.Transform({ highWaterMark: 100 });
+    parser._writableState.objectMode = false;
+    parser._readableState.objectMode = true;
 
-    record = JSON.parse(record);
+    parser._transform = function(record, enc, callback) {
+        if (!record) return;
 
-    var val;
-    for (var key in record) {
-        val = record[key];
-        if (typeof val === 'string' && val.indexOf('base64:') === 0)
-            record[key] = new Buffer(val.split('base64:').pop(), 'base64');
-    }
+        record = JSON.parse(record);
 
-    this.emit('data', record);
-});
+        var val;
+        for (var key in record) {
+            val = record[key];
+            if (typeof val === 'string' && val.indexOf('base64:') === 0)
+                record[key] = new Buffer(val.split('base64:').pop(), 'base64');
+        }
+
+        this.push(record);
+        setImmediate(callback);
+    };
+
+    return parser;
+}
 
 // Remove unimportant table metadata from the description
 function cleanDescription(desc) {
@@ -111,7 +131,7 @@ function cleanDescription(desc) {
 
 function scan() {
     dyno.scan()
-        .pipe(stringifier)
+        .pipe(Stringifier())
         .pipe(process.stdout)
         .on('error', function(err) {
             console.error(err);
@@ -119,11 +139,47 @@ function scan() {
         });
 }
 
+// Transform stream that aggregates into sets of 25 objects
+function Aggregator(withTable) {
+    var firstline = !!withTable;
+
+    var aggregator = new stream.Transform({ objectMode: true, highWaterMark: 100 });
+    aggregator.records = [];
+
+    aggregator._transform = function(record, enc, callback) {
+        if (!record) return;
+        if (firstline) {
+            firstline = false;
+            this.push(record);
+        } else if (aggregator.records.length === 25) {
+            this.push(aggregator.records);
+            aggregator.records = [];
+        } else {
+            aggregator.records.push(record);
+        }
+        callback();
+    };
+
+    aggregator._flush = function(callback) {
+        if (aggregator.records.length) this.push(aggregator.records);
+        callback();
+    };
+
+    return aggregator;
+}
+
 function Importer(withTable) {
     var firstline = !!withTable;
     var q = queue(10);
 
-    var importer = es.through(function(data) {
+    var importer = stream.Transform({ objectMode: true, highWaterMark: 100 });
+    var queued = 0;
+
+    importer._transform = function(data, enc, callback) {
+        if (!data) return;
+        if (queued > 100)
+            setImmediate(importer._transform.bind(importer), data, enc, callback);
+
         if (firstline) {
             firstline = false;
             this.pause();
@@ -133,13 +189,20 @@ function Importer(withTable) {
                 this.resume();
             }.bind(this));
         } else {
-            q.defer(dyno.putItem, data);
+            queued++;
+            q.defer(function(next) {
+                dyno.putItems(data, function(err) {
+                    queued--;
+                    callback(err);
+                    next();
+                });
+            });
         }
-    });
+    };
 
-    q.awaitAll(function(err) {
-        if (err) importer.emit('error', err);
-    });
+    importer._flush = function(callback) {
+        q.awaitAll(callback);
+    };
 
     return importer;
 }
@@ -194,7 +257,8 @@ if (params.command === 'scan') scan();
 if (params.command === 'import') {
     process.stdin
         .pipe(es.split())
-        .pipe(parser)
+        .pipe(Parser())
+        .pipe(Aggregator(true))
         .pipe(Importer(true))
         .on('error', function(err) {
             console.error(err);
@@ -208,7 +272,8 @@ if (params.command === 'import') {
 if (params.command === 'put') {
     process.stdin
         .pipe(es.split())
-        .pipe(parser)
+        .pipe(Parser())
+        .pipe(Aggregator(false))
         .pipe(Importer(false))
         .on('error', function(err) {
             console.error(err);
