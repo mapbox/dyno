@@ -69,4 +69,5 @@ test('deleteItems', function(t) {
         });
     }
 });
+
 test('teardown', s.teardown);
