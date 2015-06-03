@@ -182,10 +182,11 @@ test('typesFromDynamo - item', function(t) {
     var items = [{
         id: { S: 'id:2' },
         range: { N: '2' },
-        buffer: { B: new Buffer('hi') }
+        buffer: { B: new Buffer('hi') },
+        list: {L: [{N: '6'}, {N: '5'}, {N: '4'}, {N: '3'}, {N: '2'}, {N: '1'}]}
     }];
 
     item = types.typesFromDynamo(items);
-    t.deepEqual(item, [{buffer: new Buffer('hi'), id: 'id:2', range: 2}]);
+    t.deepEqual(item, [{buffer: new Buffer('hi'), id: 'id:2', list: [6, 5, 4, 3, 2, 1], range: 2}]);
     t.end();
 });
