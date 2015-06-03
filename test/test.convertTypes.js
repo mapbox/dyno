@@ -17,6 +17,14 @@ test('convert booleans', function(t) {
     t.end();
 });
 
+test('convert null', function(t) {
+    var item = {n: null};
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {n: {NULL: true}});
+    t.end();
+});
+
 test('convert numbers', function(t) {
     var item = {id: 6};
 
@@ -75,11 +83,118 @@ test('convert sets multiple items', function(t) {
     t.end();
 });
 
-test('convert multiple types', function(t) {
-    var item = {string: 'a', number: 6, set: types.createSet([1, 2], 'N'), set2: types.createSet(['a', 'b'], 'S')};
+test('convert lists - numbers', function(t) {
+    var item = {list: [6, 5, 4, 3, 2, 1]};
 
     item = types.toDynamoTypes(item);
-    t.deepEqual(item, {string: {S:'a'}, number: {N:'6'}, set:{NS:['1', '2']}, set2: {SS:['a', 'b']}});
+    t.deepEqual(item, { list: { L: [{ N: '6' }, { N: '5' }, { N: '4' }, { N: '3' }, { N: '2' }, { N: '1' }] } });
+    t.end();
+});
+
+test('convert lists - strings', function(t) {
+    var item = {list: ['foo', 'bar']};
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, { list: { L: [{ S: 'foo' }, { S: 'bar' }] } });
+    t.end();
+});
+
+test('convert lists - multiple types', function(t) {
+    var item = {list: [1, 'foo', null, false]};
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, { list: { L: [{ N: '1' }, { S: 'foo' }, { NULL: true }, { BOOL: false }] } });
+    t.end();
+});
+
+test('convert maps', function(t) {
+    var item = {map: {
+        date: 12345,
+        foo: 'bar',
+        valid: true
+    }};
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, { map: { M: { date: { N: '12345' }, foo: { S: 'bar' }, valid: { BOOL: true } } } });
+    t.end();
+});
+
+test('convert multiple types', function(t) {
+    var item = {
+        string: 'a',
+        number: 6,
+        set: types.createSet([1, 2], 'N'),
+        set2: types.createSet(['a', 'b'], 'S'),
+        list: ['a', 2, null, true, false, {foo: 'bar'}],
+        bool: true,
+        bool2: false,
+        map: {
+            string: 'a',
+            number: 6,
+            set: types.createSet([1, 2], 'N'),
+            set2: types.createSet(['a', 'b'], 'S'),
+            list: ['a', 2, null, true, false, {foo: 'bar'}],
+            bool: true,
+            bool2: false,
+            nested: {
+                string: 'a',
+                number: 6,
+                set: types.createSet([1, 2], 'N'),
+                set2: types.createSet(['a', 'b'], 'S'),
+                list: ['a', 2, null, true, false, {foo: 'bar'}],
+                bool: true,
+                bool2: false
+            }
+        }
+    };
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, { string: { S: 'a' },
+        number: { N: '6' },
+        set: { NS: ['1', '2'] },
+        set2: { SS: ['a', 'b'] },
+        list:
+         { L:
+            [{ S: 'a' },
+              { N: '2' },
+              { NULL: true },
+              { BOOL: true },
+              { BOOL: false },
+              { M: { foo: { S: 'bar' } } }] },
+        bool: { BOOL: true },
+        bool2: { BOOL: false },
+        map:
+         { M:
+            { string: { S: 'a' },
+              number: { N: '6' },
+              set: { NS: ['1', '2'] },
+              set2: { SS: ['a', 'b'] },
+              list:
+               { L:
+                  [{ S: 'a' },
+                    { N: '2' },
+                    { NULL: true },
+                    { BOOL: true },
+                    { BOOL: false },
+                    { M: { foo: { S: 'bar' } } }] },
+              bool: { BOOL: true },
+              bool2: { BOOL: false },
+              nested:
+               { M:
+                  { string: { S: 'a' },
+                    number: { N: '6' },
+                    set: { NS: ['1', '2'] },
+                    set2: { SS: ['a', 'b'] },
+                    list:
+                     { L:
+                        [{ S: 'a' },
+                          { N: '2' },
+                          { NULL: true },
+                          { BOOL: true },
+                          { BOOL: false },
+                          { M: { foo: { S: 'bar' } } }] },
+                    bool: { BOOL: true },
+                    bool2: { BOOL: false } } } } } });
     t.end();
 });
 
