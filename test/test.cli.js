@@ -257,6 +257,7 @@ test('cli: import data', function(assert) {
     proc.stdin.write(serialized);
     proc.stdin.end();
 });
+test('cli: deleteTable', setup.deleteTable);
 test('cli: teardown', setup.teardown);
 
 test('cli: setup', setup.setup());
@@ -283,6 +284,7 @@ test('cli: export complicated record', function(assert) {
         });
     });
 });
+test('cli: deleteTable', setup.deleteTable);
 test('cli: teardown', setup.teardown);
 
 test('cli: setup', setup.setup());
@@ -313,4 +315,5 @@ test('cli: import complicated record', function(assert) {
     proc.stdin.write('{"id":"id:1","range":1,"buffer":"base64:aGVsbG8gd29ybGQh","array":[0,1,2],"newline":"0\\n1"}');
     proc.stdin.end();
 });
+test('cli: deleteTable', setup.deleteTable);
 test('cli: teardown', setup.teardown);

@@ -328,6 +328,7 @@ test('getItem with buffer', function(t) {
 
 });
 
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -364,6 +365,7 @@ test('update - delete', function(t) {
         t.end();
     }
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup({createTableMs:200}));

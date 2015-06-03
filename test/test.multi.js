@@ -59,6 +59,7 @@ test('getItem', function(t) {
         });
     });
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -78,6 +79,7 @@ test('putItem', function(t) {
             });
     });
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -153,6 +155,7 @@ test('query', function(t) {
             });
     }
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -193,6 +196,7 @@ test('query: streaming interface', function(t) {
             });
     }
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -214,6 +218,7 @@ test('scan', function(t) {
         });
     }
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -241,6 +246,7 @@ test('scan: streaming interface', function(t) {
             });
     }
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
@@ -260,6 +266,7 @@ test('getItems', function(t) {
         });
     });
 });
+test('deleteTable', s.deleteTable);
 test('teardown', s.teardown);
 
 test('setup', s.setup());
