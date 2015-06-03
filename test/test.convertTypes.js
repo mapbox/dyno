@@ -153,3 +153,39 @@ test('convert update actions - add and delete', function(t) {
     t.deepEqual(item, { counter: { Action: 'ADD', Value: { N: '5' } }, newset: { Action: 'DELETE', Value: { SS: ['a'] } } });
     t.end();
 });
+
+test('typesFromDynamo - undefined', function(t) {
+    var items;
+
+    item = types.typesFromDynamo(items);
+    t.deepEqual(item, undefined);
+    t.end();
+});
+
+test('typesFromDynamo - single item', function(t) {
+    var items = {id: { S: 'id:2' }};
+
+    item = types.typesFromDynamo(items);
+    t.deepEqual(item, [{id: 'id:2'}]);
+    t.end();
+});
+
+test('typesFromDynamo - single item, no property name', function(t) {
+    var items = { S: 'id:2' };
+
+    item = types.typesFromDynamo(items);
+    t.deepEqual(item, [{ S: 'id:2' }]);
+    t.end();
+});
+
+test('typesFromDynamo - item', function(t) {
+    var items = [{
+        id: { S: 'id:2' },
+        range: { N: '2' },
+        buffer: { B: new Buffer('hi') }
+    }];
+
+    item = types.typesFromDynamo(items);
+    t.deepEqual(item, [{buffer: new Buffer('hi'), id: 'id:2', range: 2}]);
+    t.end();
+});
