@@ -43,7 +43,7 @@ test('convert binary', function(t) {
 });
 
 test('convert sets - strings', function(t) {
-    var item = {set: ['a']};
+    var item = {set: types.createSet(['a'], 'S')};
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {SS: ['a']}});
@@ -51,7 +51,7 @@ test('convert sets - strings', function(t) {
 });
 
 test('convert sets - numbers', function(t) {
-    var item = {set: [6]};
+    var item = {set: types.createSet([6], 'N')};
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: {NS: ['6']}});
@@ -60,7 +60,7 @@ test('convert sets - numbers', function(t) {
 
 test('convert sets - binary', function(t) {
     var buffy = new Buffer('hi');
-    var item = { set: [buffy] };
+    var item = { set: types.createSet([buffy], 'B') };
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {set: { BS: [buffy] }});
@@ -68,15 +68,15 @@ test('convert sets - binary', function(t) {
 });
 
 test('convert sets multiple items', function(t) {
-    var item = {set: [6, 5, 4, 3, 2, 1]};
+    var item = {set: types.createSet([6, 5, 4, 3, 2, 1], 'N')};
 
     item = types.toDynamoTypes(item);
-    t.deepEqual(item, {set: {NS: ['6', '5', '4', '3', '2', '1']}});
+    t.deepEqual(item, {set: {NS: ['1', '2', '3', '4', '5', '6']}});
     t.end();
 });
 
 test('convert multiple types', function(t) {
-    var item = {string: 'a', number: 6, set:[1, 2], set2: ['a', 'b']};
+    var item = {string: 'a', number: 6, set: types.createSet([1, 2], 'N'), set2: types.createSet(['a', 'b'], 'S')};
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {string: {S:'a'}, number: {N:'6'}, set:{NS:['1', '2']}, set2: {SS:['a', 'b']}});
@@ -100,7 +100,7 @@ test('convert update actions - delete', function(t) {
 });
 
 test('convert update actions - NS', function(t) {
-    var item = {add:{set: [1, 2]}};
+    var item = {add:{set: types.createSet([1, 2], 'N')}};
 
     item = types.toAttributeUpdates(item);
     t.deepEqual(item, {set: {Action: 'ADD', Value:{NS: ['1', '2']}}});
