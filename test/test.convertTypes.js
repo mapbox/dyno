@@ -7,7 +7,6 @@ test('convert strings', function(t) {
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {id: {S:'yo'}});
     t.end();
-
 });
 
 test('convert numbers', function(t) {
@@ -15,6 +14,14 @@ test('convert numbers', function(t) {
 
     item = types.toDynamoTypes(item);
     t.deepEqual(item, {id: {N: '6'}});
+    t.end();
+});
+
+test('recursive strings', function(t) {
+    var item = 'yo';
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, 'yo');
     t.end();
 });
 
