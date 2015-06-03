@@ -13,6 +13,7 @@ before_install:
 script:
 - if [ "$LIVE" == "false" ]; then node test/index.js; fi
 - if [ "$LIVE" == "true" ]; then node test/live.tests.js; fi
+- npm run-script coveralls
 env:
   global:
   - secure: 0IoS5aWIlFm2InuHTMsqssnWH0zp/SXTHzQPjDvxqGWIuulPdZBd0WM17R7nxo/Msp6FG7QMMSWBAnePuPBTrs77iLEHHok/uqApsh/rLy1PQu4WZE5mlBBruZJftN/WO+2IV7WsmK0XeVrAxG7C875z/6zK/AGsJYLpyHP2jnM=
