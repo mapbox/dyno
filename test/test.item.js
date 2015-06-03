@@ -391,15 +391,16 @@ test('update Item ', function(t) {
 test('update Item ', function(t) {
 
     var key = { id: 'yo', range: 5 };
-    var actions = {put: { newset: ['a', 'b'] }, delete: ['newkey'], add: {counter: 1}};
+    var actions = {put: { newset: dyno.createSet(['a', 'b'], 'S') }, delete: ['newkey'], add: {counter: 1}};
     var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
         dyno.getItem(key, function(err, data) {
             t.notOk(err, 'no error');
+            data.newset = data.newset.contents;
             t.deepEqual(data, {
                 id: 'yo',
                 range: 5,
-                newset: ['a', 'b'],
+                newset: dyno.createSet(['a', 'b'], 'S').contents,
                 counter: 1
             }, 'item was really updated');
             t.end();
@@ -410,15 +411,16 @@ test('update Item ', function(t) {
 test('update Item - delete from set', function(t) {
 
     var key = { id: 'yo', range: 5 };
-    var actions = {delete: {newset: ['a'], counter:null}};
+    var actions = {delete: {newset: dyno.createSet(['a'], 'S'), counter:null}};
     var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
         dyno.getItem(key, function(err, data) {
             t.notOk(err, 'no error');
+            data.newset = data.newset.contents;
             t.deepEqual(data, {
                 id: 'yo',
                 range: 5,
-                newset: ['b']
+                newset: dyno.createSet(['b'], 'S').contents
             }, 'item was really updated');
             t.end();
         });
