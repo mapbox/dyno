@@ -112,33 +112,27 @@ module.exports = function(setting) {
     };
 
     setup.teardown = function(t) {
-        if (live) {
-            // throw errors to force-quit on failure
-            return dyno.scan({ pages: 0 }, function(err, items) {
-                if (err) throw err;
-                var keys = items.map(function(item) {
-                    return {
-                        id: item.id,
-                        range: item.range
-                    };
-                });
-                dyno.deleteItems(keys, function(err) {
-                    t.ifError(err, 'truncated live table');
-                    if (err) throw err;
-                    t.end();
-                });
-            });
-        }
-
-        dynalite.close();
-        t.end();
+        dynalite.close(function() {
+            t.end();
+        });
     };
 
     setup.deleteTable = function(t) {
-        dyno.deleteTable(tableName, function(err) {
-            t.ifError(err, 'deleted table');
-            t.end();
-        });
+        if (setting === 'multi') {
+            var tablename = table.TableName;
+            queue(1)
+                .defer(setup.readDyno.deleteTable, _({TableName: tablename + '-read'}).defaults(table))
+                .defer(setup.writeDyno.deleteTable, _({TableName: tablename + '-write'}).defaults(table))
+                .await(function(err) {
+                    t.ifError(err, 'deleted tables');
+                    t.end();
+                });
+        } else {
+            dyno.deleteTable(table, function(err, resp) {
+                t.ifError(err, 'deleted table');
+                t.end();
+            });
+        }
     };
 
     return setup;
