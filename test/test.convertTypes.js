@@ -182,3 +182,13 @@ test('typesFromDynamo - item', function(t) {
     t.deepEqual(item, [{buffer: new Buffer('hi'), id: 'id:2', list: [6, 5, 4, 3, 2, 1], range: 2}]);
     t.end();
 });
+
+test('typesFromDynamo - set', function(t) {
+    var items = [{
+        set: {NS: ['6', '5', '4', '3', '2', '1']}
+    }];
+
+    item = types.typesFromDynamo(items);
+    t.deepEqual(item[0].set.contents, types.createSet([6, 5, 4, 3, 2, 1], 'N').contents);
+    t.end();
+});
