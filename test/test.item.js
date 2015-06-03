@@ -72,7 +72,7 @@ test('conditional put', function(t) {
 
         var options = {
             expected:{
-                range:{NE: [{ N: item.range.toString() }]}
+                range:{NE: [item.range]}
             }
         };
         dyno.putItem(item, options, expectFailure);
