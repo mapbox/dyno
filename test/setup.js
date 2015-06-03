@@ -130,8 +130,9 @@ module.exports = function(setting) {
             });
         }
 
-        dynalite.close();
-        t.end();
+        dynalite.close(function() {
+            t.end();
+        });
     };
 
     setup.deleteTable = function(t) {
