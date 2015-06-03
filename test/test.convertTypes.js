@@ -9,6 +9,14 @@ test('convert strings', function(t) {
     t.end();
 });
 
+test('convert booleans', function(t) {
+    var item = {bool1: true, bool2: false };
+
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {bool1: {BOOL: true}, bool2: {BOOL: false}});
+    t.end();
+});
+
 test('convert numbers', function(t) {
     var item = {id: 6};
 
