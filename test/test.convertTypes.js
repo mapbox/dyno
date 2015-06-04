@@ -91,3 +91,50 @@ test('convert update actions - NS', function(t) {
     t.deepEqual(item, {set: {Action: 'ADD', Value:{NS: ['1', '2']}}});
     t.end();
 });
+
+test('convert update actions - delete from SS', function(t) {
+    var item = {delete: {newset: ['a']}};
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, { newset: { Action: 'DELETE', Value: { SS: ['a'] } } });
+    t.end();
+});
+
+test('convert update actions - add to SS', function(t) {
+    var item = {add: {newset: ['a']}};
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, { newset: { Action: 'ADD', Value: { SS: ['a'] } } });
+    t.end();
+});
+
+test('convert update actions - delete with array', function(t) {
+    var item = {
+        delete: ['foo', 'bar']
+    };
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, { bar: { Action: 'DELETE' }, foo: { Action: 'DELETE' } });
+    t.end();
+});
+
+test('convert update actions - delete with null', function(t) {
+    var item = {
+        delete: {foo: null, bar: null}
+    };
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, { bar: { Action: 'DELETE' }, foo: { Action: 'DELETE' } });
+    t.end();
+});
+
+test('convert update actions - add and delete', function(t) {
+    var item = {
+        add: {newset: 'a', counter: 5},
+        delete: {newset: ['a']}
+    };
+
+    item = types.toAttributeUpdates(item);
+    t.deepEqual(item, { counter: { Action: 'ADD', Value: { N: '5' } }, newset: { Action: 'DELETE', Value: { SS: ['a'] } } });
+    t.end();
+});
