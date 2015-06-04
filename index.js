@@ -12,7 +12,6 @@ function Dyno(c) {
     _(dyno).extend(require('./lib/table')(config));
     _(dyno).extend(require('./lib/batch')(config));
     _(dyno).extend(require('./lib/describe')(config));
-    _(dyno).extend(require('./lib/types'));
     return dyno;
 }
 
@@ -27,6 +26,11 @@ Dyno.multi = function(readConfig, writeConfig) {
 
     return require('./lib/multi')(read, write);
 };
+
+var types = require('./lib/types');
+Dyno.createSet = types.createSet;
+Dyno.toDynamoTypes = types.toDynamoTypes;
+Dyno.typesFromDynamo = types.typesFromDynamo;
 
 function badconfig(message) {
     var err = new Error(message);

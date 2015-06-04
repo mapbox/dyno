@@ -131,7 +131,7 @@ dyno us-west-1 scan my-table | dyno local put my-table-copy
 ##### Setup
 
 ```
-var dyno = module.exports.dyno = require('dyno')({
+var dyno = require('dyno')({
     accessKeyId: 'XXX',
     secretAccessKey: 'XXX',
     region: 'us-east-1',
@@ -240,6 +240,21 @@ dyno.query(query, {start: next, pages: 1}, function(err, resp, metas) {
     ...
 });
 ```
+
+#### Type Utilties
+
+##### `Dyno.createSet(array, type)`
+
+Turn a native JavaScript array into an explicit set. The type is preserved when
+converting to the DynamoDB wire format.
+
+##### `Dyno.toDynamoTypes(nativeObj)`
+
+Convert a native JavaScript object into the DynamoDB wire format.
+
+##### `Dyno.typesFromDynamo(writeObj)`
+
+Convert an object in DynamoDB wire format to native JavaScript objects.
 
 #### multi + kinesisConfig
 

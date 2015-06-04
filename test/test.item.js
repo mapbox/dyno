@@ -1,3 +1,4 @@
+var Dyno = require('../');
 var s = require('./setup')();
 var test = s.test;
 var es = require('event-stream');
@@ -391,7 +392,7 @@ test('update Item ', function(t) {
 test('update Item ', function(t) {
 
     var key = { id: 'yo', range: 5 };
-    var actions = {put: { newset: dyno.createSet(['a', 'b'], 'S') }, delete: ['newkey'], add: {counter: 1}};
+    var actions = {put: { newset: Dyno.createSet(['a', 'b'], 'S') }, delete: ['newkey'], add: {counter: 1}};
     var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
         dyno.getItem(key, function(err, data) {
@@ -400,7 +401,7 @@ test('update Item ', function(t) {
             t.deepEqual(data, {
                 id: 'yo',
                 range: 5,
-                newset: dyno.createSet(['a', 'b'], 'S').contents,
+                newset: Dyno.createSet(['a', 'b'], 'S').contents,
                 counter: 1
             }, 'item was really updated');
             t.end();
@@ -411,7 +412,7 @@ test('update Item ', function(t) {
 test('update Item - delete from set', function(t) {
 
     var key = { id: 'yo', range: 5 };
-    var actions = {delete: {newset: dyno.createSet(['a'], 'S'), counter:null}};
+    var actions = {delete: {newset: Dyno.createSet(['a'], 'S'), counter:null}};
     var d = dyno.updateItem(key, actions, function(err, resp) {
         t.notOk(err);
         dyno.getItem(key, function(err, data) {
@@ -420,7 +421,7 @@ test('update Item - delete from set', function(t) {
             t.deepEqual(data, {
                 id: 'yo',
                 range: 5,
-                newset: dyno.createSet(['b'], 'S').contents
+                newset: Dyno.createSet(['b'], 'S').contents
             }, 'item was really updated');
             t.end();
         });
