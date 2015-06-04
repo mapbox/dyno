@@ -12,7 +12,7 @@ function Dyno(c) {
     _(dyno).extend(require('./lib/table')(config));
     _(dyno).extend(require('./lib/batch')(config));
     _(dyno).extend(require('./lib/describe')(config));
-    dyno.createSet = require('./lib/types').createSet;
+    _(dyno).extend(require('./lib/types'));
     return dyno;
 }
 
