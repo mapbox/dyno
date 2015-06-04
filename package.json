@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "pretest": "jshint bin lib test && jscs bin lib test",
-    "test": "node test/index.js"
+    "test": "tape test/test.*.js",
+    "coveralls": "istanbul cover test/index.js && coveralls < ./coverage/lcov.info"
   },
   "bin": {
     "dyno": "./bin/cli.js"
@@ -21,7 +22,9 @@
     "underscore": "1.6.0"
   },
   "devDependencies": {
+    "coveralls": "^2.11.2",
     "dynalite": "^0.13.2",
+    "istanbul": "^0.3.14",
     "jscs": "1.11.3",
     "jshint": "^2.6.3",
     "kinesalite": "^0.4.0",
