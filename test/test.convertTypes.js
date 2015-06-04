@@ -223,7 +223,7 @@ test('convert update actions - NS', function(t) {
 });
 
 test('convert update actions - delete from SS', function(t) {
-    var item = {delete: {newset: ['a']}};
+    var item = {delete: {newset: types.createSet(['a'], 'S')}};
 
     item = types.toAttributeUpdates(item);
     t.deepEqual(item, { newset: { Action: 'DELETE', Value: { SS: ['a'] } } });
@@ -231,7 +231,7 @@ test('convert update actions - delete from SS', function(t) {
 });
 
 test('convert update actions - add to SS', function(t) {
-    var item = {add: {newset: ['a']}};
+    var item = {add: {newset: types.createSet(['a'], 'S')}};
 
     item = types.toAttributeUpdates(item);
     t.deepEqual(item, { newset: { Action: 'ADD', Value: { SS: ['a'] } } });
@@ -261,7 +261,7 @@ test('convert update actions - delete with null', function(t) {
 test('convert update actions - add and delete', function(t) {
     var item = {
         add: {newset: 'a', counter: 5},
-        delete: {newset: ['a']}
+        delete: {newset: types.createSet(['a'], 'S')}
     };
 
     item = types.toAttributeUpdates(item);
