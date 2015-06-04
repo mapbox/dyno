@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "jshint bin lib test && jscs bin lib test",
-    "test": "tape test/test.*.js",
+    "test": "node test/index.js",
     "coveralls": "istanbul cover test/index.js && coveralls < ./coverage/lcov.info"
   },
   "bin": {
