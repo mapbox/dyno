@@ -69,11 +69,7 @@ function Stringifier() {
     stringifier._readableState.objectMode = false;
 
     stringifier._transform = function(record, enc, callback) {
-        var str = JSON.stringify(record, function(key, value) {
-            var val = this[key];
-            if (Buffer.isBuffer(val)) return 'base64:' + val.toString('base64');
-            return value;
-        });
+        var str = Dyno.serialize(record);
 
         this.push(str + '\n');
         setImmediate(callback);
@@ -91,14 +87,7 @@ function Parser() {
     parser._transform = function(record, enc, callback) {
         if (!record) return;
 
-        record = JSON.parse(record);
-
-        var val;
-        for (var key in record) {
-            val = record[key];
-            if (typeof val === 'string' && val.indexOf('base64:') === 0)
-                record[key] = new Buffer(val.split('base64:').pop(), 'base64');
-        }
+        record = Dyno.deserialize(record);
 
         this.push(record);
         setImmediate(callback);
