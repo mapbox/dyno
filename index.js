@@ -31,41 +31,25 @@ var types = require('./lib/types');
 Dyno.createSet = types.createSet.bind(types);
 
 Dyno.serialize = function(item) {
-    function replacer(key, value) {
-        if (Buffer.isBuffer(this[key])) return this[key].toString('base64');
-
-        if (this[key].BS &&
-            Array.isArray(this[key].BS) &&
-            _(this[key].BS).every(function(buf) {
-                return Buffer.isBuffer(buf);
-            }))
-        {
-            return {
-                BS: this[key].BS.map(function(buf) {
-                    return buf.toString('base64');
-                })
-            };
-        }
-
-        return value;
-    }
-
-    return JSON.stringify(types.toDynamoTypes(item), replacer);
+    return JSON.stringify(types.toDynamoTypes(item));
 };
 
 Dyno.deserialize = function(str) {
     function reviver(key, value) {
-        if (typeof value === 'object' && value.B && typeof value.B === 'string') {
-            return { B: new Buffer(value.B, 'base64') };
+        if (value.B && Array.isArray(value.B) && _(value.B).every(function(num) {
+            return typeof num === 'number';
+        })) {
+            return { B: new Buffer(value.B) };
         }
 
-        if (typeof value === 'object' &&
-            value.BS &&
-            Array.isArray(value.BS))
-        {
+        if (value.BS && Array.isArray(value.BS) && _(value.BS).every(function(buf) {
+            return Array.isArray(buf) && _(buf).every(function(num) {
+                return typeof num === 'number';
+            });
+        })) {
             return {
-                BS: value.BS.map(function(s) {
-                    return new Buffer(s, 'base64');
+                BS: value.BS.map(function(buf) {
+                    return new Buffer(buf);
                 })
             };
         }
