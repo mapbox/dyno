@@ -73,15 +73,15 @@ dyno local table my-table
 
 ##### Scan a table:
 
-Outputs line delimited JSON for every item in the table.
+Outputs line delimited JSON in wire-format for every item in the table.
 
 ```
 dyno local scan my-table
 
-{"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
-{"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
-{"id":"0.9447696127463132","collection":"somethign:0","attr":"moredata 48"}
-{"id":"0.9472108569461852","collection":"somethign:0","attr":"moredata 84"}
+{"id":{"N":"0.9410678697749972"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 64"}}
+{"id":{"N":"0.9417226337827742"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 24"}}
+{"id":{"N":"0.9447696127463132"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 48"}}
+{"id":{"N":"0.9472108569461852"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 84"}}
 ....
 
 ```
@@ -94,10 +94,10 @@ Outputs the table schema then does a scan (like above)
 dyno local export my-table
 
 {"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},...]}
-{"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
-{"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
-{"id":"0.9447696127463132","collection":"somethign:0","attr":"moredata 48"}
-{"id":"0.9472108569461852","collection":"somethign:0","attr":"moredata 84"}
+{"id":{"N":"0.9410678697749972"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 64"}}
+{"id":{"N":"0.9417226337827742"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 24"}}
+{"id":{"N":"0.9447696127463132"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 48"}}
+{"id":{"N":"0.9472108569461852"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 84"}}
 ....
 
 ```
@@ -131,7 +131,7 @@ dyno us-west-1 scan my-table | dyno local put my-table-copy
 ##### Setup
 
 ```
-var dyno = module.exports.dyno = require('dyno')({
+var dyno = require('dyno')({
     accessKeyId: 'XXX',
     secretAccessKey: 'XXX',
     region: 'us-east-1',
@@ -240,6 +240,21 @@ dyno.query(query, {start: next, pages: 1}, function(err, resp, metas) {
     ...
 });
 ```
+
+#### Type Utilties
+
+##### `Dyno.createSet(array, type)`
+
+Turn a native JavaScript array into an explicit set. The type is preserved when
+converting to the DynamoDB wire format.
+
+##### `Dyno.toDynamoTypes(nativeObj)`
+
+Convert a native JavaScript object into the DynamoDB wire format.
+
+##### `Dyno.typesFromDynamo(writeObj)`
+
+Convert an object in DynamoDB wire format to native JavaScript objects.
 
 #### multi + kinesisConfig
 
