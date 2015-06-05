@@ -35,18 +35,16 @@ Dyno.serialize = function(item) {
 };
 
 Dyno.deserialize = function(str) {
-    function reviver(key, value) {
-        if (value.B && Array.isArray(value.B) && _(value.B).every(function(num) {
-            return typeof num === 'number';
-        })) {
-            return { B: new Buffer(value.B) };
-        }
+    function isBuffer(val) {
+        // for node 0.10.x and 0.12.x buffer stringification styles
+        return (Array.isArray(val) && _(val).every(function(num) { return typeof num === 'number'; })) ||
+            (val.type === 'Buffer' && _(val.data).every(function(num) { return typeof num === 'number'; }));
+    }
 
-        if (value.BS && Array.isArray(value.BS) && _(value.BS).every(function(buf) {
-            return Array.isArray(buf) && _(buf).every(function(num) {
-                return typeof num === 'number';
-            });
-        })) {
+    function reviver(key, value) {
+        if (value.B && isBuffer(value.B)) return { B: new Buffer(value.B) };
+
+        if (value.BS && Array.isArray(value.BS) && _(value.BS).every(isBuffer)) {
             return {
                 BS: value.BS.map(function(buf) {
                     return new Buffer(buf);
