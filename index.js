@@ -31,23 +31,41 @@ var types = require('./lib/types');
 Dyno.createSet = types.createSet.bind(types);
 
 Dyno.serialize = function(item) {
-    return JSON.stringify(types.toDynamoTypes(item));
+    function replacer(key, value) {
+        if (Buffer.isBuffer(this[key])) return this[key].toString('base64');
+
+        if (this[key].BS &&
+            Array.isArray(this[key].BS) &&
+            _(this[key].BS).every(function(buf) {
+                return Buffer.isBuffer(buf);
+            }))
+        {
+            return {
+                BS: this[key].BS.map(function(buf) {
+                    return buf.toString('base64');
+                })
+            };
+        }
+
+        return value;
+    }
+
+    return JSON.stringify(types.toDynamoTypes(item), replacer);
 };
 
 Dyno.deserialize = function(str) {
-    function isBuffer(val) {
-        // for node 0.10.x and 0.12.x buffer stringification styles
-        return (Array.isArray(val) && _(val).every(function(num) { return typeof num === 'number'; })) ||
-            (val.type === 'Buffer' && _(val.data).every(function(num) { return typeof num === 'number'; }));
-    }
-
     function reviver(key, value) {
-        if (value.B && isBuffer(value.B)) return { B: new Buffer(value.B) };
+        if (typeof value === 'object' && value.B && typeof value.B === 'string') {
+            return { B: new Buffer(value.B, 'base64') };
+        }
 
-        if (value.BS && Array.isArray(value.BS) && _(value.BS).every(isBuffer)) {
+        if (typeof value === 'object' &&
+            value.BS &&
+            Array.isArray(value.BS))
+        {
             return {
-                BS: value.BS.map(function(buf) {
-                    return new Buffer(buf);
+                BS: value.BS.map(function(s) {
+                    return new Buffer(s, 'base64');
                 })
             };
         }

@@ -32,9 +32,89 @@ var original = {
     }
 };
 
+var expected = {
+    str: { S: 'a string' },
+    num: { N: '2' },
+    bin: { B: 'YSBiaW5hcnk=' },
+    bool: { BOOL: true },
+    nothin: { NULL: true },
+    strSet: {
+        SS: ['a', 'b', 'c']
+    },
+    numSet: {
+        NS: ['1', '2', '3']
+    },
+    binSet: {
+        BS: ['YQ==', 'Yg==', 'Yw==']
+    },
+    list: {
+        L: [
+            { S: '1' },
+            { N: '2' },
+            { B: 'dGhyZWU=' },
+            { BOOL: false }
+        ]
+    },
+    B: { S: 'a trap' },
+    map: {
+        M: {
+            nested: {
+                M: {
+                    str: { S: 'a string' },
+                    num: { N: '2' },
+                    bin: { B: 'YSBiaW5hcnk=' },
+                    bool: { BOOL: true },
+                    nothin: { NULL: true },
+                    strSet: {
+                        SS: ['a', 'b', 'c']
+                    },
+                    numSet: {
+                        NS: ['1', '2', '3']
+                    },
+                    binSet: {
+                        BS: ['YQ==', 'Yg==', 'Yw==']
+                    },
+                    list: {
+                        L: [
+                            { S: '1' },
+                            { N: '2' },
+                            { B: 'dGhyZWU=' },
+                            { BOOL: false }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    trickyMap: {
+        M: {
+            SS: {
+                L: [
+                    { N: '1' },
+                    { N: '2' },
+                    { N: '3' }
+                ]
+            },
+            BS: {
+                L: [
+                    { S: '1' },
+                    { N: '2' },
+                    { B: 'dGhyZWU=' },
+                    { BOOL: false }
+                ]
+            },
+            B: {
+                SS: ['a', 'b', 'c']
+            }
+        }
+    }
+};
+
 test('[serialization]', function(assert) {
     var str = Dyno.serialize(original);
     assert.ok(typeof str === 'string', 'serializes to a string');
+    assert.equal(str, JSON.stringify(expected), 'expected serialized string');
+
     var roundtrip = Dyno.deserialize(str);
     assert.ok(typeof roundtrip === 'object', 'deserializes from a string');
 
