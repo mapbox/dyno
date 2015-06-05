@@ -73,15 +73,15 @@ dyno local table my-table
 
 ##### Scan a table:
 
-Outputs line delimited JSON for every item in the table.
+Outputs line delimited JSON in wire-format for every item in the table.
 
 ```
 dyno local scan my-table
 
-{"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
-{"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
-{"id":"0.9447696127463132","collection":"somethign:0","attr":"moredata 48"}
-{"id":"0.9472108569461852","collection":"somethign:0","attr":"moredata 84"}
+{"id":{"N":"0.9410678697749972"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 64"}}
+{"id":{"N":"0.9417226337827742"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 24"}}
+{"id":{"N":"0.9447696127463132"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 48"}}
+{"id":{"N":"0.9472108569461852"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 84"}}
 ....
 
 ```
@@ -94,10 +94,10 @@ Outputs the table schema then does a scan (like above)
 dyno local export my-table
 
 {"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},...]}
-{"id":"0.9410678697749972","collection":"somethign:0","attr":"moredata 64"}
-{"id":"0.9417226337827742","collection":"somethign:0","attr":"moredata 24"}
-{"id":"0.9447696127463132","collection":"somethign:0","attr":"moredata 48"}
-{"id":"0.9472108569461852","collection":"somethign:0","attr":"moredata 84"}
+{"id":{"N":"0.9410678697749972"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 64"}}
+{"id":{"N":"0.9417226337827742"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 24"}}
+{"id":{"N":"0.9447696127463132"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 48"}}
+{"id":{"N":"0.9472108569461852"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 84"}}
 ....
 
 ```

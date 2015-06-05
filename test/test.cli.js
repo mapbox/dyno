@@ -7,6 +7,7 @@ var fixtures = require('./fixtures');
 var setup = require('./setup')();
 var test = setup.test;
 var dyno = setup.dyno;
+var Dyno = require('..');
 
 // use --verbose to print cli output to terminal during the test run
 var verbose = process.argv.indexOf('--verbose') > -1;
@@ -150,7 +151,7 @@ test('cli: export table', function(assert) {
             assert.deepEqual(table, cleanedTable, 'printed cleaned table definition to stdout');
 
             var expectedRecords = records.map(function(record) {
-                return JSON.stringify(record);
+                return Dyno.serialize(record);
             });
 
             var intersection = _.intersection(expectedRecords, results);
@@ -177,7 +178,7 @@ test('cli: scan table', function(assert) {
             var results = stdout.trim().split('\n');
 
             var expectedRecords = records.map(function(record) {
-                return JSON.stringify(record);
+                return Dyno.serialize(record);
             });
 
             var intersection = _.intersection(expectedRecords, results);
@@ -192,7 +193,7 @@ test('cli: setup', setup.setup());
 test('cli: import table', function(assert) {
     var records = fixtures.randomItems(10);
     var serialized = _.union([cleanedTable], records).map(function(line) {
-        return JSON.stringify(line);
+        return Dyno.serialize(line);
     }).join('\n');
 
     var proc = runCli(['import', 'local/' + setup.tableName], function(err, stdout, stderr) {
@@ -204,11 +205,11 @@ test('cli: import table', function(assert) {
             }
 
             var expectedRecords = records.map(function(record) {
-                return JSON.stringify(record);
+                return Dyno.serialize(record);
             });
 
             items = items.map(function(record) {
-                return JSON.stringify(record);
+                return Dyno.serialize(record);
             });
 
             var intersection = _.intersection(expectedRecords, items);
@@ -229,7 +230,7 @@ test('cli: setup table', setup.setupTable);
 test('cli: import data', function(assert) {
     var records = fixtures.randomItems(10);
     var serialized = records.map(function(line) {
-        return JSON.stringify(line);
+        return Dyno.serialize(line);
     }).join('\n');
 
     var proc = runCli(['put', 'local/' + setup.tableName], function(err, stdout, stderr) {
@@ -241,11 +242,11 @@ test('cli: import data', function(assert) {
             }
 
             var expectedRecords = records.map(function(record) {
-                return JSON.stringify(record);
+                return Dyno.serialize(record);
             });
 
             items = items.map(function(record) {
-                return JSON.stringify(record);
+                return Dyno.serialize(record);
             });
 
             var intersection = _.intersection(expectedRecords, items);
@@ -279,7 +280,7 @@ test('cli: export complicated record', function(assert) {
 
         runCli(['scan', 'local/' + setup.tableName], function(err, stdout, stderr) {
             assert.ifError(err, 'cli success');
-            assert.equal(stdout.trim(), '{"id":"id:1","range":1,"buffer":"base64:aGVsbG8gd29ybGQh","array":[0,1,2],"newline":"0\\n1"}', 'printed record to stdout');
+            assert.equal(stdout.trim(), '{"id":{"S":"id:1"},"range":{"N":"1"},"buffer":{"B":[104,101,108,108,111,32,119,111,114,108,100,33]},"array":{"L":[{"N":"0"},{"N":"1"},{"N":"2"}]},"newline":{"S":"0\\n1"}}', 'printed record to stdout');
             assert.end();
         });
     });
@@ -312,7 +313,7 @@ test('cli: import complicated record', function(assert) {
         });
     });
 
-    proc.stdin.write('{"id":"id:1","range":1,"buffer":"base64:aGVsbG8gd29ybGQh","array":[0,1,2],"newline":"0\\n1"}');
+    proc.stdin.write('{"id":{"S":"id:1"},"range":{"N":"1"},"buffer":{"B":[104,101,108,108,111,32,119,111,114,108,100,33]},"array":{"L":[{"N":"0"},{"N":"1"},{"N":"2"}]},"newline":{"S":"0\\n1"}}');
     proc.stdin.end();
 });
 test('cli: deleteTable', setup.deleteTable);
