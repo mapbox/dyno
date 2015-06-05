@@ -280,7 +280,7 @@ test('cli: export complicated record', function(assert) {
 
         runCli(['scan', 'local/' + setup.tableName], function(err, stdout, stderr) {
             assert.ifError(err, 'cli success');
-            assert.equal(stdout.trim(), '{"id":{"S":"id:1"},"range":{"N":"1"},"buffer":{"B":[104,101,108,108,111,32,119,111,114,108,100,33]},"array":{"L":[{"N":"0"},{"N":"1"},{"N":"2"}]},"newline":{"S":"0\\n1"}}', 'printed record to stdout');
+            assert.equal(stdout.trim(), '{"id":{"S":"id:1"},"range":{"N":"1"},"buffer":{"B":"aGVsbG8gd29ybGQh"},"array":{"L":[{"N":"0"},{"N":"1"},{"N":"2"}]},"newline":{"S":"0\\n1"}}', 'printed record to stdout');
             assert.end();
         });
     });
@@ -313,7 +313,7 @@ test('cli: import complicated record', function(assert) {
         });
     });
 
-    proc.stdin.write('{"id":{"S":"id:1"},"range":{"N":"1"},"buffer":{"B":[104,101,108,108,111,32,119,111,114,108,100,33]},"array":{"L":[{"N":"0"},{"N":"1"},{"N":"2"}]},"newline":{"S":"0\\n1"}}');
+    proc.stdin.write('{"id":{"S":"id:1"},"range":{"N":"1"},"buffer":{"B":"aGVsbG8gd29ybGQh"},"array":{"L":[{"N":"0"},{"N":"1"},{"N":"2"}]},"newline":{"S":"0\\n1"}}');
     proc.stdin.end();
 });
 test('cli: deleteTable', setup.deleteTable);
