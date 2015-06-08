@@ -1,3 +1,7 @@
+## v0.15.1
+
+- Batch write requests now return any keys that went unprocessed
+
 ## v0.15.0
 
 - Add support for [document types (List and Map)][1], [Boolean][2], and [Null][3]
