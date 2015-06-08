@@ -69,4 +69,62 @@ test('deleteItems', function(t) {
         });
     }
 });
+
+test('putItems: invalid item in the array', function(t) {
+    var items = randomItems(25);
+    items.push({
+        hash: 'failure',
+        span: 7
+    });
+    items = items.concat(randomItems(10));
+
+    dyno.putItems(items, function(err, data) {
+        t.ok(err, 'expected error');
+        t.equal(err.code, 'ValidationException', 'expected error code');
+
+        var unprocessed = err.unprocessed[Object.keys(err.unprocessed)[0]];
+        t.equal(unprocessed.length, 11, 'unprocessed records returned');
+
+        dyno.scan(function(err, items) {
+            t.ifError(err, 'scan success');
+            t.equal(items.length, 25, '25/36 objects written');
+            t.end();
+        });
+    });
+});
+
+test('deleteItems: one invalid key', function(t) {
+    var items = randomItems(36);
+    dyno.putItems(items, function(err) {
+        if (err) throw err;
+
+        var keys = items.map(function(item) {
+            return {
+                id: item.id,
+                range: item.range
+            };
+        });
+
+        keys.pop();
+        keys.push({
+            hash: 'failure',
+            span: 7
+        });
+
+        dyno.deleteItems(keys, function(err, data) {
+            t.ok(err, 'expected error');
+            t.equal(err.code, 'ValidationException', 'expected error code');
+
+            var unprocessed = err.unprocessed[Object.keys(err.unprocessed)[0]];
+            t.equal(unprocessed.length, 11, 'unprocessed records returned');
+
+            dyno.scan(function(err, items) {
+                t.ifError(err, 'scan success');
+                t.equal(items.length, 11, '25/36 objects deleted');
+                t.end();
+            });
+        });
+    });
+});
+
 test('teardown', s.teardown);

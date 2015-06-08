@@ -99,12 +99,12 @@ module.exports = function(setting) {
                 .defer(setup.readDyno.createTable, _({TableName: tablename + '-read'}).defaults(table))
                 .defer(setup.writeDyno.createTable, _({TableName: tablename + '-write'}).defaults(table))
                 .await(function(err) {
-                    t.ifError(err, 'created tables');
+                    t.ifError(err, 'created tables ' + table.TableName + ' -read and -write');
                     t.end();
                 });
         } else {
             dyno.createTable(table, function(err, resp) {
-                t.ifError(err, 'created table');
+                t.ifError(err, 'created table ' + table.TableName);
                 tableExists = true;
                 t.end();
             });
@@ -112,9 +112,24 @@ module.exports = function(setting) {
     };
 
     setup.teardown = function(t) {
-        dynalite.close(function() {
-            t.end();
-        });
+        if (setting === 'multi') {
+            var tablename = table.TableName;
+            queue(1)
+                .defer(setup.readDyno.deleteTable, _({TableName: tablename + '-read'}).defaults(table))
+                .defer(setup.writeDyno.deleteTable, _({TableName: tablename + '-write'}).defaults(table))
+                .await(shutdown);
+        } else {
+            dyno.deleteTable(table, shutdown);
+        }
+
+        function shutdown(err) {
+            if (err) throw err;
+
+            dynalite.close(function(err) {
+                t.ifError(err, 'dynalite closed');
+                t.end();
+            });
+        }
     };
 
     setup.deleteTable = function(t) {

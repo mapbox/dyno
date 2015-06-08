@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
-    "dynalite": "^0.13.2",
+    "dynalite": "^0.14.0",
     "istanbul": "^0.3.14",
     "jscs": "1.11.3",
     "jshint": "^2.6.3",
