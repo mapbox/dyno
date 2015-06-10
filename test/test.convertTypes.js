@@ -25,6 +25,27 @@ test('convert null', function(t) {
     t.end();
 });
 
+test('convert undefined top-level attribute', function(t) {
+    var item = {ok: 1, notOk: undefined};
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {ok: {N: '1'}, notOk: undefined});
+    t.end();
+});
+
+test('convert undefined in a map', function(t) {
+    var item = {ok: 1, notOk: {hidden: 'in here', isSome: undefined}};
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {ok: {N: '1'}, notOk: {M: {hidden: {S: 'in here'}, isSome: undefined}}});
+    t.end();
+});
+
+test('convert undefined in a map in a list', function(t) {
+    var item = {ok:1, notOk: [{thereIs: 'an', attrThatIs: undefined}]};
+    item = types.toDynamoTypes(item);
+    t.deepEqual(item, {ok: {N: '1'}, notOk: {L: [{M: {thereIs: {S: 'an'}, attrThatIs: undefined}}]}});
+    t.end();
+});
+
 test('convert numbers', function(t) {
     var item = {id: 6};
 
