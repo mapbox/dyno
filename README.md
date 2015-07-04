@@ -189,16 +189,6 @@ dyno.getItem(item, {table:'myothertablename'}, function(err, resp){});
 
 ```
 
-##### updateItem
-
-```
-var key = {id: 'yo', range:5};
-var item = {put:{a: 'oh hai'}, add:{count: 1}};
-
-dyno.updateItem(key, item, function(err, resp){});
-
-```
-
 ##### deleteItems
 
 ```
