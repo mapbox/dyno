@@ -6,7 +6,8 @@
   "scripts": {
     "pretest": "jshint bin lib test && jscs bin lib test",
     "test": "node test/index.js",
-    "coveralls": "istanbul cover test/index.js && coveralls < ./coverage/lcov.info"
+    "coveralls": "istanbul cover test/index.js && coveralls < ./coverage/lcov.info",
+    "docs": "documentation index.js -f md > API.md"
   },
   "bin": {
     "dyno": "./bin/cli.js"
@@ -16,6 +17,7 @@
   "dependencies": {
     "aws-sdk": "2.1.16",
     "big.js": "^2.5.1",
+    "documentation": "^2.0.1",
     "dynamodb-doc": "^1.0.0",
     "event-stream": "^3.1.5",
     "minimist": "^1.1.0",

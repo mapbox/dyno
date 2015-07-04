@@ -24,7 +24,7 @@ When dyno doesn't do anything to improve a command, it simply passes it through 
 This is the case right now with commands like `scan`
 
 
-#### Installing
+### Installing
 
 ```
  npm install dyno -S
@@ -125,7 +125,10 @@ dyno us-west-1 scan my-table | dyno local put my-table-copy
 
 
 
-#### JS api:
+#### JavaScript API
+
+See [complete API Documentation](https://github.com/mapbox/dyno/blob/master/API.md).
+
 
 
 ##### Setup
@@ -263,8 +266,8 @@ details for both a read (replica) table and a write (primary) table. All read
 operations are performed on the read table and all write operations on the write
 table.
 
-You can supply a `kinesisConfig` object to the write . The idea is to provides
-stopgap until [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
+You can supply a `kinesisConfig` object to the write client. The idea is to
+provide a stopgap until [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
 are out of preview. Adding `kinesisConfig` to a dyno config object will result
 in write operations being "logged" to a Kinesis stream. The Kinesis stream can
 then be utilized elsewhere to keep a follower database up-to-speed.

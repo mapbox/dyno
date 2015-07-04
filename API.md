@@ -1,75 +1,96 @@
-# `createTable`
+## `createTable`
 
 Create a table
 
-| name | description |
-| ---- | ----------- |
-| `table` |  |
-| `cb` |  |
+### Parameters
+
+* `table` **`String`** 
+* `cb` **`Function`** 
 
 
-# `deleteTable`
-
-Delete a table
-
-| name | description |
-| ---- | ----------- |
-| `table` |  |
-| `cb` |  |
 
 
-# `scan`
 
-Scan a table
-
-| name | description |
-| ---- | ----------- |
-| `opts` |  |
-| `cb` |  |
-
-
-# `getItem`
-
-Get an item from a table
-
-| name | description |
-| ---- | ----------- |
-| `key` | key of the item to get |
-| `opts` |  |
-| `cb` | callback |
-
-
-# `putItem`
-
-Put an item into a table
-
-| name | description |
-| ---- | ----------- |
-| `doc` | document |
-| `opts` |  |
-| `cb` | callback |
-
-
-# `updateItem`
-
-Update an item in a table
-
-| name | description |
-| ---- | ----------- |
-| `key` |  |
-| `doc` | document |
-| `opts` |  |
-| `cb` | callback |
-
-
-# `deleteItem`
+## `deleteItem`
 
 Delete an item from a table
 
-| name | description |
-| ---- | ----------- |
-| `key` |  |
-| `opts` |  |
-| `cb` | callback |
+### Parameters
+
+* `key` **`String`** 
+* `opts` **`Object`** 
+* `cb` **`Function`** callback
+
+
+
+
+
+## `deleteTable`
+
+Delete a table
+
+### Parameters
+
+* `table` **`String`** 
+* `cb` **`Function`** 
+
+
+
+
+
+## `getItem`
+
+Get an item from a table
+
+### Parameters
+
+* `key` **`String`** key of the item to get
+* `opts` **`Object`** 
+* `cb` **`Function`** callback
+
+
+
+
+
+## `putItem`
+
+Put an item into a table
+
+### Parameters
+
+* `doc` **`Object`** document
+* `opts` **`Object`** 
+* `cb` **`Function`** callback
+
+
+
+
+
+## `scan`
+
+Scan a table
+
+### Parameters
+
+* `opts` **`Object`** 
+* `cb` **`Function`** 
+
+
+
+
+
+## `updateItem`
+
+Update an item in a table
+
+### Parameters
+
+* `key` **`String`** 
+* `doc` **`Object`** document
+* `opts` **`Object`** 
+* `cb` **`Function`** callback
+
+
+
 
 
