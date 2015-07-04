@@ -143,29 +143,6 @@ var dyno = require('dyno')({
 
 ```
 
-##### putItem
-
-```
-var item = {id: 'yo', range: 5};
-dyno.putItem(item, function(err, resp){});
-
-// multiple items
-var items = [
-        {id: 'yo', range: 5},
-        {id: 'guten tag', range: 5},
-        {id: 'nihao', range: 5}
-    ];
-dyno.putItems(items, function(err, resp){})
-```
-
-Set the table name per command:
-
-```
-var item = {id: 'yo', range: 5};
-dyno.putItem(item, {table:'myothertablename'}, function(err, resp){});
-
-```
-
 ##### getItem
 
 ```
