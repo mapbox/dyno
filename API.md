@@ -82,6 +82,10 @@ dyno.putItem({
     id: 'yo',
     range: 5,
     subject: 'test'
+}, {
+     expected: {
+         likes: { 'LE': 1000 }
+     }
 }, function(err, resp) {
     // called asynchronously
 });
