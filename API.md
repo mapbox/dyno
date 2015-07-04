@@ -57,10 +57,20 @@ Get an item from a table
 ### Parameters
 
 * `key` **`String`** key of the item to get
-* `opts` **`Object`** 
-* `cb` **`Function`** callback
+* `opts` **`[Object]`** options that modify item put and are passed to the DynamoDB request
+* `callback` **`Function`** 
 
 
+### Examples
+
+```js
+dyno.getItem({
+    id: 'yo',
+    range: 5
+}, function(err, resp) {
+    // called asynchronously
+});
+```
 
 
 
