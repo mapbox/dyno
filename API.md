@@ -70,11 +70,22 @@ Put an item into a table
 
 ### Parameters
 
-* `doc` **`Object`** document
-* `opts` **`Object`** 
-* `cb` **`Function`** callback
+* `doc` **`Object`** document to put to the DynamoDB table
+* `opts` **`[Object]`** options that modify item put and are passed to the DynamoDB request
+* `callback` **`Function`** 
 
 
+### Examples
+
+```js
+dyno.putItem({
+    id: 'yo',
+    range: 5,
+    subject: 'test'
+}, function(err, resp) {
+    // called asynchronously
+});
+```
 
 
 
@@ -100,7 +111,7 @@ Update an item in a table
 * `key` **`String`** the primary key of the item to be updated
 * `updates` **`Object`** the names of attributes to be modified, the action to perform on each, and the new value for each
 * `opts` **`[Object]`** options that modify item update and are passed to the DynamoDB request
-* `callback` **`Function`** callback
+* `callback` **`Function`** 
 
 
 ### Examples
