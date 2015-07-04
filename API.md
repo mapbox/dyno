@@ -1,3 +1,15 @@
+## `Dyno`
+
+Dyno constructor
+
+### Parameters
+
+* `config` **`Object`** a configuration object
+
+
+
+
+
 ## `createTable`
 
 Create a table

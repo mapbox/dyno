@@ -2,6 +2,18 @@ var _ = require('underscore');
 
 module.exports = Dyno;
 
+/** Dyno constructor
+ * @param {Object} config - a configuration object
+ * @param {String} [config.endpoint] - endpoint to use for DynamoDB client
+ * @param {String} [config.httpOptions] - httpOptions passed to DynamoDB client
+ * @param {String} [config.kinesisConfig] - kinesisConfig to use for logging write operations
+ * @param {String} [config.kinesisConfig.stream]
+ * @param {String} [config.kinesisConfig.region]
+ * @param {String} [config.kinesisConfig.key]
+ * @param {String} [config.accessKeyId]
+ * @param {String} [config.secretAccessKey]
+ * @param {String} [config.sessionToken]
+**/
 function Dyno(c) {
     var dyno = {};
     var config = require('./lib/config')(c);
