@@ -8,3 +8,4 @@ require('./test.batch');
 require('./test.config');
 require('./test.serialization');
 require('./test.multi');
+require('./test.itemsize.js');
