@@ -1,3 +1,7 @@
+## Pending
+
+- Adds a function to estimate the number of bytes required to store an item
+
 ## v0.15.1
 
 - Batch write requests now return any keys that went unprocessed
