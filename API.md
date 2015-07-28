@@ -1,75 +1,153 @@
-# `createTable`
+## `Dyno`
+
+Dyno constructor
+
+### Parameters
+
+* `config` **`Object`** a configuration object
+
+
+
+
+
+## `createTable`
 
 Create a table
 
-| name | description |
-| ---- | ----------- |
-| `table` |  |
-| `cb` |  |
+### Parameters
+
+* `table` **`String`** 
+* `cb` **`Function`** 
 
 
-# `deleteTable`
-
-Delete a table
-
-| name | description |
-| ---- | ----------- |
-| `table` |  |
-| `cb` |  |
 
 
-# `scan`
 
-Scan a table
-
-| name | description |
-| ---- | ----------- |
-| `opts` |  |
-| `cb` |  |
-
-
-# `getItem`
-
-Get an item from a table
-
-| name | description |
-| ---- | ----------- |
-| `key` | key of the item to get |
-| `opts` |  |
-| `cb` | callback |
-
-
-# `putItem`
-
-Put an item into a table
-
-| name | description |
-| ---- | ----------- |
-| `doc` | document |
-| `opts` |  |
-| `cb` | callback |
-
-
-# `updateItem`
-
-Update an item in a table
-
-| name | description |
-| ---- | ----------- |
-| `key` |  |
-| `doc` | document |
-| `opts` |  |
-| `cb` | callback |
-
-
-# `deleteItem`
+## `deleteItem`
 
 Delete an item from a table
 
-| name | description |
-| ---- | ----------- |
-| `key` |  |
-| `opts` |  |
-| `cb` | callback |
+### Parameters
+
+* `key` **`String`** 
+* `opts` **`Object`** 
+* `cb` **`Function`** callback
+
+
+
+
+
+## `deleteTable`
+
+Delete a table
+
+### Parameters
+
+* `table` **`String`** 
+* `cb` **`Function`** 
+
+
+
+
+
+## `getItem`
+
+Get an item from a table
+
+### Parameters
+
+* `key` **`String`** key of the item to get
+* `opts` **`[Object]`** options that modify item put and are passed to the DynamoDB request
+* `callback` **`Function`** 
+
+
+### Examples
+
+```js
+dyno.getItem({
+    id: 'yo',
+    range: 5
+}, function(err, resp) {
+    // called asynchronously
+});
+```
+
+
+
+## `putItem`
+
+Put an item into a table
+
+### Parameters
+
+* `doc` **`Object`** document to put to the DynamoDB table
+* `opts` **`[Object]`** options that modify item put and are passed to the DynamoDB request
+* `callback` **`Function`** 
+
+
+### Examples
+
+```js
+dyno.putItem({
+    id: 'yo',
+    range: 5,
+    subject: 'test'
+}, {
+     expected: {
+         likes: { 'LE': 1000 }
+     }
+}, function(err, resp) {
+    // called asynchronously
+});
+```
+
+
+
+## `scan`
+
+Scan a table
+
+### Parameters
+
+* `opts` **`Object`** 
+* `cb` **`Function`** 
+
+
+
+
+
+## `updateItem`
+
+Update an item in a table
+
+### Parameters
+
+* `key` **`String`** the primary key of the item to be updated
+* `updates` **`Object`** the names of attributes to be modified, the action to perform on each, and the new value for each
+* `opts` **`[Object]`** options that modify item update and are passed to the DynamoDB request
+* `callback` **`Function`** 
+
+
+### Examples
+
+```js
+dyno.updateItem({
+    id: 'yo',
+    range: 5
+}, {
+    put: {
+        subject: 'oh hai',
+        message: 'kthxbai'
+    },
+    add: { likes: 1 }
+}, {
+     expected: {
+         likes: { 'LE': 1000 }
+     }
+}, function(err, resp) {
+    // called asynchronously
+});
+```
+
 
 

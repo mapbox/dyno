@@ -24,7 +24,7 @@ When dyno doesn't do anything to improve a command, it simply passes it through 
 This is the case right now with commands like `scan`
 
 
-#### Installing
+### Installing
 
 ```
  npm install dyno -S
@@ -125,7 +125,10 @@ dyno us-west-1 scan my-table | dyno local put my-table-copy
 
 
 
-#### JS api:
+#### JavaScript API
+
+See [complete API Documentation](https://github.com/mapbox/dyno/blob/master/API.md).
+
 
 
 ##### Setup
@@ -137,29 +140,6 @@ var dyno = require('dyno')({
     region: 'us-east-1',
     table: 'test'
 });
-
-```
-
-##### putItem
-
-```
-var item = {id: 'yo', range: 5};
-dyno.putItem(item, function(err, resp){});
-
-// multiple items
-var items = [
-        {id: 'yo', range: 5},
-        {id: 'guten tag', range: 5},
-        {id: 'nihao', range: 5}
-    ];
-dyno.putItems(items, function(err, resp){})
-```
-
-Set the table name per command:
-
-```
-var item = {id: 'yo', range: 5};
-dyno.putItem(item, {table:'myothertablename'}, function(err, resp){});
 
 ```
 
@@ -183,16 +163,6 @@ Set the table name per command:
 ```
 var item = {id: 'yo', range: 5};
 dyno.getItem(item, {table:'myothertablename'}, function(err, resp){});
-
-```
-
-##### updateItem
-
-```
-var key = {id: 'yo', range:5};
-var item = {put:{a: 'oh hai'}, add:{count: 1}};
-
-dyno.updateItem(key, item, function(err, resp){});
 
 ```
 
@@ -263,8 +233,8 @@ details for both a read (replica) table and a write (primary) table. All read
 operations are performed on the read table and all write operations on the write
 table.
 
-You can supply a `kinesisConfig` object to the write . The idea is to provides
-stopgap until [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
+You can supply a `kinesisConfig` object to the write client. The idea is to
+provide a stopgap until [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
 are out of preview. Adding `kinesisConfig` to a dyno config object will result
 in write operations being "logged" to a Kinesis stream. The Kinesis stream can
 then be utilized elsewhere to keep a follower database up-to-speed.
