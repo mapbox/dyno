@@ -50,6 +50,20 @@ Delete a table
 
 
 
+## `estimateSize`
+
+Estimate the total size of an item, including any local secondary index items
+
+### Parameters
+
+* `doc` **`object`** the item
+* `tabledef` **`object`** JSON object defining the table's schema
+
+
+
+Returns `number` the number of bytes required to store the item
+
+
 ## `getItem`
 
 Get an item from a table
