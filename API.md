@@ -103,6 +103,20 @@ dyno.putItem({
 
 
 
+## `query`
+
+Query items from item from a table
+
+### Parameters
+
+* `conditions` **`String`** criteria for the query
+* `opts` **`[Object]`** 
+* `cb` **`Function`** callback
+
+
+
+
+
 ## `scan`
 
 Scan a table
