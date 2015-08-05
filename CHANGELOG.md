@@ -1,5 +1,6 @@
 ## Pending
 
+- Fixed a bug that did not allow the CLI tool to function using EC2 IAM Role-based credentials
 - Adds a function to estimate the number of bytes required to store an item
 
 ## v0.15.1
