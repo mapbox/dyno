@@ -6,9 +6,6 @@ var es = require('event-stream');
 var stream = require('stream');
 var fs = require('fs');
 
-process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || 'fake';
-process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'fake';
-
 function usage() {
     console.error('');
     console.error('Usage: dyno <sub-command> <region>[/<tablename>]');
