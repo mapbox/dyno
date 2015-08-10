@@ -139,7 +139,7 @@ function Aggregator(withTable) {
             this.push(record);
         } else if (aggregator.records.length === 25) {
             this.push(aggregator.records);
-            aggregator.records = [];
+            aggregator.records = [record];
         } else {
             aggregator.records.push(record);
         }
