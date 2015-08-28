@@ -4,6 +4,8 @@ var es = require('event-stream');
 var seedrandom = require('seedrandom');
 var dyno = s.dyno;
 var randomItems = require('./fixtures').randomItems;
+var http = require('http');
+var _ = require('underscore');
 
 test('setup', s.setup());
 test('setup table', s.setupTable);
@@ -128,3 +130,75 @@ test('deleteItems: one invalid key', function(t) {
 });
 
 test('teardown', s.teardown);
+
+test('batch adjustable concurrency', function(t) {
+    function mock(assert) {
+        var concurrent = 0;
+        var server = http.createServer(function(req, res) {
+            concurrent++;
+            setTimeout(function() {
+                assert.equal(concurrent, 1, 'only one outstanding request');
+                concurrent--;
+                res.writeHead(200);
+                res.end();
+            }, 100);
+        });
+
+        return {
+            dyno: require('..')({
+                table: 'test',
+                region: 'fake',
+                endpoint: 'http://localhost:3003'
+            }),
+
+            start: function(callback) {
+                server.listen(3003, callback);
+            },
+
+            stop: function(callback) {
+                server.close(callback);
+            },
+
+            options: {
+                concurrency: 1,
+                batchAttempts: 1
+            }
+        };
+    }
+
+    t.test('serial putItems', function(assert) {
+        var server = mock(assert);
+        server.start(function() {
+            server.dyno.putItems(randomItems(100), server.options, function(err, result) {
+                assert.ifError(err, 'success');
+                server.stop(function() {
+                    assert.end();
+                });
+            });
+        });
+    });
+
+    t.test('serial getItems', function(assert) {
+        var server = mock(assert);
+        server.start(function() {
+            server.dyno.getItems(_.range(100), server.options, function(err, result) {
+                assert.ifError(err, 'success');
+                server.stop(function() {
+                    assert.end();
+                });
+            });
+        });
+    });
+
+    t.test('serial putItems', function(assert) {
+        var server = mock(assert);
+        server.start(function() {
+            server.dyno.deleteItems(_.range(100), server.options, function(err, result) {
+                assert.ifError(err, 'success');
+                server.stop(function() {
+                    assert.end();
+                });
+            });
+        });
+    });
+});
