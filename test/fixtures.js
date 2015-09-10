@@ -31,6 +31,36 @@ module.exports.live = {
     }
 };
 
+module.exports.gsi = {
+    AttributeDefinitions: [
+        { AttributeName: 'id', AttributeType: 'S' },
+        { AttributeName: 'group', AttributeType: 'S' }
+    ],
+    KeySchema: [
+        { AttributeName: 'id', KeyType: 'HASH' }
+    ],
+    ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+    },
+    GlobalSecondaryIndexes: [
+        {
+            IndexName: 'gsi',
+            KeySchema: [
+                { AttributeName: 'group', KeyType: 'HASH' },
+                { AttributeName: 'id', KeyType: 'RANGE' }
+            ],
+            Projection: {
+                ProjectionType: 'KEYS_ONLY'
+            },
+            ProvisionedThroughput: {
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1
+            }
+        }
+    ]
+};
+
 module.exports.randomItems = function(n, itemsize) {
     var items = [];
     var rng = seedrandom('test');

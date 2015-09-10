@@ -5,6 +5,7 @@ require('./test.item');
 require('./test.table');
 require('./test.kinesis');
 require('./test.batch');
+require('./test.queryBatchGet');
 require('./test.config');
 require('./test.serialization');
 require('./test.multi');
