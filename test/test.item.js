@@ -261,16 +261,17 @@ test('query - callback, paging get all pages', function(t) {
     }
 });
 
-test('query - callback, paging via prev/next', function(t) {
+test('query - callback, paging via start', function(t) {
 
     dyno.query({id:{EQ:'yo'}}, {limit:1, pages:1}, firstResp);
 
     function firstResp(err, items, metas) {
         t.equal(err, null);
         t.equal(items.length, 1);
-        t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range:5});
+        t.deepEqual(_(items[0]).omit('blob'), {id: 'yo', range: 5});
         var next = metas.pop().last;
         t.ok(next, 'last evaluated key is not null');
+        t.deepEqual(next, {id: 'yo', range: 5});
         nextQuery(next);
     }
 
