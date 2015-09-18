@@ -1,3 +1,8 @@
+## v0.17.0
+
+- Return native format (not wire format) for `metas[*].last` (`LastEvaluatedKey`).
+- Callers must use native format (not wire format) when passing in `opts.start` (`ExclusiveStartKey`).
+
 ## v0.16.0
 
 - Fixed a bug that did not allow the CLI tool to function using EC2 IAM Role-based credentials
