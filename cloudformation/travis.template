@@ -26,6 +26,16 @@
                                                     ":table/dyno-test-*"
                                                 ]
                                             ]
+                                        },
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:dynamodb:us-east-1:",
+                                                    { "Ref": "AWS::AccountId" },
+                                                    ":table/test-dyno-*"
+                                                ]
+                                            ]
                                         }
                                     ]
                                 }
