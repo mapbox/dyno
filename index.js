@@ -1,97 +1,85 @@
+var AWS = require('aws-sdk');
 var _ = require('underscore');
 
 module.exports = Dyno;
 
-/** Dyno constructor
- * @param {Object} config - a configuration object
- * @param {String} [config.endpoint] - endpoint to use for DynamoDB client
- * @param {String} [config.httpOptions] - httpOptions passed to DynamoDB client
- * @param {String} [config.kinesisConfig] - kinesisConfig to use for logging write operations
- * @param {String} [config.kinesisConfig.stream]
- * @param {String} [config.kinesisConfig.region]
- * @param {String} [config.kinesisConfig.key]
- * @param {String} [config.accessKeyId]
- * @param {String} [config.secretAccessKey]
- * @param {String} [config.sessionToken]
-**/
-function Dyno(c) {
-    var dyno = {};
-    var config = require('./lib/config')(c);
-    _(dyno).extend(config.dynamo);
-    _(dyno).extend(require('./lib/item')(config));
-    _(dyno).extend(require('./lib/query')(config));
-    _(dyno).extend(require('./lib/scan')(config));
-    _(dyno).extend(require('./lib/table')(config));
-    _(dyno).extend(require('./lib/batch')(config));
-    _(dyno).extend(require('./lib/describe')(config));
-    return dyno;
+function Dyno(options) {
+  if (!options.table) throw new Error('table is required'); // Demand table be specified
+  if (!options.region) throw new Error('region is required');
+
+  var config = {
+    region: options.region,
+    endpoint: options.endpoint,
+    params: { TableName: options.table }, // Sets `TableName` in every request
+    httpOptions: options.httpOptions || { timeout: 5000 }, // Default appears to be 2 min
+    accessKeyId: options.accessKeyId,
+    secretAccessKey: options.secretAccessKey,
+    sessionToken: options.sessionToken,
+    logger: options.logger,
+    maxRetries: options.maxRetries
+  };
+
+  var client = new AWS.DynamoDB(config);
+  var docClient = new AWS.DynamoDB.DocumentClient({ service: client });
+  var tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
+  var tableFreeDocClient = new AWS.DynamoDB.DocumentClient({ service: tableFreeClient });
+
+  // Straight-up inherit several functions from aws-sdk so we can also inherit docs and tests
+  var nativeFunctions = {
+    describeTable: client.describeTable.bind(client),
+    batchGetItem: tableFreeDocClient.batchGet.bind(tableFreeDocClient),
+    batchWriteItem: tableFreeDocClient.batchWrite.bind(tableFreeDocClient),
+    deleteItem: docClient.delete.bind(docClient),
+    getItem: docClient.get.bind(docClient),
+    putItem: docClient.put.bind(docClient),
+    query: docClient.query.bind(docClient),
+    scan: docClient.scan.bind(docClient),
+    updateItem: docClient.update.bind(docClient)
+  };
+
+  var dynoExtensions = {
+    createTable: require('./lib/table')(client, null).create, // to poll until table is ready
+    deleteTable: require('./lib/table')(client).delete, // to poll until table is gone
+    queryStream: require('./lib/stream')(docClient).query, // provide a readable stream
+    scanStream: require('./lib/stream')(docClient).scan // provide a readable stream
+  };
+
+  // Drop specific functions from read/write only clients
+  if (options.read) {
+    delete nativeFunctions.deleteItem;
+    delete nativeFunctions.putItem;
+    delete nativeFunctions.updateItem;
+    delete nativeFunctions.batchWriteItem;
+  }
+
+  if (options.write) {
+    delete nativeFunctions.batchGetItem;
+    delete nativeFunctions.getItem;
+    delete nativeFunctions.query;
+    delete nativeFunctions.scan;
+    delete dynoExtensions.queryStream;
+    delete dynoExtensions.scanStream;
+  }
+
+  // Glue everything together
+  return _({ config: config }).extend(nativeFunctions, dynoExtensions);
 }
 
-Dyno.multi = function(readConfig, writeConfig) {
-    if (!readConfig.region) throw badconfig('You must specify a read region');
-    if (!readConfig.table) throw badconfig('You must specify a read table');
-    if (!writeConfig.region) throw badconfig('You must specify a write region');
-    if (!writeConfig.table) throw badconfig('You must specify a write table');
+Dyno.multi = function(readOptions, writeOptions) {
+  var read = Dyno(_({}).extend(readOptions, { read: true }));
+  var write = Dyno(_({}).extend(writeOptions, { write: true }));
 
-    var read = Dyno(readConfig);
-    var write = Dyno(writeConfig);
-
-    return require('./lib/multi')(read, write);
+  return _({}).extend(write, read, {
+    config: { read: read.config, write: write.config },
+    createTable: require('./lib/table')(read, write).multiCreate,
+    deleteTable: require('./lib/table')(read, write).multiDelete
+  });
 };
 
-var types = require('./lib/types');
-Dyno.createSet = types.createSet.bind(types);
-
-Dyno.serialize = function(item) {
-    function replacer(key, value) {
-        if (Buffer.isBuffer(this[key])) return this[key].toString('base64');
-
-        if (this[key].BS &&
-            Array.isArray(this[key].BS) &&
-            _(this[key].BS).every(function(buf) {
-                return Buffer.isBuffer(buf);
-            }))
-        {
-            return {
-                BS: this[key].BS.map(function(buf) {
-                    return buf.toString('base64');
-                })
-            };
-        }
-
-        return value;
-    }
-
-    return JSON.stringify(types.toDynamoTypes(item), replacer);
+Dyno.createSet = function(list) {
+  var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
+  return new DynamoDBSet(list);
 };
 
-Dyno.deserialize = function(str) {
-    function reviver(key, value) {
-        if (typeof value === 'object' && value.B && typeof value.B === 'string') {
-            return { B: new Buffer(value.B, 'base64') };
-        }
-
-        if (typeof value === 'object' &&
-            value.BS &&
-            Array.isArray(value.BS))
-        {
-            return {
-                BS: value.BS.map(function(s) {
-                    return new Buffer(s, 'base64');
-                })
-            };
-        }
-
-        return value;
-    }
-
-    str = JSON.parse(str, reviver);
-    str = types.typesFromDynamo(str);
-    return str[0];
-};
-
-function badconfig(message) {
-    var err = new Error(message);
-    err.code = 'EBADCONFIG';
-    return err;
-}
+Dyno.serialize = require('./lib/serialization').serialize;
+Dyno.deserialize = require('./lib/serialization').deserialize;
