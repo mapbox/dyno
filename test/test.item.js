@@ -550,6 +550,11 @@ test('delete', function(t) {
     function getItem(err, resp) {
         t.equal(err, null);
         t.deepEqual(resp, undefined);
+        dyno.deleteItem(item, deleteAgain);
+    }
+    function deleteAgain(err, resp) {
+        t.equal(err, null);
+        t.deepEqual(resp, undefined);
         t.end();
     }
 });
