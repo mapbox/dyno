@@ -38,6 +38,8 @@ function Dyno(options) {
   };
 
   var dynoExtensions = {
+    batchGetItemRequests: require('./lib/requests')(docClient).batchGetItemRequests, // provide an array of AWS.Requests
+    batchWriteItemRequests: require('./lib/requests')(docClient).batchWriteItemRequests, // provide an array of AWS.Requests
     createTable: require('./lib/table')(client, null).create, // to poll until table is ready
     deleteTable: require('./lib/table')(client).delete, // to poll until table is gone
     queryStream: require('./lib/stream')(docClient).query, // provide a readable stream
@@ -50,6 +52,7 @@ function Dyno(options) {
     delete nativeFunctions.putItem;
     delete nativeFunctions.updateItem;
     delete nativeFunctions.batchWriteItem;
+    delete dynoExtensions.batchWriteItemRequests;
   }
 
   if (options.write) {
@@ -57,6 +60,7 @@ function Dyno(options) {
     delete nativeFunctions.getItem;
     delete nativeFunctions.query;
     delete nativeFunctions.scan;
+    delete dynoExtensions.batchGetItemRequests;
     delete dynoExtensions.queryStream;
     delete dynoExtensions.scanStream;
   }

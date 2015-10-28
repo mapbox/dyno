@@ -1,6 +1,6 @@
 ## Dyno
 
-![](https://travis-ci.org/mapbox/dyno.svg)
+[![Build Status](https://travis-ci.org/mapbox/dyno.svg?branch=master)](https://travis-ci.org/mapbox/dyno)
 [![Coverage Status](https://coveralls.io/repos/mapbox/dyno/badge.svg?branch=coverage)](https://coveralls.io/r/mapbox/dyno?branch=coverage)
 
 The aws-sdk dynamo client is very close to the API, dyno tries to help reduce the

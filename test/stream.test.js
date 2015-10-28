@@ -46,10 +46,10 @@ scanTable.test('[stream] scan', fixtures, function(assert) {
     .on('error', function(err) { assert.ifError(err, 'should not error'); })
     .on('data', function(item) {
       count++;
-      assert.ok(item.id, 'streamed record has id');
-      assert.equal(item.data.length, 5 * 1024, 'streamed record has correct buffer length');
-      assert.ok(count <= 2345, 'streamed ' + count + ' records...');
+      if (!item.id) assert.fail('stream record has no id');
+      if (item.data.length !== 5 * 1024) assert.fail('streamed record has incorrect buffer length')
       if (count > 2345) {
+        assert.fail('streamed too many records')
         scan.pause();
         assert.end();
       }
@@ -84,16 +84,16 @@ queryTable.test('[stream] query', queryFixtures, function(assert) {
     .on('error', function(err) { assert.ifError(err, 'should not error'); })
     .on('data', function(item) {
       count++;
-      assert.ok(item.id, 'queried record has id');
-      assert.equal(item.data.length, 5 * 1024, 'queried record has correct buffer length');
-      assert.ok(count <= 2345, 'queried ' + count + ' records...');
+      if (!item.id) assert.fail('stream record has no id');
+      if (item.data.length !== 5 * 1024) assert.fail('streamed record has incorrect buffer length')
       if (count > 2345) {
+        assert.fail('streamed too many records')
         query.pause();
         assert.end();
       }
     })
     .on('end', function() {
-      assert.equal(count, 2345, 'scanned all records');
+      assert.equal(count, 2345, 'query stream returned all records');
       assert.end();
     });
 });

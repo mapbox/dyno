@@ -26,6 +26,8 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof dyno.query, 'function', 'exposes query function');
   assert.equal(typeof dyno.scan, 'function', 'exposes scan function');
   assert.equal(typeof dyno.updateItem, 'function', 'exposes updateItem function');
+  assert.equal(typeof dyno.batchGetItemRequests, 'function', 'exposes batchGetItemRequests function');
+  assert.equal(typeof dyno.batchWriteItemRequests, 'function', 'exposes batchWriteItemRequests function');
   assert.equal(typeof dyno.createTable, 'function', 'exposes createTable function');
   assert.equal(typeof dyno.deleteTable, 'function', 'exposes deleteTable function');
   assert.equal(typeof dyno.queryStream, 'function', 'exposes queryStream function');
@@ -43,6 +45,8 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof read.query, 'function', 'read-only client exposes query function');
   assert.equal(typeof read.scan, 'function', 'read-only client exposes scan function');
   assert.equal(typeof read.updateItem, 'undefined', 'read-only client does not expose updateItem function');
+  assert.equal(typeof read.batchGetItemRequests, 'function', 'read-only client exposes batchGetItemRequests function');
+  assert.equal(typeof read.batchWriteItemRequests, 'undefined', 'read-only client does not expose batchWriteItemRequests function');
   assert.equal(typeof read.createTable, 'function', 'read-only client exposes createTable function');
   assert.equal(typeof read.deleteTable, 'function', 'read-only client exposes deleteTable function');
   assert.equal(typeof read.queryStream, 'function', 'read-only client exposes queryStream function');
@@ -60,6 +64,8 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof write.query, 'undefined', 'write-only client does not expose query function');
   assert.equal(typeof write.scan, 'undefined', 'write-only client does not expose scan function');
   assert.equal(typeof write.updateItem, 'function', 'write-only client exposes updateItem function');
+  assert.equal(typeof write.batchGetItemRequests, 'undefined', 'write-only client does not expose batchGetItemRequests function');
+  assert.equal(typeof write.batchWriteItemRequests, 'function', 'write-only client exposes batchWriteItemRequests function');
   assert.equal(typeof write.createTable, 'function', 'write-only client exposes createTable function');
   assert.equal(typeof write.deleteTable, 'function', 'write-only client exposes deleteTable function');
   assert.equal(typeof write.queryStream, 'undefined', 'write-only client does not expose queryStream function');
@@ -80,6 +86,8 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof multi.query, 'function', 'multi-client exposes query function');
   assert.equal(typeof multi.scan, 'function', 'multi-client exposes scan function');
   assert.equal(typeof multi.updateItem, 'function', 'multi-client exposes updateItem function');
+  assert.equal(typeof multi.batchGetItemRequests, 'function', 'exposes batchGetItemRequests function');
+  assert.equal(typeof multi.batchWriteItemRequests, 'function', 'exposes batchWriteItemRequests function');
   assert.equal(typeof multi.createTable, 'function', 'multi-client exposes createTable function');
   assert.equal(typeof multi.deleteTable, 'function', 'multi-client exposes deleteTable function');
   assert.equal(typeof multi.queryStream, 'function', 'multi-client exposes queryStream function');
