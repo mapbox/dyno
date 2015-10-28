@@ -50,6 +50,30 @@ dynamodb.test('[requests] batchGetItemRequests (single table)', fixtures, functi
     });
 });
 
+dynamodb.test('[requests] batchGetItemRequests.sendAll (single table)', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+
+  var found = dyno.batchGetItemRequests(params);
+  assert.equal(found.length, 2, 'split 150 keys into two requests');
+  found.sendAll(function(err, results) {
+    assert.ifError(err, 'requests were sent successfully');
+    results = results[0].Responses[dynamodb.tableName].concat(results[1].Responses[dynamodb.tableName]);
+    assert.equal(results.length, 150, 'all responses were recieved');
+    assert.end();
+  });
+});
+
 dynamodb.test('[requests] batchWriteItemRequests (single table, small writes)', fixtures, function(assert) {
   var dyno = Dyno({
     table: dynamodb.tableName,

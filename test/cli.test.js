@@ -137,7 +137,20 @@ dynamodb.test('[cli] describe table', function(assert) {
 
 dynamodb.test('[cli] export table', function(assert) {
   var records = randomItems(10);
-  dynamodb.dyno.putItems(records, function(err) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var puts = { RequestItems: {} };
+  puts.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return {
+      PutRequest: { Item: item }
+    };
+  });
+
+  dyno.batchWriteItemRequests(puts).sendAll(function(err) {
     if (err) {
       assert.ifError(err, 'failed to put records');
       return assert.end();
@@ -165,7 +178,21 @@ dynamodb.test('[cli] export table', function(assert) {
 
 dynamodb.test('[cli] scan table', function(assert) {
   var records = randomItems(10);
-  dynamodb.dyno.putItems(records, function(err) {
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var puts = { RequestItems: {} };
+  puts.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return {
+      PutRequest: { Item: item }
+    };
+  });
+
+  dyno.batchWriteItemRequests(puts).sendAll(function(err) {
     if (err) {
       assert.ifError(err, 'failed to put records');
       return assert.end();
@@ -191,17 +218,26 @@ dynamodb.delete();
 
 test('[cli] import table', function(assert) {
   var records = randomItems(10);
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
   var serialized = _.union([cleanedTable], records).map(function(line) {
     return Dyno.serialize(line);
   }).join('\n');
 
   var proc = runCli(['import', 'local/' + dynamodb.tableName], function(err) {
     assert.ifError(err, 'cli success');
-    dynamodb.dyno.scan({ pages: 0 }, function(err, items) {
+    dyno.scan(function(err, data) {
       if (err) {
         assert.ifError(err, 'failed to import table + data');
         return assert.end();
       }
+
+      var items = data.Items;
 
       var expectedRecords = records.map(function(record) {
         return Dyno.serialize(record);
@@ -228,14 +264,21 @@ dynamodb.test('[cli] import data', function(assert) {
   var serialized = records.map(function(line) {
     return Dyno.serialize(line);
   }).join('\n');
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
 
   var proc = runCli(['put', 'local/' + dynamodb.tableName], function(err) {
     assert.ifError(err, 'cli success');
-    dynamodb.dyno.scan({ pages: 0 }, function(err, items) {
+    dyno.scan(function(err, data) {
       if (err) {
         assert.ifError(err, 'failed to import table + data');
         return assert.end();
       }
+
+      var items = data.Items;
 
       var expectedRecords = records.map(function(record) {
         return Dyno.serialize(record);
@@ -256,6 +299,12 @@ dynamodb.test('[cli] import data', function(assert) {
 });
 
 dynamodb.test('[cli] export complicated record', function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
   var record = {
     id: 'id:1',
     range: 1,
@@ -264,7 +313,7 @@ dynamodb.test('[cli] export complicated record', function(assert) {
     newline: '0\n1'
   };
 
-  dynamodb.dyno.putItem(record, function(err) {
+  dyno.putItem({ Item: record }, function(err) {
     if (err) {
       assert.ifError(err, 'failed to put record');
       return assert.end();
@@ -287,14 +336,21 @@ dynamodb.test('[cli] import complicated record', function(assert) {
     newline: '0\n1'
   };
 
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
   var proc = runCli(['put', 'local/' + dynamodb.tableName], function(err) {
     assert.ifError(err, 'cli success');
 
-    dynamodb.dyno.scan(function(err, items) {
+    dyno.scan(function(err, data) {
       if (err) {
         assert.ifError(err, 'failed to scan table');
         return assert.end();
       }
+      var items = data.Items;
       assert.equal(items.length, 1, 'loaded one record');
       assert.deepEqual(items[0], expected, 'loaded expected record');
       assert.end();
