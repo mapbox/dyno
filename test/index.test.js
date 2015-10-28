@@ -17,6 +17,7 @@ test('[index] expected properties', function(assert) {
   var dyno = Dyno({ table: 'my-table', region: 'us-east-1' });
 
   assert.equal(typeof dyno.config, 'object', 'exposes config object');
+  assert.equal(typeof dyno.listTables, 'function', 'exposes listTables function');
   assert.equal(typeof dyno.describeTable, 'function', 'exposes describeTable function');
   assert.equal(typeof dyno.batchGetItem, 'function', 'exposes batchGetItem function');
   assert.equal(typeof dyno.batchWriteItem, 'function', 'exposes batchWriteItem function');
@@ -36,6 +37,7 @@ test('[index] expected properties', function(assert) {
   var read = Dyno({ table: 'my-table', region: 'us-east-1', read: true });
 
   assert.equal(typeof read.config, 'object', 'read-only client exposes config object');
+  assert.equal(typeof read.listTables, 'function', 'read-only client exposes listTables function');
   assert.equal(typeof read.describeTable, 'function', 'read-only client exposes describeTable function');
   assert.equal(typeof read.batchGetItem, 'function', 'read-only client exposes batchGetItem function');
   assert.equal(typeof read.batchWriteItem, 'undefined', 'read-only client does not expose batchWriteItem function');
@@ -55,6 +57,7 @@ test('[index] expected properties', function(assert) {
   var write = Dyno({ table: 'my-table', region: 'us-east-1', write: true });
 
   assert.equal(typeof write.config, 'object', 'write-only client exposes config object');
+  assert.equal(typeof write.listTables, 'function', 'write-only client exposes listTables function');
   assert.equal(typeof write.describeTable, 'function', 'write-only client exposes describeTable function');
   assert.equal(typeof write.batchGetItem, 'undefined', 'write-only client does not expose batchGetItem function');
   assert.equal(typeof write.batchWriteItem, 'function', 'write-only client exposes batchWriteItem function');
@@ -77,6 +80,7 @@ test('[index] expected properties', function(assert) {
   );
 
   assert.equal(typeof multi.config, 'object', 'multi-client exposes config object');
+  assert.equal(typeof multi.listTables, 'function', 'multi-client exposes listTables function');
   assert.equal(typeof multi.describeTable, 'function', 'multi-client exposes describeTable function');
   assert.equal(typeof multi.batchGetItem, 'function', 'multi-client exposes batchGetItem function');
   assert.equal(typeof multi.batchWriteItem, 'function', 'multi-client exposes batchWriteItem function');

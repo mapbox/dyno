@@ -26,6 +26,7 @@ function Dyno(options) {
 
   // Straight-up inherit several functions from aws-sdk so we can also inherit docs and tests
   var nativeFunctions = {
+    listTables: client.listTables.bind(client),
     describeTable: client.describeTable.bind(client),
     batchGetItem: tableFreeDocClient.batchGet.bind(tableFreeDocClient),
     batchWriteItem: tableFreeDocClient.batchWrite.bind(tableFreeDocClient),
