@@ -56,6 +56,10 @@ if (!params.table && params.command !== 'tables') {
   process.exit(1);
 }
 
+if (!params.table && params.command === 'tables') {
+  params.table = 'none';
+}
+
 var dyno = Dyno(params);
 
 // Transform stream to stringifies JSON objects and base64 encodes buffers
@@ -115,7 +119,7 @@ function cleanDescription(desc) {
 }
 
 function scan() {
-  dyno.scan()
+  dyno.scanStream()
     .pipe(Stringifier())
     .pipe(process.stdout)
     .on('error', function(err) {
@@ -169,19 +173,31 @@ function Importer(withTable) {
       firstline = false;
       this.pause();
       data.TableName = params.table;
+      delete data.TableArn;
       dyno.createTable(data, function(err) {
         if (err) throw err;
         this.resume();
       }.bind(this));
     } else {
-      queued++;
-      q.defer(function(next) {
-        dyno.putItems(data, function(err) {
-          queued--;
-          callback(err);
-          next();
+      var reqs = { RequestItems: {} };
+      reqs.RequestItems[params.table] = [];
+
+      data.forEach(function(item) {
+        reqs.RequestItems[params.table].push({
+          PutRequest: { Item: item }
         });
       });
+
+      dyno.batchWriteItemRequests(reqs).forEach(function(req) {
+        queued++;
+        q.defer(function(next) {
+          req.send(function(err) {
+            queued--;
+            next(err);
+          });
+        });
+      });
+      callback();
     }
   };
 
