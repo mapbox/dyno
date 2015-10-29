@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "eslint bin lib test index.js",
-    "test": "nyc tape test/*.test.js",
+    "test": "tape test/stream.test.js",
     "docs": "documentation index.js -f md > API.md"
   },
   "bin": {
