@@ -1,265 +1,51 @@
 ## Dyno
 
 [![Build Status](https://travis-ci.org/mapbox/dyno.svg?branch=master)](https://travis-ci.org/mapbox/dyno)
-[![Coverage Status](https://coveralls.io/repos/mapbox/dyno/badge.svg?branch=coverage)](https://coveralls.io/r/mapbox/dyno?branch=coverage)
 
-The aws-sdk dynamo client is very close to the API, dyno tries to help reduce the
-amount of repetitive code needed to interact with dynamodb.
+Dyno provides a DynamoDB client that adds additional functionality beyond what is provided by the [aws-sdk-js](https://github.com/aws/aws-sdk-js).
 
-First it guesses types. Dynamo is very specific about its types:
+## Overview
 
-```
-{key:{S: 'value'}}
-```
+### Native JavaScript objects
 
-in dyno can be written like:
+Dyno operates as an extension to the [aws-sdk's DocumentClient](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html). This means that instead of interacting with typed JavaScript objects representing your DynamoDB records, you can use more "native" objects. For example, the following represents a typed object that could be stored in DynamoDB:
 
-```
-{key:'value'}
-```
-
-When dyno doesn't do anything to improve a command, it simply passes it through to
-[aws-sdk dynamodb client](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html).
-
-This is the case right now with commands like `scan`
-
-
-### Installing
-
-```
- npm install dyno -S
+```js
+{
+  id: { S: 'my-record' },
+  numbers: { L: [{ N: '1' }, { N: '2' }, { N: '3' }] },
+  data: { B: new Buffer('Hello World!') },
+  version: { N: '5' },
+}
 ```
 
-### Usage
+Using Dyno, you can represent the same data in a "native" object:
 
-#### CLI
-
-Dyno includes a cli for working with DynamoDB tables.
-
-##### Setup
-
-Dyno assumes that credentials for AWS will be provided in the ENVIRONMENT as [described in the aws-sdk docs](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html#Credentials_from_Environment_Variables)
-
-##### Common flags:
-
-```
-dyno <region> <sub command> -e <Endpoint URL>
-
-dyno us-east-1 tables
-
-dyno local tables
-// setting the region to local, will set the endpoint to http://localhost:4567
-
+```js
+{
+  id: 'my-record',
+  numbers: [1, 2, 3],
+  data: new Buffer('Hello World!'),
+  version: 5
+}
 ```
 
+### Streaming query and scan results
 
-##### List tables:
+A large query or scan operation may require multiple HTTP requests in order to retrieve all the desired data. Dyno provides functions that allow you to read those data from a native Node.js Readable Stream. Behind-the-scenes, Dyno manages making paginated requests to DynamoDB for you, and emits objects representing each of the records in the aggregated response.
 
-```
-dyno local tables
+### Chunked batch getItem and writeItem requests
 
-{"TableNames":['my-table', 'my-other-table']}
+`BatchGetItem` and `BatchWriteItem` requests come with limits as to how much data you can ask for in a single HTTP request. Dyno functions allow you to present the entire set of batch requests that you wish to make. Dyno breaks your set up into an array of request objects each of which is within the limits of a single acceptable request. You can then send each of these requests and handle each of their responses individually.
 
-```
+### Multi-table client
 
-##### Describe a table:
+For situations where you may wish to write to one database and read from another. Dyno allows you to configure a client with parameters for two different tables, then routes your individual requests to the appropriate one.
 
-```
-dyno local table my-table
+### De/serialization
 
-{"Table":{"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},....]}}
+Dyno exposes functions capable of serializing and deserializing native JavaScript objects representing DynamoDB records to and from wire-formatted strings acceptable as the body of any DynamoDB HTTP request.
 
-```
+### Command-line interface
 
-##### Scan a table:
-
-Outputs line delimited JSON in wire-format for every item in the table.
-
-```
-dyno local scan my-table
-
-{"id":{"N":"0.9410678697749972"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 64"}}
-{"id":{"N":"0.9417226337827742"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 24"}}
-{"id":{"N":"0.9447696127463132"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 48"}}
-{"id":{"N":"0.9472108569461852"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 84"}}
-....
-
-```
-
-##### Export a table:
-
-Outputs the table schema then does a scan (like above)
-
-```
-dyno local export my-table
-
-{"AttributeDefinitions":[{"AttributeName":"collection","AttributeType":"S"},...]}
-{"id":{"N":"0.9410678697749972"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 64"}}
-{"id":{"N":"0.9417226337827742"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 24"}}
-{"id":{"N":"0.9447696127463132"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 48"}}
-{"id":{"N":"0.9472108569461852"},"collection":{"S":"somethign:0"},"attr":{"S":"moredata 84"}}
-....
-
-```
-
-##### Import a table:
-
-Receives an exported table on stdin. Expects the first line to be the table schema, and
-the rest of the lines to be items.
-
-```
-dyno us-west-1 export my-table | dyno local import my-table-copy
-
-```
-
-##### Put items into a table:
-
-Receives an items as new line delimited json on stdin.
-
-**pro tip:** That is the same as the output of [scan](#scan-a-table).
-
-```
-dyno us-west-1 scan my-table | dyno local put my-table-copy
-
-```
-
-
-
-#### JavaScript API
-
-See [complete API Documentation](https://github.com/mapbox/dyno/blob/master/API.md).
-
-
-
-##### Setup
-
-```
-var dyno = require('dyno')({
-    accessKeyId: 'XXX',
-    secretAccessKey: 'XXX',
-    region: 'us-east-1',
-    table: 'test'
-});
-
-```
-
-##### getItem
-
-```
-var item = {id: 'yo', range: 5};
-dyno.getItem(item, function(err, resp){});
-
-// multiple items
-var items = [
-        {id: 'yo', range: 5},
-        {id: 'guten tag', range: 5},
-        {id: 'nihao', range: 5}
-    ];
-dyno.getItems(items, function(err, resp){})
-```
-
-Set the table name per command:
-
-```
-var item = {id: 'yo', range: 5};
-dyno.getItem(item, {table:'myothertablename'}, function(err, resp){});
-
-```
-
-##### deleteItems
-
-```
-var keys = [
-        {id: 'yo', range: 5},
-        {id: 'guten tag', range: 5},
-        {id: 'nihao', range: 5}
-    ];
-dyno.deleteItems(keys, function(err, resp){})
-```
-
-##### query
-
-```
-var query = {id: {'EQ':'yo'}, {range:{'BETWEEN':[4,6]}};
-
-dyno.query(query, function(err, resp){
-    assert.deepEqual(resp, {count : 1, items : [{id : 'yo', range : 5 }]});
-});
-
-dyno.query(query, {attributes:['range']}, function(err, resp){
-    assert.deepEqual(resp, {count : 1, items : [{range : 5 }]});
-});
-
-```
-
-The last key evaluated by dynamodb can be found in the query callback's third
-argument.
-
-```
-dyno.query(query, {pages: 1}, function(err, resp, metas) {
-    next = metas.pop().last;
-    ...
-});
-```
-
-This key can be passed back in to another query to get the next page of
-results.
-
-```
-dyno.query(query, {start: next, pages: 1}, function(err, resp, metas) {
-    ...
-});
-```
-
-#### Type Utilties
-
-##### `Dyno.createSet(array, type)`
-
-Turn a native JavaScript array into an explicit set. The type is preserved when
-converting to the DynamoDB wire format.
-
-##### `Dyno.toDynamoTypes(nativeObj)`
-
-Convert a native JavaScript object into the DynamoDB wire format.
-
-##### `Dyno.typesFromDynamo(writeObj)`
-
-Convert an object in DynamoDB wire format to native JavaScript objects.
-
-#### multi + kinesisConfig
-
-Dyno includes a special multi-table client that let's you provide configuration
-details for both a read (replica) table and a write (primary) table. All read
-operations are performed on the read table and all write operations on the write
-table.
-
-You can supply a `kinesisConfig` object to the write client. The idea is to
-provide a stopgap until [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
-are out of preview. Adding `kinesisConfig` to a dyno config object will result
-in write operations being "logged" to a Kinesis stream. The Kinesis stream can
-then be utilized elsewhere to keep a follower database up-to-speed.
-
-`multi` and `kinesisConfig` are is useful when used together for setting up
-basic cross-region replication.
-
-```javascript
-var readConfig = {
-  region: 'eu-west-1',
-  table: 'follower'
-};
-
-var writeConfig = {
-  region: 'us-east-1',
-  table: 'leader',
-  kinesisConfig: {
-    stream: 'identifier-for-kinesis-stream',
-    region: 'us-east-1',
-    key: ['id', 'range']
-  }
-};
-
-var dyno = Dyno.multi(readConfig, writeConfig);
-
-dyno.getItem('...'); // reads from the follower database in eu-west-1
-dyno.putItem('...'); // writes to the leader database + kinesis stream
-```
+Dyno provides a CLI tool capable of reading and writing individual records, scanning, exporting and importing data into a DynamoDB table.

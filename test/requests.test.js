@@ -70,7 +70,11 @@ dynamodb.test('[requests] batchGetItemRequests.sendAll (single table)', fixtures
     assert.ifError(err, 'requests were sent successfully');
     results = results[0].Responses[dynamodb.tableName].concat(results[1].Responses[dynamodb.tableName]);
     assert.equal(results.length, 150, 'all responses were recieved');
-    assert.end();
+
+    found.sendAll(4, function(err) {
+      assert.ifError(err, 'can set concurrency');
+      assert.end();
+    });
   });
 });
 

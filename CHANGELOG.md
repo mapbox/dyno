@@ -1,3 +1,48 @@
+## v1.0.0
+
+The overarching goal is to prefer to utilize the aws-sdk commands where possible, inheriting their bug fixes, updates, [and documentation](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/index.html). Some aspects of dyno's API are really nice (e.g. `.getItem(key)` instead of `.getItem({ Key: key })`), but having documentation that we don't have to maintain is arguably better.
+
+### generally speaking
+
+... the big changes are:
+
+- "dyno-style" function arguments, conditions, and options go away. Instead all function arguments are as described for the aws-sdk's [document client](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html).
+- dyno navigates the differences between the aws-sdk's [regular client](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html) and [document client](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html) for you behind the scenes.
+- with the exception of explicit `stream` functions, none of the function calls fan out into multiple HTTP requests. It doesn't handle pagination, it doesn't split large batch requests into a series of acceptably-sized requests, and it doesn't attempt to retry errors. Configuring when and how errors are retried becomes the client's responsibility using [aws-sdk's mechanisms](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#retry-event).
+
+
+### breaking changes
+
+- **client configuration** requires you to provide a `table` name
+- **dyno.getItems** renamed to **dyno.batchGetItem**, as a passthrough to aws-sdk.
+	- no longer accepts an array of keys and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property)
+	- does not allow you to request more than 100 items per function call
+	- does not provide a readable stream of response records
+- **dyno.deleteItems** and **dyno.putItems** replaced by **dyno.batchWriteItem**, a passthrough to aws-sdk.
+	- no longer accepts an array of items to put / keys to delete and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property)
+	- does not allow you to write > 25 items or 16 MB per function call
+- **dyno.deleteItem** becomes a passthrough to aws-sdk. No longer accepts a key and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property)
+- **dyno.getItem** becomes a passthrough to aws-sdk. No longer accepts a key and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property)
+- **dyno.putItem** becomes a passthrough to aws-sdk. No longer accepts a record and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property)
+- **dyno.updateItem** becomes a passthrough to aws-sdk. No longer accepts a key, "dyno-style" update definition and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property)
+- **dyno.query** becomes a passthrough to aws-sdk.
+	- no longer accepts the "dyno-style" query conditions and optional `options` object. See [aws-sdk docs for parameters](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property)
+	- does not paginate through the reponse for you. Pagination can be accomplished manually or via [aws-sdk's functions](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#eachPage-property).
+	- does not provide a readable stream of response records
+- **dyno.scan** becomes a passthrough to aws-sdk.
+	- no longer accepts an optional `options` object. [aws-sdk docs for parameters](See http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property)
+	- does not paginate through the response for you. Pagination can be accomplished manually or via [aws-sdk's functions](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#eachPage-property)
+	- does not provide a readable stream of response records
+- drops **dyno.estimateSize**
+- drops all **kinesis-related functionality**
+
+### new functions
+
+- **dyno.queryStream** provides a readable stream of query responses. Parameters passed to the function are identical to [dyno.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property), but the function returns a readable stream that will paginate through results as you read from it.
+- **dyno.scanStream** provides a readable stream of scan responses. Parameters passed to the function are identical to [dyno.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property), but the function returns a readable stream that will paginate through results as you read from it.
+- **dyno.batchWriteItemRequests** provides an array of [AWS.Request](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html) objects representing BatchWriteItem requests. Parameters passed to the function are identical to [dyno.batchWriteItem](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property), except that there is no size/count limit to the number or write requests you may provide.
+- **dyno.batchGetItemRequests** provides an array of [AWS.Request](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html) objects representing BatchGetItem requests. Parameters passed to the function are identical to [dyno.batchGetItem](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property), except that there is no size/count limit to the number or get requests you may provide.
+
 ## v0.17.0
 
 - Return native format (not wire format) for `metas[*].last` (`LastEvaluatedKey`).
