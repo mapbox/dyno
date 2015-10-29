@@ -16,7 +16,6 @@
   "dependencies": {
     "aws-sdk": "https://github.com/aws/aws-sdk-js/tarball/master",
     "big.js": "^3.1.3",
-    "documentation": "^2.0.1",
     "event-stream": "^3.3.2",
     "minimist": "^1.1.0",
     "queue-async": "~1.0.7",
@@ -24,7 +23,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
-    "documentation": "^2.0.1",
+    "documentation": "https://github.com/documentationjs/documentation/tarball/master",
     "dynamodb-test": "^0.1.5",
     "eslint": "^1.4.1",
     "nyc": "^3.2.2",

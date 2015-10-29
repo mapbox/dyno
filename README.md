@@ -49,3 +49,7 @@ Dyno exposes functions capable of serializing and deserializing native JavaScrip
 ### Command-line interface
 
 Dyno provides a CLI tool capable of reading and writing individual records, scanning, exporting and importing data into a DynamoDB table.
+
+## Documentation
+
+See API.md for documentation of the JavaScript client, and use `dyno --help` for details on CLI usage.
