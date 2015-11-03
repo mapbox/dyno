@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
-    "documentation": "https://github.com/documentationjs/documentation/tarball/master",
+    "documentation": "^3.0.0",
     "dynamodb-test": "^0.1.5",
     "eslint": "^1.4.1",
     "nyc": "^3.2.2",
