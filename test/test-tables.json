@@ -1,0 +1,72 @@
+{
+  "idhash": {
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "id",
+        "AttributeType": "S"
+      }
+    ],
+    "KeySchema": [
+      {
+        "AttributeName": "id",
+        "KeyType": "HASH"
+      }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 10,
+      "WriteCapacityUnits": 10
+    }
+  },
+  "idhash-numrange": {
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "num",
+        "AttributeType": "N"
+      }
+    ],
+    "KeySchema": [
+      {
+        "AttributeName": "id",
+        "KeyType": "HASH"
+      },
+      {
+        "AttributeName": "num",
+        "KeyType": "RANGE"
+      }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 10,
+      "WriteCapacityUnits": 10
+    }
+  },
+  "idhash-range": {
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "range",
+        "AttributeType": "N"
+      }
+    ],
+    "KeySchema": [
+      {
+        "AttributeName": "id",
+        "KeyType": "HASH"
+      },
+      {
+        "AttributeName": "range",
+        "KeyType": "RANGE"
+      }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 1,
+      "WriteCapacityUnits": 1
+    }
+  }
+}

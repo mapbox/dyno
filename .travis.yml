@@ -3,18 +3,7 @@ node_js:
 - '0.10'
 - '0.12'
 sudo: false
-cache:
-  directories:
-  - node_modules
-before_install:
-- MSG=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
-- LIVE=false
-- if test "${MSG#*'[live test]'}" != "$MSG"; then LIVE=true; fi
-script:
-- if [ "$LIVE" == "false" ]; then node test/index.js; fi
-- if [ "$LIVE" == "true" ]; then node test/live.tests.js; fi
-- npm run-script coveralls
 env:
   global:
-  - secure: 0IoS5aWIlFm2InuHTMsqssnWH0zp/SXTHzQPjDvxqGWIuulPdZBd0WM17R7nxo/Msp6FG7QMMSWBAnePuPBTrs77iLEHHok/uqApsh/rLy1PQu4WZE5mlBBruZJftN/WO+2IV7WsmK0XeVrAxG7C875z/6zK/AGsJYLpyHP2jnM=
-  - secure: HSxpg9/84xgfCwzojeu2Z7AGhIWTLudMVbNIRelVBTDSO+ksLFKCb0nyeGCj6q+LcXKu7sX4ZgdQomllrNNxhl02xsO5Ux+Z4HRWFcIZolpTcFXhjW2dNOgi+JnaiK7Y5PmnNpCKbPqvjWMct4GFazWFmS1X9Jcg/h1GBgdtzk0=
+  - secure: gPUkYNSfqd4wxsyJ5ef4zpjHKcUBLq6TEVuOtWbFpXFfLJtGBucNbcm5x2QZrhilmcWeeIPRhv4TzAo7PIFeZfaGzWk6ETc8AdD54JQCKvW38kRIHp/WTx5eWYmUg28orLNynjvegOlotG8IQn8zutonTU2iLSjIMsWZUnmZrNI=
+  - secure: kfQPDoOevWzbqisNTiiqkF49cRhOXzfdmrA2BnuaiMIjxOxi2PQqjHMxV8vBLoGF6pYbBRQcVddESyW79nuQ7MbCb3Ig8cTHNPJrZFGz9sDLapSTp7B3/aRwFYcr0Fq2hCi4q+qe1D6+AMY9Gn8CZaUO9caDfNcZ1pfK+YZVANk=
