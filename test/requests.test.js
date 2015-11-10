@@ -180,8 +180,9 @@ dynamodb.test('[requests] sendAll (two tables)', fixtures, function(assert) {
 
   var found = dyno.batchGetItemRequests(params);
   assert.equal(found.length, 3, 'split 300 keys into three requests');
-  found.sendAll(function(err, results) {
+  found.sendAll(function(err, results, unprocessed) {
     assert.ifError(err, 'requests were sent successfully');
+    assert.ifError(unprocessed, 'no unprocessed items reported');
 
     results = results.reduce(function(results, result) {
       if (result.Responses[dynamodb.tableName]) results = results.concat(result.Responses[dynamodb.tableName]);

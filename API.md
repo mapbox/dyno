@@ -198,7 +198,19 @@ An array of [AWS.Requests](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AW
 ## sendAll
 
 Send all the requests in a set, optionally specifying concurrency. The
-provided callback function is passed an array of individual results
+emphasis is on making it transparent to the caller the exact outcome of each
+request in the set.
+
+The callback function will be passed arguments in this order:
+
+-   error: set to null if no errors occurred, otherwise an array of errors with
+    indexes that correspond to the indexes of the original request set
+-   responses: always an array of responses equal with indexes corresponding
+    to the original request set. If a particular request encountered an error,
+    that index in the `responses` array will be set to `null`.
+-   unprocessed: set to null if no unprocessed results were detected, otherwise
+    a new set of requests with its own .sendAll function bound to it. Again,
+    indexes correspond to those in the original request set.
 
 
 **Parameters**
@@ -206,7 +218,7 @@ provided callback function is passed an array of individual results
 -   `concurrency` **[number]** the concurrency with which to make requests.
     Default value is `1`.
 
--   `callback` **function** a function to handle the response array.
+-   `callback` **function** a function to handle the response.
 
 
 

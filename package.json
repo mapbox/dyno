@@ -6,7 +6,8 @@
   "scripts": {
     "pretest": "eslint bin lib test index.js",
     "test": "nyc tape test/*.test.js",
-    "docs": "documentation index.js -f md > API.md"
+    "docs": "documentation index.js -f md > API.md",
+    "coverage": "nyc --reporter=html tape test/*.test.js && open coverage/index.html"
   },
   "bin": {
     "dyno": "./bin/cli.js"
