@@ -1,6 +1,8 @@
+var AWS = require('aws-sdk');
 var test = require('tape');
 var testTables = require('./test-tables');
 var dynamodb = require('dynamodb-test')(test, 'dyno', testTables.idhash);
+var second = require('dynamodb-test')(test, 'dyno', testTables.idhash);
 var Requests = require('../lib/requests');
 var _ = require('underscore');
 var crypto = require('crypto');
@@ -22,6 +24,7 @@ test('[requests] properties', function(assert) {
 });
 
 dynamodb.start();
+second.start();
 
 dynamodb.test('[requests] batchGetItemRequests (single table)', fixtures, function(assert) {
   var dyno = Dyno({
@@ -48,34 +51,6 @@ dynamodb.test('[requests] batchGetItemRequests (single table)', fixtures, functi
       assert.equal(results.length, 150, 'all responses were recieved');
       assert.end();
     });
-});
-
-dynamodb.test('[requests] batchGetItemRequests.sendAll (single table)', fixtures, function(assert) {
-  var dyno = Dyno({
-    table: dynamodb.tableName,
-    region: 'local',
-    endpoint: 'http://localhost:4567'
-  });
-
-  var params = { RequestItems: {} };
-  params.RequestItems[dynamodb.tableName] = {
-    Keys: _.range(150).map(function(i) {
-      return { id: i.toString() };
-    })
-  };
-
-  var found = dyno.batchGetItemRequests(params);
-  assert.equal(found.length, 2, 'split 150 keys into two requests');
-  found.sendAll(function(err, results) {
-    assert.ifError(err, 'requests were sent successfully');
-    results = results[0].Responses[dynamodb.tableName].concat(results[1].Responses[dynamodb.tableName]);
-    assert.equal(results.length, 150, 'all responses were recieved');
-
-    found.sendAll(4, function(err) {
-      assert.ifError(err, 'can set concurrency');
-      assert.end();
-    });
-  });
 });
 
 dynamodb.test('[requests] batchWriteItemRequests (single table, small writes)', fixtures, function(assert) {
@@ -153,5 +128,388 @@ dynamodb.test('[requests] batchWriteItemRequests (single table, large writes)', 
   // Test doesn't run the requests because dynalite barfs on items > 400KB
   assert.end();
 });
+
+dynamodb.test('[requests] sendAll (single table)', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+
+  var found = dyno.batchGetItemRequests(params);
+  assert.equal(found.length, 2, 'split 150 keys into two requests');
+  found.sendAll(function(err, results) {
+    assert.ifError(err, 'requests were sent successfully');
+    results = results[0].Responses[dynamodb.tableName].concat(results[1].Responses[dynamodb.tableName]);
+    assert.equal(results.length, 150, 'all responses were recieved');
+
+    found.sendAll(4, function(err) {
+      assert.ifError(err, 'can set concurrency');
+      assert.end();
+    });
+  });
+});
+
+second.load(fixtures);
+
+dynamodb.test('[requests] sendAll (two tables)', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+  params.RequestItems[second.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+
+  var found = dyno.batchGetItemRequests(params);
+  assert.equal(found.length, 3, 'split 300 keys into three requests');
+  found.sendAll(function(err, results) {
+    assert.ifError(err, 'requests were sent successfully');
+
+    results = results.reduce(function(results, result) {
+      if (result.Responses[dynamodb.tableName]) results = results.concat(result.Responses[dynamodb.tableName]);
+      if (result.Responses[second.tableName]) results = results.concat(result.Responses[second.tableName]);
+      return results;
+    }, []);
+
+    assert.equal(results.length, 300, 'all responses were recieved');
+    assert.end();
+  });
+});
+
+second.empty();
+
+test('[requests] batchGet sendAll: no errors, unprocessed items present', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var params = this.params.RequestItems[dynamodb.tableName].Keys;
+    var data = { Responses: {} };
+    data.Responses[dynamodb.tableName] = [];
+
+    params.forEach(function(key) {
+      if (key.id === '143') {
+        data.UnprocessedKeys = {};
+        data.UnprocessedKeys[dynamodb.tableName] = { Keys: [key] };
+      }
+
+      else data.Responses[dynamodb.tableName].push({
+        Item: fixtures[key.id]
+      });
+    });
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = null; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = 200;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+
+  var requests = dyno.batchGetItemRequests(params);
+  requests.sendAll(function(err, responses, unprocessed) {
+    assert.ifError(err, 'success');
+    assert.equal(responses.length, requests.length, 'when present, responses array has as many entries as there were requests');
+    assert.equal(unprocessed.length, requests.length, 'when present, unprocessed array has as many entries as there were requests');
+
+    var successCount = responses[0].Responses[dynamodb.tableName].length + responses[1].Responses[dynamodb.tableName].length;
+    assert.equal(successCount, 149, '149 items requested successfully');
+    assert.equal(unprocessed[0], null, 'first request contained no unprocessed items');
+
+    var expected = { RequestItems: {} };
+    expected.RequestItems[dynamodb.tableName] = { Keys: [{ id: '143' }] };
+    assert.deepEqual(unprocessed[1].params, expected, 'unprocessed request for expected params');
+
+    assert.equal(typeof unprocessed.sendAll, 'function', 'unprocessed response has bound .sendAll');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
+test('[requests] batchGet sendAll: with errors, unprocessed items present', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var params = this.params.RequestItems[dynamodb.tableName].Keys;
+    var data = { Responses: {} };
+    data.Responses[dynamodb.tableName] = [];
+    var error;
+
+    params.forEach(function(key) {
+      if (key.id === '2') {
+        console.log('getting an error');
+        error = new Error('omg! mock error!');
+        error.statusCode = 404;
+      }
+
+      else if (key.id === '143') {
+        data.UnprocessedKeys = {};
+        data.UnprocessedKeys[dynamodb.tableName] = { Keys: [key] };
+      }
+
+      else data.Responses[dynamodb.tableName].push({
+        Item: fixtures[key.id]
+      });
+    });
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = error || null; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = error ? 404 : 200;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+
+  var requests = dyno.batchGetItemRequests(params);
+  requests.sendAll(function(err, responses, unprocessed) {
+    assert.equal(err.length, requests.length, 'when present, error array has as many entries as there were requests');
+    assert.equal(responses.length, requests.length, 'when present, responses array has as many entries as there were requests');
+    assert.equal(unprocessed.length, requests.length, 'when present, unprocessed array has as many entries as there were requests');
+
+    assert.equal(err[0].message, 'omg! mock error!', 'first request errored');
+    assert.equal(responses[0], null, 'response set to null when error occurred');
+    assert.equal(unprocessed[0], null, 'first request contained no unprocessed items');
+
+    var expected = { RequestItems: {} };
+    expected.RequestItems[dynamodb.tableName] = { Keys: [{ id: '143' }] };
+
+    assert.equal(err[1], null, 'no error on second request');
+    assert.equal(responses[1].Responses[dynamodb.tableName].length, 49, '49 successful requests');
+    assert.deepEqual(unprocessed[1].params, expected, 'unprocessed request for expected params');
+    assert.equal(typeof unprocessed.sendAll, 'function', 'unprocessed response has bound .sendAll');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
+test('[requests] batchWrite sendAll: no errors, unprocessed items present', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var params = this.params.RequestItems[dynamodb.tableName];
+    var data = { Responses: {} };
+    data.Responses[dynamodb.tableName] = [];
+
+    params.forEach(function(req) {
+      if (req.PutRequest.Item.id === '143') {
+        data.UnprocessedItems = {};
+        data.UnprocessedItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
+      }
+
+      else data.Responses[dynamodb.tableName].push({});
+    });
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = null; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = 200;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteItemRequests(params);
+  requests.sendAll(function(err, responses, unprocessed) {
+    assert.ifError(err, 'success');
+    assert.equal(responses.length, requests.length, 'when present, responses array has as many entries as there were requests');
+    assert.equal(unprocessed.length, requests.length, 'when present, unprocessed array has as many entries as there were requests');
+
+    var successCount =
+      responses[0].Responses[dynamodb.tableName].length +
+      responses[1].Responses[dynamodb.tableName].length +
+      responses[2].Responses[dynamodb.tableName].length +
+      responses[3].Responses[dynamodb.tableName].length +
+      responses[4].Responses[dynamodb.tableName].length +
+      responses[5].Responses[dynamodb.tableName].length;
+
+    assert.equal(successCount, 149, '149 items requested successfully');
+    assert.equal(unprocessed[0], null, 'first request contained no unprocessed items');
+    assert.equal(unprocessed[1], null, 'second request contained no unprocessed items');
+    assert.equal(unprocessed[2], null, 'third request contained no unprocessed items');
+    assert.equal(unprocessed[3], null, 'fourth request contained no unprocessed items');
+    assert.equal(unprocessed[4], null, 'fifth request contained no unprocessed items');
+
+    var expected = { RequestItems: {} };
+    expected.RequestItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
+    assert.deepEqual(unprocessed[5].params, expected, 'unprocessed request for expected params');
+
+    assert.equal(typeof unprocessed.sendAll, 'function', 'unprocessed response has bound .sendAll');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
+test('[requests] batchWrite sendAll: with errors, unprocessed items present', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var params = this.params.RequestItems[dynamodb.tableName];
+    var data = { Responses: {} };
+    data.Responses[dynamodb.tableName] = [];
+    var error;
+
+    params.forEach(function(req) {
+      if (req.PutRequest.Item.id === '2') {
+        error = new Error('omg! mock error!');
+        error.statusCode = 404;
+      }
+
+      else if (req.PutRequest.Item.id === '143') {
+        data.UnprocessedItems = {};
+        data.UnprocessedItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
+      }
+
+      else data.Responses[dynamodb.tableName].push({});
+    });
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = error || null; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = error ? 404 : 200;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteItemRequests(params);
+  requests.sendAll(function(err, responses, unprocessed) {
+    assert.equal(err.length, requests.length, 'when present, error array has as many entries as there were requests');
+    assert.equal(responses.length, requests.length, 'when present, responses array has as many entries as there were requests');
+    assert.equal(unprocessed.length, requests.length, 'when present, unprocessed array has as many entries as there were requests');
+
+    assert.equal(err[0].message, 'omg! mock error!', 'first response errored');
+    assert.equal(responses[0], null, 'responses set to null when error occurred');
+    assert.equal(unprocessed[0], null, 'no unprocessed results');
+
+    assert.equal(err[1], null, 'second response did not error');
+    assert.equal(responses[1].Responses[dynamodb.tableName].length, 25, '25 successful responses');
+    assert.equal(unprocessed[1], null, 'no unprocessed results');
+
+    assert.equal(err[2], null, 'third response did not error');
+    assert.equal(responses[2].Responses[dynamodb.tableName].length, 25, '25 successful responses');
+    assert.equal(unprocessed[2], null, 'no unprocessed results');
+
+    assert.equal(err[3], null, 'fourth response did not error');
+    assert.equal(responses[3].Responses[dynamodb.tableName].length, 25, '25 successful responses');
+    assert.equal(unprocessed[3], null, 'no unprocessed results');
+
+    assert.equal(err[4], null, 'fifth response did not error');
+    assert.equal(responses[4].Responses[dynamodb.tableName].length, 25, '25 successful responses');
+    assert.equal(unprocessed[4], null, 'no unprocessed results');
+
+    assert.equal(err[5], null, 'sixth response did not error');
+    assert.equal(responses[5].Responses[dynamodb.tableName].length, 24, '24 successful responses');
+
+    var expected = { RequestItems: {} };
+    expected.RequestItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
+    assert.deepEqual(unprocessed[5].params, expected, 'unprocessed request for expected params');
+
+    assert.equal(typeof unprocessed.sendAll, 'function', 'unprocessed response has bound .sendAll');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
+second.delete();
+dynamodb.delete();
 
 dynamodb.close();
