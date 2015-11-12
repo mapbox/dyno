@@ -505,8 +505,11 @@ test('[requests] batchWrite sendAll: with errors, unprocessed items present', fu
 
     assert.equal(typeof unprocessed.sendAll, 'function', 'unprocessed response has bound .sendAll');
 
-    AWS.Request.prototype.send = original;
-    assert.end();
+    unprocessed.sendAll(function(err) {
+      assert.ifError(err, 'successful .sendAll on unprocessed requestSet');
+      AWS.Request.prototype.send = original;
+      assert.end();
+    });
   });
 });
 
