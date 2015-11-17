@@ -344,7 +344,15 @@ Dyno.multi = function(readOptions, writeOptions) {
  */
 Dyno.createSet = function(list) {
   var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
-  return new DynamoDBSet(list);
+  var set = new DynamoDBSet(list);
+
+  // hotfix for https://github.com/aws/aws-sdk-js/issues/801
+  if (!set.type) {
+    var typeOf = require('aws-sdk/lib/dynamodb/types').typeOf;
+    set.type = typeOf(list[0]);
+  }
+
+  return set;
 };
 
 /**
