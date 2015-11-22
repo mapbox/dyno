@@ -1,4 +1,5 @@
 var AWS = require('aws-sdk');
+var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
 var _ = require('underscore');
 
 module.exports = Dyno;
@@ -343,7 +344,6 @@ Dyno.multi = function(readOptions, writeOptions) {
  * };
  */
 Dyno.createSet = function(list) {
-  var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
   return new DynamoDBSet(list);
 };
 
