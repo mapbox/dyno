@@ -1,3 +1,7 @@
+## v1.0.1
+
+- fixes a bug in converting JavaScript arrays to DynamoDB Sets if the first item in the array is falsy (e.g `0`)
+
 ## v1.0.0
 
 The overarching goal is to prefer to utilize the aws-sdk commands where possible, inheriting their bug fixes, updates, [and documentation](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/index.html). Some aspects of dyno's API are really nice (e.g. `.getItem(key)` instead of `.getItem({ Key: key })`), but having documentation that we don't have to maintain is arguably better.
