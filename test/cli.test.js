@@ -48,7 +48,7 @@ var expectedTable = {
       { AttributeName: 'id', AttributeType: 'S' },
       { AttributeName: 'range', AttributeType: 'N' }
     ],
-    TableArn: 'arn:aws:dynamodb:us-east-1:000000000000:table/' + dynamodb.tableName,
+    TableArn: 'arn:aws:dynamodb:us-east-1:' + (process.env.AWS_ACCOUNT_ID || '000000000000') + ':table/' + dynamodb.tableName,
     TableName: dynamodb.tableName,
     ProvisionedThroughput: {
       WriteCapacityUnits: 1,

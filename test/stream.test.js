@@ -1,5 +1,6 @@
 var test = require('tape');
 var testTables = require('./test-tables');
+var putTable = require('dynamodb-test')(test, 'dyno', testTables.idhash);
 var scanTable = require('dynamodb-test')(test, 'dyno', testTables.idhash);
 var queryTable = require('dynamodb-test')(test, 'dyno', testTables['idhash-numrange']);
 var liveTable = require('dynamodb-test')(test, 'dyno', testTables.idhash, 'us-east-1');
@@ -99,6 +100,41 @@ queryTable.test('[stream] query', queryFixtures, function(assert) {
 });
 
 queryTable.delete();
+
+putTable.start();
+
+putTable.test('[stream] put', function(assert) {
+  var dyno = Dyno({
+    table: putTable.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  dyno.listTables(function(err) {
+    if (err) return assert.end(err);
+
+    var stream = dyno.putStream();
+    for (var i = 0; i < fixtures.length; i++) {
+      stream.write(fixtures[i]);
+    }
+
+    var count = 0;
+    stream.on('finish', function() {
+      dyno.scanStream({ ReturnConsumedCapacity: 'TOTAL' })
+        .on('error', function(err) { assert.ifError(err, 'should not error'); })
+        .on('data', function() {
+          count++;
+        })
+        .on('end', function() {
+          assert.equal(count, fixtures.length, 'wrote all features');
+          assert.end();
+        });
+    }).end();
+  });
+});
+
+putTable.delete();
+
 scanTable.close();
 
 liveTable.start();

@@ -278,7 +278,9 @@ function Dyno(options) {
      * @param {object} params - scan request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
      * @returns {ReadableStream}
      */
-    scanStream: require('./lib/stream')(docClient).scan
+    scanStream: require('./lib/stream')(docClient).scan,
+
+    putStream: require('./lib/stream')(docClient, options.table).put
   };
 
   // Drop specific functions from read/write only clients
@@ -301,7 +303,7 @@ function Dyno(options) {
   }
 
   // Glue everything together
-  return _({ config: config }).extend(nativeFunctions, dynoExtensions);
+  return _({ config: config, defaultTable: options.tableName }).extend(nativeFunctions, dynoExtensions);
 }
 
 /**
