@@ -19,7 +19,7 @@
     "big.js": "^3.1.3",
     "event-stream": "^3.3.2",
     "minimist": "^1.1.0",
-    "parallel-stream": "^1.1.0",
+    "parallel-stream": "^1.1.2",
     "queue-async": "~1.0.7",
     "underscore": "1.6.0"
   },
