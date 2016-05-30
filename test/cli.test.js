@@ -361,4 +361,64 @@ dynamodb.test('[cli] import complicated record', function(assert) {
   proc.stdin.end();
 });
 
+dynamodb.test('[cli] export --> import roundtrip', function(assert) {
+  var records = randomItems(10);
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var puts = { RequestItems: {} };
+  puts.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  dyno.batchWriteItemRequests(puts).sendAll(function(err) {
+    if (err) {
+      assert.ifError(err, 'failed to put records');
+      return assert.end();
+    }
+
+    runCli(['export', 'local/' + dynamodb.tableName], function(err, stdout) {
+      assert.ifError(err, 'cli success');
+
+      var results = stdout;
+
+      dyno.deleteTable({ TableName: dynamodb.tableName }, function(err) {
+        if (err) return assert.end(err);
+
+        var proc = runCli(['import', 'local/' + dynamodb.tableName], function(err) {
+          assert.ifError(err, 'cli success');
+          dyno.scan(function(err, data) {
+            if (err) {
+              assert.ifError(err, 'failed to import table + data');
+              return assert.end();
+            }
+
+            var items = data.Items;
+
+            var expectedRecords = records.map(function(record) {
+              return Dyno.serialize(record);
+            });
+
+            items = items.map(function(record) {
+              return Dyno.serialize(record);
+            });
+
+            var intersection = _.intersection(expectedRecords, items);
+            assert.equal(intersection.length, items.length, 'loaded records into table');
+            assert.end();
+          });
+        });
+
+        proc.stdout.pipe(process.stdout);
+        proc.stderr.pipe(process.stderr);
+        proc.stdin.write(results);
+        proc.stdin.end();
+      });
+    });
+  });
+});
+
 dynamodb.close();

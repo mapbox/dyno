@@ -84,8 +84,18 @@ function Parser() {
   parser._writableState.objectMode = false;
   parser._readableState.objectMode = true;
 
+  var firstline = true;
   parser._transform = function(record, enc, callback) {
     if (!record || record.length === 0) return;
+
+    if (firstline) {
+      firstline = false;
+
+      var parsed = Dyno.deserialize(record);
+      if (!Object.keys(parsed).every(function(key) {
+        return !!parsed[key];
+      })) return this.push(JSON.parse(record.toString()));
+    }
 
     record = Dyno.deserialize(record);
 
