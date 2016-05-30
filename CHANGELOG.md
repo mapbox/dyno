@@ -1,6 +1,7 @@
-## v1.1.0 (in-progress)
+## v1.1.0
 
 - adds `dyno.putStream()`, a writable stream to batch individual records into `BatchWriteItem` requests
+- bug fixes in cli
 
 ## v1.0.1
 
