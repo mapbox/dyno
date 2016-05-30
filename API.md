@@ -316,6 +316,8 @@ Writing individual records to the stream will aggregate them into sets of
     for available options. The stream **will always** set `objectMode: true` for you.
     -   `options.concurrency` **[number]** set the maximum desired concurrency for
         outgoing BatchWriteItem requests. (optional, default `1`)
+    -   `options.retry` **[function]** sets the provided function as a [retry event listener](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#retry-event)
+        on outgoing BatchWriteItem requests.
 
 Returns **** a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable)
 

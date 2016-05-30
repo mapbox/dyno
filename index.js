@@ -288,6 +288,8 @@ function Dyno(options) {
      * for available options. The stream **will always** set `objectMode: true` for you.
      * @param {number} [options.concurrency=1] - set the maximum desired concurrency for
      * outgoing BatchWriteItem requests.
+     * @param {function} [options.retry] - sets the provided function as a [retry event listener](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#retry-event)
+     * on outgoing BatchWriteItem requests.
      * @returns a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable)
      */
     putStream: require('./lib/stream')(docClient, options.table).put
