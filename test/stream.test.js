@@ -30,6 +30,7 @@ test('[stream] properties', function(assert) {
   var stream = Stream(scanTable.dynamo);
   assert.equal(typeof stream.query, 'function', 'exposes query function');
   assert.equal(typeof stream.scan, 'function', 'exposes scan function');
+  assert.equal(typeof stream.put, 'function', 'exposes put function');
   assert.end();
 });
 

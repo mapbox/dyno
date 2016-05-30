@@ -300,6 +300,7 @@ function Dyno(options) {
     delete nativeFunctions.updateItem;
     delete nativeFunctions.batchWriteItem;
     delete dynoExtensions.batchWriteItemRequests;
+    delete dynoExtensions.putStream;
   }
 
   if (options.write) {

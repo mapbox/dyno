@@ -33,6 +33,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof dyno.deleteTable, 'function', 'exposes deleteTable function');
   assert.equal(typeof dyno.queryStream, 'function', 'exposes queryStream function');
   assert.equal(typeof dyno.scanStream, 'function', 'exposes scanStream function');
+  assert.equal(typeof dyno.putStream, 'function', 'exposes putStream function');
 
   var read = Dyno({ table: 'my-table', region: 'us-east-1', read: true });
 
@@ -53,6 +54,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof read.deleteTable, 'function', 'read-only client exposes deleteTable function');
   assert.equal(typeof read.queryStream, 'function', 'read-only client exposes queryStream function');
   assert.equal(typeof read.scanStream, 'function', 'read-only client exposes scanStream function');
+  assert.equal(typeof read.putStream, 'undefined', 'read-only client does not expose putStream function');
 
   var write = Dyno({ table: 'my-table', region: 'us-east-1', write: true });
 
@@ -73,6 +75,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof write.deleteTable, 'function', 'write-only client exposes deleteTable function');
   assert.equal(typeof write.queryStream, 'undefined', 'write-only client does not expose queryStream function');
   assert.equal(typeof write.scanStream, 'undefined', 'write-only client does not expose scanStream function');
+  assert.equal(typeof write.putStream, 'function', 'write-only client exposes putStream function');
 
   var multi = Dyno.multi(
     { table: 'read-table', region: 'us-east-1' },
@@ -96,6 +99,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof multi.deleteTable, 'function', 'multi-client exposes deleteTable function');
   assert.equal(typeof multi.queryStream, 'function', 'multi-client exposes queryStream function');
   assert.equal(typeof multi.scanStream, 'function', 'multi-client exposes scanStream function');
+  assert.equal(typeof multi.putStream, 'function', 'multi-client exposes putStream function');
 
   assert.end();
 });
