@@ -26,7 +26,7 @@
   "devDependencies": {
     "coveralls": "^2.11.2",
     "documentation": "^3.0.0",
-    "dynamodb-test": "^0.2.1",
+    "dynamodb-test": "^0.2.2",
     "eslint": "^1.4.1",
     "nyc": "^3.2.2",
     "tape": "^4.2.0"
