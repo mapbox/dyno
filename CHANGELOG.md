@@ -1,3 +1,7 @@
+## v1.1.0 (in-progress)
+
+- adds `dyno.putStream()`, a writable stream to batch individual records into `BatchWriteItem` requests
+
 ## v1.0.1
 
 - fixes a bug in converting JavaScript arrays to DynamoDB Sets if the first item in the array is falsy (e.g `0`)

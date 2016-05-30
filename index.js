@@ -278,7 +278,19 @@ function Dyno(options) {
      * @param {object} params - scan request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
      * @returns {ReadableStream}
      */
-    scanStream: require('./lib/stream')(docClient).scan
+    scanStream: require('./lib/stream')(docClient).scan,
+    /**
+     * Creates a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable).
+     * Writing individual records to the stream will aggregate them into sets of
+     * 25 items and submit them as `BatchWriteItem` requests.
+     *
+     * @param {object} options - stream options. See [Writable stream documentation](https://nodejs.org/api/stream.html#stream_class_stream_writable_1)
+     * for available options. The stream **will always** set `objectMode: true` for you.
+     * @param {number} [options.concurrency=1] - set the maximum desired concurrency for
+     * outgoing BatchWriteItem requests.
+     * @returns a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable)
+     */
+    putStream: require('./lib/stream')(docClient, options.table).put
   };
 
   // Drop specific functions from read/write only clients
@@ -288,6 +300,7 @@ function Dyno(options) {
     delete nativeFunctions.updateItem;
     delete nativeFunctions.batchWriteItem;
     delete dynoExtensions.batchWriteItemRequests;
+    delete dynoExtensions.putStream;
   }
 
   if (options.write) {
@@ -301,7 +314,7 @@ function Dyno(options) {
   }
 
   // Glue everything together
-  return _({ config: config }).extend(nativeFunctions, dynoExtensions);
+  return _({ config: config, defaultTable: options.tableName }).extend(nativeFunctions, dynoExtensions);
 }
 
 /**
