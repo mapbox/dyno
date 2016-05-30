@@ -85,7 +85,7 @@ function Parser() {
   parser._readableState.objectMode = true;
 
   parser._transform = function(record, enc, callback) {
-    if (!record) return;
+    if (!record || record.length === 0) return;
 
     record = Dyno.deserialize(record);
 
