@@ -1,3 +1,7 @@
+## v1.1.1 (in-progress)
+
+- fixes a bug in the cli which prevented export --> import roundtrips
+
 ## v1.1.0
 
 - adds `dyno.putStream()`, a writable stream to batch individual records into `BatchWriteItem` requests
