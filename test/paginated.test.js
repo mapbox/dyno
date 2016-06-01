@@ -25,13 +25,8 @@ dynamodb.test('[paginated] query, 0 pages', fixtures, function(assert) {
     ExpressionAttributeValues: { ':id': 'id' },
     KeyConditionExpression: '#id = :id',
     Pages: 0
-  }, function(err, data) {
-    if (err) return assert.end(err);
-    assert.deepEqual(data, {
-      Items: [],
-      Count: 0,
-      ScannedCount: 0
-    }, 'null result');
+  }, function(err) {
+    assert.equal(err.message, 'Pages must be an integer greater than 0', '0 Pages is an invalid parameter value');
     assert.end();
   });
 });
@@ -171,14 +166,12 @@ dynamodb.test('[paginated] scan, 0 pages', fixtures, function(assert) {
   });
 
   dyno.scan({
+    ExpressionAttributeNames: { '#id': 'id' },
+    ExpressionAttributeValues: { ':id': 'id' },
+    KeyConditionExpression: '#id = :id',
     Pages: 0
-  }, function(err, data) {
-    if (err) return assert.end(err);
-    assert.deepEqual(data, {
-      Items: [],
-      Count: 0,
-      ScannedCount: 0
-    }, 'null result');
+  }, function(err) {
+    assert.equal(err.message, 'Pages must be an integer greater than 0', '0 Pages is an invalid parameter value');
     assert.end();
   });
 });
