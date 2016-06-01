@@ -31,6 +31,42 @@ dynamodb.test('[paginated] query, 0 pages', fixtures, function(assert) {
   });
 });
 
+dynamodb.test('[paginated] query, negative pages', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  dyno.query({
+    ExpressionAttributeNames: { '#id': 'id' },
+    ExpressionAttributeValues: { ':id': 'id' },
+    KeyConditionExpression: '#id = :id',
+    Pages: -56
+  }, function(err) {
+    assert.equal(err.message, 'Pages must be an integer greater than 0', 'Pages must be greater than 0');
+    assert.end();
+  });
+});
+
+dynamodb.test('[paginated] query, string for pages', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  dyno.query({
+    ExpressionAttributeNames: { '#id': 'id' },
+    ExpressionAttributeValues: { ':id': 'id' },
+    KeyConditionExpression: '#id = :id',
+    Pages: 'five'
+  }, function(err) {
+    assert.equal(err.message, 'Pages must be an integer greater than 0', 'Pages must be a number');
+    assert.end();
+  });
+});
+
 dynamodb.test('[paginated] query, 1 page', fixtures, function(assert) {
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -172,6 +208,42 @@ dynamodb.test('[paginated] scan, 0 pages', fixtures, function(assert) {
     Pages: 0
   }, function(err) {
     assert.equal(err.message, 'Pages must be an integer greater than 0', '0 Pages is an invalid parameter value');
+    assert.end();
+  });
+});
+
+dynamodb.test('[paginated] scan, negative pages', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  dyno.scan({
+    ExpressionAttributeNames: { '#id': 'id' },
+    ExpressionAttributeValues: { ':id': 'id' },
+    KeyConditionExpression: '#id = :id',
+    Pages: -56
+  }, function(err) {
+    assert.equal(err.message, 'Pages must be an integer greater than 0', 'Pages must be greater than 0');
+    assert.end();
+  });
+});
+
+dynamodb.test('[paginated] scan, string for pages', fixtures, function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  dyno.scan({
+    ExpressionAttributeNames: { '#id': 'id' },
+    ExpressionAttributeValues: { ':id': 'id' },
+    KeyConditionExpression: '#id = :id',
+    Pages: 'five'
+  }, function(err) {
+    assert.equal(err.message, 'Pages must be an integer greater than 0', 'Pages must be a number');
     assert.end();
   });
 });
