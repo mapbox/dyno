@@ -134,9 +134,10 @@ Query a table or secondary index. Passthrough to [DocumentClient.query](http://d
 **Parameters**
 
 -   `params` **object** request parameters. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
+    -   `params.Pages` **[number]** maximum number of pages of query results to request. Set to `Infinity` to return all available data. (optional, default `1`)
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
 
-Returns **Request** 
+Returns **** a Request if not paginating, or a ReadableStream if multiple pages were requested
 
 ## queryStream
 
@@ -157,9 +158,10 @@ Scan a table or secondary index. Passthrough to [DocumentClient.scan](http://doc
 **Parameters**
 
 -   `params` **object** request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
+    -   `params.Pages` **[number]** maximum number of pages of scan results to request. Set to `Infinity` to return all available data. (optional, default `1`)
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
 
-Returns **Request** 
+Returns **** a Request if not paginating, or a ReadableStream if multiple pages were requested
 
 ## scanStream
 

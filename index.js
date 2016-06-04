@@ -152,26 +152,6 @@ function Dyno(options) {
      */
     putItem: docClient.put.bind(docClient),
     /**
-     * Query a table or secondary index. Passthrough to [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property).
-     *
-     * @instance
-     * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
-     * @returns {Request}
-     */
-    query: docClient.query.bind(docClient),
-    /**
-     * Scan a table or secondary index. Passthrough to [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property).
-     *
-     * @instance
-     * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
-     * @returns {Request}
-     */
-    scan: docClient.scan.bind(docClient),
-    /**
      * Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property).
      *
      * @instance
@@ -292,7 +272,29 @@ function Dyno(options) {
      * on outgoing BatchWriteItem requests.
      * @returns a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable)
      */
-    putStream: require('./lib/stream')(docClient, options.table).put
+    putStream: require('./lib/stream')(docClient, options.table).put,
+    /**
+     * Query a table or secondary index. Passthrough to [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property).
+     *
+     * @instance
+     * @memberof client
+     * @param {object} params - request parameters. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
+     * @param {number} [params.Pages=1] - maximum number of pages of query results to request. Set to `Infinity` to return all available data.
+     * @param {function} [callback] - a function to handle the response. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
+     * @returns a Request if not paginating, or a ReadableStream if multiple pages were requested
+     */
+    query: require('./lib/paginated')(docClient).query,
+    /**
+     * Scan a table or secondary index. Passthrough to [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property).
+     *
+     * @instance
+     * @memberof client
+     * @param {object} params - request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
+     * @param {number} [params.Pages=1] - maximum number of pages of scan results to request. Set to `Infinity` to return all available data.
+     * @param {function} [callback] - a function to handle the response. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
+     * @returns a Request if not paginating, or a ReadableStream if multiple pages were requested
+     */
+    scan: require('./lib/paginated')(docClient).scan
   };
 
   // Drop specific functions from read/write only clients
@@ -308,8 +310,8 @@ function Dyno(options) {
   if (options.write) {
     delete nativeFunctions.batchGetItem;
     delete nativeFunctions.getItem;
-    delete nativeFunctions.query;
-    delete nativeFunctions.scan;
+    delete dynoExtensions.query;
+    delete dynoExtensions.scan;
     delete dynoExtensions.batchGetItemRequests;
     delete dynoExtensions.queryStream;
     delete dynoExtensions.scanStream;
