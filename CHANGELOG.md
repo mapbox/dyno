@@ -1,5 +1,7 @@
-## v1.1.1 (in-progress)
+## v1.2.0 (in-progress)
 
+- adds `.batchGetAll()` and `.batchWriteAll()` methods
+- adds autopagination to `.query()` and `.scan()` methods via a `Pages` parameter.
 - fixes a bug in the cli which prevented export --> import roundtrips
 
 ## v1.1.0
