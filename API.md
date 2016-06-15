@@ -2,6 +2,17 @@
 
 A dyno client which extends the [aws-sdk's DocumentClient](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html).
 
+## batchGetAll
+
+Break a large batch of get operations into a set of requests that are intended
+to be sent concurrently.
+
+**Parameters**
+
+-   `params` **object** unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
+
+Returns **CompleteRequestSet** 
+
 ## batchGetItem
 
 Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property).
@@ -23,6 +34,17 @@ sent individually or concurrently.
 -   `params` **object** unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
 
 Returns **RequestSet** 
+
+## batchWriteAll
+
+Break a large batch of write operations into a set of requests that are intended
+to be sent concurrently.
+
+**Parameters**
+
+-   `params` **object** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
+
+Returns **CompleteRequestSet** 
 
 ## batchWriteItem
 
@@ -186,6 +208,27 @@ Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.a
 
 Returns **Request** 
 
+# CompleteRequestSet
+
+An array of [AWS.Requests](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html)
+
+## sendAll
+
+Send all the requests in a set, optionally specifying concurrency. This function
+will retry unprocessed items and return a single response body aggregated from
+results of all the individual requests.
+
+The callback function will be passed a single error object if any occurred, and the
+aggregated response body. If all requests encountered an error, the second argument
+will be null. Otherwise the callback may be provided with an error as well as
+the outcome from successful requests.
+
+**Parameters**
+
+-   `concurrency` **[number]** the concurrency with which to make requests.
+    Default value is `1`.
+-   `callback` **function** a function to handle the response.
+
 # Dyno
 
 Creates a dyno client. You must provide a table name and the region where the
@@ -336,6 +379,16 @@ DynamoDB record.
     the aggregate of all requests that have completed. This property will only
     be present if the `ReturnConsumedCapacity` parameter was set on the initial
     request.
+
+# reduceCapacity
+
+Reduce two sets of consumed capacity metrics into a single object
+
+**Parameters**
+
+-   `existing` **object** capacity. This object will be updated.
+-   `new` **object** capacity object to be added to the existing object.
+-   `incoming`  
 
 # Request
 
