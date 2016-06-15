@@ -197,7 +197,7 @@ dynamodb.test('[requests] sendAll (two tables)', fixtures, function(assert) {
 
 second.empty();
 
-test('[requests] batchGet sendAll: no errors, unprocessed items present', function(assert) {
+dynamodb.test('[requests] batchGet sendAll: no errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
 
   AWS.Request.prototype.send = function() {
@@ -266,7 +266,7 @@ test('[requests] batchGet sendAll: no errors, unprocessed items present', functi
   });
 });
 
-test('[requests] batchGet sendAll: with errors, unprocessed items present', function(assert) {
+dynamodb.test('[requests] batchGet sendAll: with errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
 
   AWS.Request.prototype.send = function() {
@@ -343,7 +343,7 @@ test('[requests] batchGet sendAll: with errors, unprocessed items present', func
   });
 });
 
-test('[requests] batchWrite sendAll: no errors, unprocessed items present', function(assert) {
+dynamodb.test('[requests] batchWrite sendAll: no errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
 
   AWS.Request.prototype.send = function() {
@@ -419,7 +419,7 @@ test('[requests] batchWrite sendAll: no errors, unprocessed items present', func
   });
 });
 
-test('[requests] batchWrite sendAll: with errors, unprocessed items present', function(assert) {
+dynamodb.test('[requests] batchWrite sendAll: with errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
 
   AWS.Request.prototype.send = function() {
@@ -512,6 +512,31 @@ test('[requests] batchWrite sendAll: with errors, unprocessed items present', fu
   });
 });
 
+dynamodb.test('[requests] batchWriteAll sendAll: no errors, no unprocessed items', function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteAll(params);
+  requests.sendAll(function(err) {
+    if (err) return assert.end(err);
+
+    dynamodb.dyno.scan(function(err, data) {
+      if (err) return assert.end(err);
+
+      assert.equal(data.Items.length, fixtures.length, 'expected data');
+      assert.end();
+    });
+  });
+});
+
 test('[requests] batchWriteAll sendAll: with errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
   var once = true;
@@ -541,8 +566,6 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
         data.UnprocessedItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
         if (capacity) data.ConsumedCapacity.CapacityUnits = 0;
       }
-
-      else data.Responses[dynamodb.tableName].push({});
     });
 
     this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
@@ -576,10 +599,7 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
   requests.sendAll(function(err, data) {
 
     assert.equal(err.message, 'omg! mock error!', 'single error was reported from a failed request');
-    assert.equal(Object.keys(data.Responses).reduce(function(total, table) {
-      total += data.Responses[table].length;
-      return total;
-    }, 0), 125, '125 successful responses');
+
     assert.deepEqual(data.ConsumedCapacity, {
       TableName: dynamodb.tableName,
       CapacityUnits: 50
@@ -590,7 +610,42 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
   });
 });
 
-test('[requests] batchGet sendAll: with errors, unprocessed items present', function(assert) {
+dynamodb.test('[requests] batchGetAll sendAll: no errors, no unprocessed items', function(assert) {
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var keys = _.range(150).map(function(i) {
+    return { id: i.toString() };
+  });
+
+  var fixtureParams = { RequestItems: {} };
+  fixtureParams.RequestItems[dynamodb.tableName] = keys.map(function(key) {
+    return { PutRequest: { Item: key } };
+  });
+  dyno.batchWriteAll(fixtureParams).sendAll(10, function(err) {
+    if (err) return assert.end(err);
+
+    var params = { RequestItems: {} };
+    params.RequestItems[dynamodb.tableName] = { Keys: keys };
+
+    var requests = dyno.batchGetAll(params);
+    requests.sendAll(function(err, data) {
+      if (err) return assert.end(err);
+
+      assert.equal(Object.keys(data.Responses).reduce(function(total, table) {
+        total += data.Responses[table].length;
+        return total;
+      }, 0), 150, '150 successful responses');
+
+      assert.end();
+    });
+  });
+});
+
+dynamodb.test('[requests] batchGetAll sendAll: with errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
   var once = true;
 
