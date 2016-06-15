@@ -192,6 +192,30 @@ function Dyno(options) {
    * @param {function} callback - a function to handle the response.
    */
 
+  /**
+   * An array of [AWS.Requests](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html)
+   *
+   * @name CompleteRequestSet
+   */
+
+  /**
+   * Send all the requests in a set, optionally specifying concurrency. This function
+   * will retry unprocessed items and return a single response body aggregated from
+   * results of all the individual requests.
+   *
+   * The callback function will be passed a single error object if any occurred, and the
+   * aggregated response body. If all requests encountered an error, the second argument
+   * will be null. Otherwise the callback may be provided with an error as well as
+   * the outcome from successful requests.
+   *
+   * @name sendAll
+   * @instance
+   * @memberof CompleteRequestSet
+   * @param {number} [concurrency] - the concurrency with which to make requests.
+   * Default value is `1`.
+   * @param {function} callback - a function to handle the response.
+   */
+
   var dynoExtensions = {
     /**
      * Break a large batch of get operations into a set of requests that can be
@@ -213,6 +237,26 @@ function Dyno(options) {
      * @returns {RequestSet}
      */
     batchWriteItemRequests: require('./lib/requests')(docClient).batchWriteItemRequests,
+    /**
+     * Break a large batch of get operations into a set of requests that are intended
+     * to be sent concurrently.
+     *
+     * @instance
+     * @memberof client
+     * @param {object} params - unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
+     * @returns {CompleteRequestSet}
+     */
+    batchGetAll: require('./lib/requests')(docClient).batchGetAll,
+    /**
+     * Break a large batch of write operations into a set of requests that are intended
+     * to be sent concurrently.
+     *
+     * @instance
+     * @memberof client
+     * @param {object} params - unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
+     * @returns {CompleteRequestSet}
+     */
+    batchWriteAll: require('./lib/requests')(docClient).batchWriteAll,
     /**
      * Create a table. Passthrough to [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property),
      * except the function polls DynamoDB until the table is ready to accept
@@ -304,6 +348,7 @@ function Dyno(options) {
     delete nativeFunctions.updateItem;
     delete nativeFunctions.batchWriteItem;
     delete dynoExtensions.batchWriteItemRequests;
+    delete dynoExtensions.batchWriteAll;
     delete dynoExtensions.putStream;
   }
 
@@ -313,6 +358,7 @@ function Dyno(options) {
     delete dynoExtensions.query;
     delete dynoExtensions.scan;
     delete dynoExtensions.batchGetItemRequests;
+    delete dynoExtensions.batchGetAll;
     delete dynoExtensions.queryStream;
     delete dynoExtensions.scanStream;
   }
