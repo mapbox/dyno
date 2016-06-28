@@ -723,6 +723,126 @@ dynamodb.test('[requests] batchGetAll sendAll: with errors, unprocessed items pr
   });
 });
 
+dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeout', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var params = this.params.RequestItems[dynamodb.tableName].Keys;
+    var data = { Responses: {}, UnprocessedKeys: {} };
+    data.Responses[dynamodb.tableName] = [];
+    data.UnprocessedKeys[dynamodb.tableName] = { Keys: [params] };
+
+    var capacity = this.params.ReturnConsumedCapacity;
+    if (capacity) data.ConsumedCapacity = {
+      TableName: dynamodb.tableName,
+      CapacityUnits: 10
+    };
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = null; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      // not sure what this is doing
+      response.httpResponse.body = '{"mocked":"response"}';
+      // Question: Should this be 200?
+      response.httpResponse.statusCode = 200;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {}, ReturnConsumedCapacity: 'TOTAL' };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(150).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+
+  var requests = dyno.batchGetAll(params, 3);
+  requests.sendAll(function(err, data) {
+    assert.equal(err.message, 'Timeout: Items still left to process', 'Ended with an error');
+    assert.equal(data.Responses[dynamodb.tableName].length, 0, 'there are no responses');
+    assert.deepEqual(data.ConsumedCapacity, {
+      TableName: dynamodb.tableName,
+      CapacityUnits: 80
+    }, 'aggregated consumed capacity from 2 requests');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
+test('[requests] batchWriteAll sendAll: everything is unprocessed. timeout', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var params = this.params.RequestItems[dynamodb.tableName];
+    var data = { Responses: {} };
+    data.Responses[dynamodb.tableName] = [];
+    data.UnprocessedItems = {};
+    data.UnprocessedItems[dynamodb.tableName] = params.map(function(req) {
+      return { PutRequest: { Item: fixtures[req.PutRequest.Item.id] } };
+    });
+
+    var capacity = this.params.ReturnConsumedCapacity;
+    if (capacity) data.ConsumedCapacity = {
+      TableName: dynamodb.tableName,
+      CapacityUnits: 10
+    };
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = null; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      // Question: Should this be 200?
+      response.httpResponse.statusCode = 200;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {}, ReturnConsumedCapacity: 'TOTAL' };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteAll(params, 3);
+  requests.sendAll(function(err, data) {
+    assert.equal(err.message, 'Timeout: Items still left to process', 'Ended with an error');
+    assert.equal(data.Responses[dynamodb.tableName].length, 0, 'there are no responses');
+    assert.deepEqual(data.ConsumedCapacity, {
+      TableName: dynamodb.tableName,
+      CapacityUnits: 240
+    }, 'aggregated consumed capacity');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
 second.delete();
 dynamodb.delete();
 
