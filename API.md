@@ -5,13 +5,15 @@ A dyno client which extends the [aws-sdk's DocumentClient](http://docs.aws.amazo
 ## batchGetAll
 
 Break a large batch of get operations into a set of requests that are intended
-to be sent concurrently.
+to be sent concurrently. Retries unprocessed results for you with [an exponential
+backoff as explained by aws](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#BatchOperations);
 
 **Parameters**
 
 -   `params` **object** unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
+-   `maxRetryCount` **number** (optional, default 10) the number of retries to attempt before failing.
 
-Returns **CompleteRequestSet** 
+Returns **CompleteRequestSet**
 
 ## batchGetItem
 
@@ -22,7 +24,7 @@ Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http
 -   `params` **object** request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## batchGetItemRequests
 
@@ -33,18 +35,20 @@ sent individually or concurrently.
 
 -   `params` **object** unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
 
-Returns **RequestSet** 
+Returns **RequestSet**
 
 ## batchWriteAll
 
 Break a large batch of write operations into a set of requests that are intended
-to be sent concurrently.
+to be sent concurrently. Retries unprocessed results for you with [an exponential
+backoff as explained by aws](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#BatchOperations);
 
 **Parameters**
 
 -   `params` **object** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
+-   `maxRetryCount` **number** (optional, default 10) the number of retries to attempt before failing.
 
-Returns **CompleteRequestSet** 
+Returns **CompleteRequestSet**
 
 ## batchWriteItem
 
@@ -55,7 +59,7 @@ Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite](
 -   `params` **object** request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## batchWriteItemRequests
 
@@ -66,7 +70,7 @@ sent individually or concurrently.
 
 -   `params` **object** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
 
-Returns **RequestSet** 
+Returns **RequestSet**
 
 ## createTable
 
@@ -79,7 +83,7 @@ reads and writes, at which point the callback function is called.
 -   `params` **object** request parameters. See [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## deleteItem
 
@@ -90,7 +94,7 @@ Delete a single record. Passthrough to [DocumentClient.delete](http://docs.aws.a
 -   `params` **object** request parameters. See [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## deleteTable
 
@@ -103,7 +107,7 @@ reads and writes, at which point the callback function is called.
 -   `params` **object** request parameters. See [DynamoDB.deleteTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DynamoDB.deleteTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## describeTable
 
@@ -114,7 +118,7 @@ Get table information. Passthrough to [DynamoDB.describeTable](http://docs.aws.a
 -   `params` **object** request parameters. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## getItem
 
@@ -125,7 +129,7 @@ Get a single record. Passthrough to [DocumentClient.get](http://docs.aws.amazon.
 -   `params` **object** request parameters. See [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## listTables
 
@@ -136,7 +140,7 @@ List the tables available in a given region. Passthrough to [DynamoDB.listTables
 -   `params` **object** request parameters. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## putItem
 
@@ -147,7 +151,7 @@ Put a single record. Passthrough to [DocumentClient.put](http://docs.aws.amazon.
 -   `params` **object** request parameters. See [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 ## query
 
@@ -171,7 +175,7 @@ as the caller reads from the stream.
 
 -   `params` **object** query request parameters. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
 
-Returns **ReadableStream** 
+Returns **ReadableStream**
 
 ## scan
 
@@ -195,7 +199,7 @@ as the caller reads from the stream.
 
 -   `params` **object** scan request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
 
-Returns **ReadableStream** 
+Returns **ReadableStream**
 
 ## updateItem
 
@@ -206,7 +210,7 @@ Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.a
 -   `params` **object** request parameters. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
 -   `callback` **[function]** a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
 
-Returns **Request** 
+Returns **Request**
 
 # CompleteRequestSet
 
@@ -388,7 +392,7 @@ Reduce two sets of consumed capacity metrics into a single object
 
 -   `existing` **object** capacity. This object will be updated.
 -   `new` **object** capacity object to be added to the existing object.
--   `incoming`  
+-   `incoming`
 
 # Request
 
