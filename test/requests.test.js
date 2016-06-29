@@ -636,8 +636,7 @@ dynamodb.test('[requests] batchGetAll sendAll: no errors, no unprocessed items',
       if (err) return assert.end(err);
 
       assert.equal(Object.keys(data.Responses).reduce(function(total, table) {
-        total += data.Responses[table].length;
-        return total;
+        return total + data.Responses[table].length;
       }, 0), 150, '150 successful responses');
 
       assert.end();
@@ -730,7 +729,7 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
     var params = this.params.RequestItems[dynamodb.tableName].Keys;
     var data = { Responses: {}, UnprocessedKeys: {} };
     data.Responses[dynamodb.tableName] = [];
-    data.UnprocessedKeys[dynamodb.tableName] = { Keys: [params] };
+    data.UnprocessedKeys[dynamodb.tableName] = { Keys: params };
 
     var capacity = this.params.ReturnConsumedCapacity;
     if (capacity) data.ConsumedCapacity = {
@@ -771,8 +770,9 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
 
   var requests = dyno.batchGetAll(params, 3);
   requests.sendAll(function(err, data) {
-    assert.equal(err.message, 'Timeout: Items still left to process', 'Ended with an error');
+    assert.ifError(err, 'there is no error here');
     assert.equal(data.Responses[dynamodb.tableName].length, 0, 'there are no responses');
+    assert.equal(data.UnprocessedKeys[dynamodb.tableName].Keys.length, 150, 'there are no responses');
     assert.deepEqual(data.ConsumedCapacity, {
       TableName: dynamodb.tableName,
       CapacityUnits: 80
@@ -831,8 +831,8 @@ test('[requests] batchWriteAll sendAll: everything is unprocessed. timeout', fun
 
   var requests = dyno.batchWriteAll(params, 3);
   requests.sendAll(function(err, data) {
-    assert.equal(err.message, 'Timeout: Items still left to process', 'Ended with an error');
     assert.equal(data.Responses[dynamodb.tableName].length, 0, 'there are no responses');
+    assert.equal(data.UnprocessedItems[dynamodb.tableName].length, 150, 'all items were left unprocessed');
     assert.deepEqual(data.ConsumedCapacity, {
       TableName: dynamodb.tableName,
       CapacityUnits: 240
