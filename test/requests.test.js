@@ -728,7 +728,6 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
   AWS.Request.prototype.send = function() {
     var params = this.params.RequestItems[dynamodb.tableName].Keys;
     var data = { Responses: {}, UnprocessedKeys: {} };
-    data.Responses[dynamodb.tableName] = [];
     data.UnprocessedKeys[dynamodb.tableName] = { Keys: params };
 
     var capacity = this.params.ReturnConsumedCapacity;
@@ -745,10 +744,8 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
 
     this.removeListener('send', AWS.EventListeners.Core.SEND);
     this.on('send', function(response) {
-      // not sure what this is doing
       response.httpResponse.body = '{"mocked":"response"}';
-      // Question: Should this be 200?
-      response.httpResponse.statusCode = 200;
+      response.httpResponse.statusCode = 400;
     });
 
     this.runTo();
@@ -771,7 +768,7 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
   var requests = dyno.batchGetAll(params, 3);
   requests.sendAll(function(err, data) {
     assert.ifError(err, 'there is no error here');
-    assert.equal(data.Responses[dynamodb.tableName].length, 0, 'there are no responses');
+    assert.equal(data.Responses[dynamodb.tableName], undefined, 'there are no responses');
     assert.equal(data.UnprocessedKeys[dynamodb.tableName].Keys.length, 150, 'there are no responses');
     assert.deepEqual(data.ConsumedCapacity, {
       TableName: dynamodb.tableName,
