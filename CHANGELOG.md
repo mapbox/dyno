@@ -1,4 +1,4 @@
-## v1.2.0 (in-progress)
+## v1.2.0 
 
 - adds `.batchGetAll()` and `.batchWriteAll()` methods
 - adds autopagination to `.query()` and `.scan()` methods via a `Pages` parameter.
