@@ -455,9 +455,10 @@ dynamodb.test('[requests] batchWrite sendAll: with errors, Responses not present
 
   var requests = dyno.batchWriteItemRequests(params);
   requests.sendAll(function(err, responses, unprocessed) {
-    assert.equal(err.message, 'omg! mock error!');
-    assert.notOk(responses);
-    assert.notOk(unprocessed);
+    assert.equal(err.length, 6, 'has a lot of error message');
+    assert.equal(err[0].message, 'omg! mock error!', 'with the expected message');
+    assert.equal(responses.filter(function(v) { return v; }).length, 0, 'no none null reponses');
+    assert.notOk(unprocessed, 'and nothing left to do');
 
     AWS.Request.prototype.send = original;
     assert.end();
@@ -588,11 +589,9 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
 
   AWS.Request.prototype.send = function() {
     var params = this.params.RequestItems[dynamodb.tableName];
-    var data = { Responses: {} };
-    data.Responses[dynamodb.tableName] = [];
+    var data = {};
 
-    var capacity = this.params.ReturnConsumedCapacity;
-    if (capacity) data.ConsumedCapacity = {
+    data.ConsumedCapacity = {
       TableName: dynamodb.tableName,
       CapacityUnits: 10
     };
@@ -609,7 +608,7 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
         once = false;
         data.UnprocessedItems = {};
         data.UnprocessedItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
-        if (capacity) data.ConsumedCapacity.CapacityUnits = 0;
+        data.ConsumedCapacity.CapacityUnits = 0;
       }
     });
 
