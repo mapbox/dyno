@@ -537,6 +537,50 @@ dynamodb.test('[requests] batchWriteAll sendAll: no errors, no unprocessed items
   });
 });
 
+dynamodb.test('[requests] batchWriteAll sendAll: with errors, no Responses data', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var data = { };
+    var error = new Error('omg! mock error!');
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = error; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = 400;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteAll(params);
+  requests.sendAll(function(err, data) {
+    assert.equal(err.message, 'omg! mock error!', 'single error was reported without Responses data');
+    assert.equal(data, undefined, 'data is undefined for error only callback without Responses data');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
 test('[requests] batchWriteAll sendAll: with errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
   var once = true;
