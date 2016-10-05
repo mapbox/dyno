@@ -814,7 +814,7 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
   requests.sendAll(function(err, data) {
     assert.ifError(err, 'there is no error here');
     assert.equal(data.Responses[dynamodb.tableName], undefined, 'there are no responses');
-    assert.equal(data.UnprocessedKeys[dynamodb.tableName].Keys.length, 150, 'there are no responses');
+    assert.equal(data.UnprocessedKeys[dynamodb.tableName].Keys.length, 150, 'there are unprocessed keys');
     assert.deepEqual(data.ConsumedCapacity, {
       TableName: dynamodb.tableName,
       CapacityUnits: 80
