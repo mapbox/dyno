@@ -1,3 +1,7 @@
+## v1.2.1
+
+- fixes a bug where certain errors were not handled correctly by `.batchWriteAll()`
+
 ## v1.2.0 
 
 - adds `.batchGetAll()` and `.batchWriteAll()` methods
