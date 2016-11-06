@@ -876,9 +876,8 @@ test('[requests] batchWriteAll sendAll: no data.Response', function(assert) {
   });
 
   var requests = dyno.batchWriteAll(params, 3);
-  requests.sendAll(function(err, data) {
+  requests.sendAll(function(err) {
     assert.ok(err);
-    assert.ok(!data, 'no data passed');
     AWS.Request.prototype.send = original;
     assert.end();
   });
