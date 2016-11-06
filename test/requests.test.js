@@ -841,6 +841,48 @@ test('[requests] batchWriteAll sendAll: everything is unprocessed. timeout', fun
   });
 });
 
+test('[requests] batchWriteAll sendAll: no data.Response', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var error = new Error('omg! mock error!');
+    error.statusCode = 404;
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = error; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = {}; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = 404;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {}, ReturnConsumedCapacity: 'TOTAL' };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteAll(params, 3);
+  requests.sendAll(function(err) {
+    assert.ok(err);
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
 second.delete();
 dynamodb.delete();
 
