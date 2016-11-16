@@ -1,8 +1,13 @@
+## v1.3.0
+
+- updates aws-sdk dependency to v2.7+ from v2.1+
+
+
 ## v1.2.1
 
 - fixes a bug where certain errors were not handled correctly by `.batchWriteAll()`
 
-## v1.2.0 
+## v1.2.0
 
 - adds `.batchGetAll()` and `.batchWriteAll()` methods
 - adds autopagination to `.query()` and `.scan()` methods via a `Pages` parameter.
