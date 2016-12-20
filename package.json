@@ -15,7 +15,7 @@
   "author": "Mick Thompson <mick@mick.im>",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "2.x",
+    "aws-sdk": "^2.7.2",
     "big.js": "^3.1.3",
     "event-stream": "^3.3.2",
     "minimist": "^1.1.0",
