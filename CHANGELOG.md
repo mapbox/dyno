@@ -1,3 +1,7 @@
+## v1.4.0
+
+- updates aws-sdk dependency to `2.x` to help reduce the weight of the aws-sdk in your bundle
+
 ## v1.3.0
 
 - updates aws-sdk dependency to v2.7+ from v2.1+
