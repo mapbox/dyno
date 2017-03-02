@@ -419,6 +419,52 @@ dynamodb.test('[requests] batchWrite sendAll: no errors, unprocessed items prese
   });
 });
 
+dynamodb.test('[requests] batchWrite sendAll: with errors, Responses not present', function(assert) {
+  var original = AWS.Request.prototype.send;
+
+  AWS.Request.prototype.send = function() {
+    var data = { };
+    var error = new Error('omg! mock error!');
+
+    this.removeListener('extractError', AWS.EventListeners.Core.EXTRACT_ERROR);
+    this.on('extractError', function(response) { response.error = error; });
+
+    this.removeListener('extractData', AWS.EventListeners.Core.EXTRACT_DATA);
+    this.on('extractData', function(response) { response.data = data; });
+
+    this.removeListener('send', AWS.EventListeners.Core.SEND);
+    this.on('send', function(response) {
+      response.httpResponse.body = '{"mocked":"response"}';
+      response.httpResponse.statusCode = 400;
+    });
+
+    this.runTo();
+    return this.response;
+  };
+
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567'
+  });
+
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = fixtures.map(function(item) {
+    return { PutRequest: { Item: item } };
+  });
+
+  var requests = dyno.batchWriteItemRequests(params);
+  requests.sendAll(function(err, responses, unprocessed) {
+    assert.equal(err.length, 6, 'has a lot of error message');
+    assert.equal(err[0].message, 'omg! mock error!', 'with the expected message');
+    assert.equal(responses.filter(function(v) { return v; }).length, 0, 'no none null reponses');
+    assert.notOk(unprocessed, 'and nothing left to do');
+
+    AWS.Request.prototype.send = original;
+    assert.end();
+  });
+});
+
 dynamodb.test('[requests] batchWrite sendAll: with errors, unprocessed items present', function(assert) {
   var original = AWS.Request.prototype.send;
 
@@ -543,11 +589,9 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
 
   AWS.Request.prototype.send = function() {
     var params = this.params.RequestItems[dynamodb.tableName];
-    var data = { Responses: {} };
-    data.Responses[dynamodb.tableName] = [];
+    var data = {};
 
-    var capacity = this.params.ReturnConsumedCapacity;
-    if (capacity) data.ConsumedCapacity = {
+    data.ConsumedCapacity = {
       TableName: dynamodb.tableName,
       CapacityUnits: 10
     };
@@ -564,7 +608,7 @@ test('[requests] batchWriteAll sendAll: with errors, unprocessed items present',
         once = false;
         data.UnprocessedItems = {};
         data.UnprocessedItems[dynamodb.tableName] = [{ PutRequest: { Item: fixtures['143'] } }];
-        if (capacity) data.ConsumedCapacity.CapacityUnits = 0;
+        data.ConsumedCapacity.CapacityUnits = 0;
       }
     });
 
@@ -770,7 +814,7 @@ dynamodb.test('[requests] batchGetAll sendAll: everything is unprocessed. timeou
   requests.sendAll(function(err, data) {
     assert.ifError(err, 'there is no error here');
     assert.equal(data.Responses[dynamodb.tableName], undefined, 'there are no responses');
-    assert.equal(data.UnprocessedKeys[dynamodb.tableName].Keys.length, 150, 'there are no responses');
+    assert.equal(data.UnprocessedKeys[dynamodb.tableName].Keys.length, 150, 'there are unprocessed keys');
     assert.deepEqual(data.ConsumedCapacity, {
       TableName: dynamodb.tableName,
       CapacityUnits: 80
