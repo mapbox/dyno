@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/dyno",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Simple DynamoDB client",
   "main": "index.js",
   "scripts": {
