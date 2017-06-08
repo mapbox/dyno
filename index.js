@@ -22,6 +22,7 @@ module.exports = Dyno;
  * @param {string} [options.accessKeyId] - credentials for the client to utilize
  * @param {string} [options.secretAccessKey] - credentials for the client to utilize
  * @param {string} [options.sessionToken] - credentials for the client to utilize
+ * @param {AWS.Credentials} [options.credentials] - an AWS.Credentials object for the client to utilize
  * @param {object} [options.logger] - a writable stream for detailed logging from the aws-sdk. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {number} [options.maxRetries] - number of times to retry on retryable errors. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @returns {client} a dyno client
@@ -70,6 +71,7 @@ function Dyno(options) {
     accessKeyId: options.accessKeyId,
     secretAccessKey: options.secretAccessKey,
     sessionToken: options.sessionToken,
+    credentials: options.credentials,
     logger: options.logger,
     maxRetries: options.maxRetries
   };

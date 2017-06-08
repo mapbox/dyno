@@ -252,6 +252,7 @@ for details.
     -   `options.accessKeyId` **[string]** credentials for the client to utilize
     -   `options.secretAccessKey` **[string]** credentials for the client to utilize
     -   `options.sessionToken` **[string]** credentials for the client to utilize
+    -   `options.credentials` **[AWS.Credentials]** [AWS.Credentials](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Credentials.html) object for the client to utilize
     -   `options.logger` **[object]** a writable stream for detailed logging from the aws-sdk. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
     -   `options.maxRetries` **[number]** number of times to retry on retryable errors. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
 
