@@ -344,7 +344,7 @@ function Dyno(options) {
      * 
      * @instanceof
      * @memberof client
-     * @param {object} newObject - the object to update all values within a row of a table
+     * @param {object} newObject - all of this object's properties will be used to update the row in the table 
      * @param {object} updateParams - standard parameters object for a [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) call, ExpressionAttributeNames, ExpressionAttributeValues, and UpdateExpression not reqiured
      * @param {function} callback - a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
      * @returns {Request}

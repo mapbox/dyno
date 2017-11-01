@@ -210,6 +210,19 @@ Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.a
 
 Returns **Request**
 
+## dynamicUpdate
+
+Updates a single record, dynamically generating parts of the update statement from an object.
+Given a new object to update within a table, the necessary parameters to update every key in this new object will be generated.
+
+**Parameters**
+
+-   `newObject` **object** all of this object's properties will be used to update the row in the table
+-   `params` **object** standard update request parameters. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details. ExpressionAttributeNames, ExpressionAttributeValues, and UpdateExpression fields not reqiured
+-   `callback` **[function]** a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
+
+Returns **Request**
+
 # CompleteRequestSet
 
 An array of [AWS.Requests](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html)
