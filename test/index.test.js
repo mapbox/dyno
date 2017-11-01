@@ -27,6 +27,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof dyno.query, 'function', 'exposes query function');
   assert.equal(typeof dyno.scan, 'function', 'exposes scan function');
   assert.equal(typeof dyno.updateItem, 'function', 'exposes updateItem function');
+  assert.equal(typeof dyno.dynamicUpdate, 'function', 'exposes dynamicUpdate function');
   assert.equal(typeof dyno.batchGetItemRequests, 'function', 'exposes batchGetItemRequests function');
   assert.equal(typeof dyno.batchWriteItemRequests, 'function', 'exposes batchWriteItemRequests function');
   assert.equal(typeof dyno.batchGetAll, 'function', 'exposes batchGetAll function');
@@ -50,6 +51,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof read.query, 'function', 'read-only client exposes query function');
   assert.equal(typeof read.scan, 'function', 'read-only client exposes scan function');
   assert.equal(typeof read.updateItem, 'undefined', 'read-only client does not expose updateItem function');
+  assert.equal(typeof read.dynamicUpdate, 'undefined', 'read-only client does not expose dynamicUpdate function');
   assert.equal(typeof read.batchGetItemRequests, 'function', 'read-only client exposes batchGetItemRequests function');
   assert.equal(typeof read.batchWriteItemRequests, 'undefined', 'read-only client does not expose batchWriteItemRequests function');
   assert.equal(typeof read.batchGetAll, 'function', 'read-only client exposes batchGetAll function');
@@ -73,6 +75,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof write.query, 'undefined', 'write-only client does not expose query function');
   assert.equal(typeof write.scan, 'undefined', 'write-only client does not expose scan function');
   assert.equal(typeof write.updateItem, 'function', 'write-only client exposes updateItem function');
+  assert.equal(typeof write.dynamicUpdate, 'function', 'write-only client exposes dynamicUpdate function');
   assert.equal(typeof write.batchGetItemRequests, 'undefined', 'write-only client does not expose batchGetItemRequests function');
   assert.equal(typeof write.batchWriteItemRequests, 'function', 'write-only client exposes batchWriteItemRequests function');
   assert.equal(typeof write.batchGetAll, 'undefined', 'write-only client does not expose batchGetAll function');
@@ -99,6 +102,7 @@ test('[index] expected properties', function(assert) {
   assert.equal(typeof multi.query, 'function', 'multi-client exposes query function');
   assert.equal(typeof multi.scan, 'function', 'multi-client exposes scan function');
   assert.equal(typeof multi.updateItem, 'function', 'multi-client exposes updateItem function');
+  assert.equal(typeof multi.dynamicUpdate, 'function', 'multi-client exposes dynamicUpdate function');
   assert.equal(typeof multi.batchGetItemRequests, 'function', 'exposes batchGetItemRequests function');
   assert.equal(typeof multi.batchWriteItemRequests, 'function', 'exposes batchWriteItemRequests function');
   assert.equal(typeof multi.batchGetAll, 'function', 'exposes batchGetAll function');
