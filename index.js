@@ -364,7 +364,7 @@ function Dyno(options) {
   }
 
   // Glue everything together
-  return _({ config: config, defaultTable: options.tableName }).extend(nativeFunctions, dynoExtensions);
+  return _({ config: config, defaultTable: options.table }).extend(nativeFunctions, dynoExtensions);
 }
 
 /**
