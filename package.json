@@ -3,6 +3,9 @@
   "version": "1.4.1",
   "description": "Simple DynamoDB client",
   "main": "index.js",
+  "engines": {
+    "node": ">=6"
+  },
   "scripts": {
     "pretest": "eslint bin lib test index.js",
     "test": "nyc tape test/*.test.js",
