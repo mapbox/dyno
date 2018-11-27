@@ -27,9 +27,9 @@
     "underscore": "1.6.0"
   },
   "devDependencies": {
+    "@mapbox/dynamodb-test": "^0.3.0",
     "coveralls": "^2.11.2",
     "documentation": "^3.0.0",
-    "dynamodb-test": "^0.2.2",
     "eslint": "^1.4.1",
     "nyc": "^3.2.2",
     "tape": "^4.2.0"
