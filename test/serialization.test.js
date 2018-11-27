@@ -163,6 +163,7 @@ test('[serialization] deserialize string containing falsy set', function(assert)
   var obj = Dyno.deserialize(str);
   assert.deepEqual(obj, {
     set: {
+      wrapperName: 'Set',
       type: 'Number',
       values: [0]
     }

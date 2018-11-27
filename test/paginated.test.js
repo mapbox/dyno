@@ -1,6 +1,6 @@
 var test = require('tape');
 var testTables = require('./test-tables');
-var dynamodb = require('dynamodb-test')(test, 'dyno', testTables['idhash-numrange']);
+var dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables['idhash-numrange']);
 var crypto = require('crypto');
 var _ = require('underscore');
 var Dyno = require('..');

@@ -1,9 +1,9 @@
 var test = require('tape');
 var testTables = require('./test-tables');
-var putTable = require('dynamodb-test')(test, 'dyno', testTables.idhash);
-var scanTable = require('dynamodb-test')(test, 'dyno', testTables.idhash);
-var queryTable = require('dynamodb-test')(test, 'dyno', testTables['idhash-numrange']);
-var liveTable = require('dynamodb-test')(test, 'dyno', testTables.idhash, 'us-east-1');
+var putTable = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
+var scanTable = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
+var queryTable = require('@mapbox/dynamodb-test')(test, 'dyno', testTables['idhash-numrange']);
+var liveTable = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash, 'us-east-1');
 var Dyno = require('..');
 var Stream = require('../lib/stream');
 var _ = require('underscore');
