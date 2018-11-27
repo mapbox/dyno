@@ -1,6 +1,6 @@
 var test = require('tape');
 var testTables = require('./test-tables');
-var mock = require('dynamodb-test')(test, 'dyno', testTables.idhash);
+var mock = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
 var Dyno = require('..');
 var Table = require('../lib/table');
 var _ = require('underscore');

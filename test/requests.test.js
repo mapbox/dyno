@@ -1,8 +1,8 @@
 var AWS = require('aws-sdk');
 var test = require('tape');
 var testTables = require('./test-tables');
-var dynamodb = require('dynamodb-test')(test, 'dyno', testTables.idhash);
-var second = require('dynamodb-test')(test, 'dyno', testTables.idhash);
+var dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
+var second = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
 var Requests = require('../lib/requests');
 var _ = require('underscore');
 var crypto = require('crypto');
