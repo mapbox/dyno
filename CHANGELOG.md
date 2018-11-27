@@ -1,3 +1,8 @@
+## v1.4.2
+
+- pin event-stream to `3.3.4`
+- use @mapbox/dynamodbtest
+
 ## v1.4.0
 
 - updates aws-sdk dependency to `2.x` to help reduce the weight of the aws-sdk in your bundle
