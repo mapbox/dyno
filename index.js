@@ -338,7 +338,18 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
      * @returns a Request if not paginating, or a ReadableStream if multiple pages were requested
      */
-    scan: require('./lib/paginated')(docClient).scan
+    scan: require('./lib/paginated')(docClient).scan,
+    /**
+     * Given a object, generates the necessary parameters to update every key in the new object within a given Dynamo table and executes the update
+     * 
+     * @instanceof
+     * @memberof client
+     * @param {object} newObject - all of this object's properties will be used to update the row in the table 
+     * @param {object} updateParams - standard parameters object for a [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) call, ExpressionAttributeNames, ExpressionAttributeValues, and UpdateExpression not reqiured
+     * @param {function} callback - a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
+     * @returns {Request}
+     */
+    dynamicUpdate: require('./lib/update')(docClient).dynamicUpdate
   };
 
   // Drop specific functions from read/write only clients
@@ -350,6 +361,7 @@ function Dyno(options) {
     delete dynoExtensions.batchWriteItemRequests;
     delete dynoExtensions.batchWriteAll;
     delete dynoExtensions.putStream;
+    delete dynoExtensions.dynamicUpdate;
   }
 
   if (options.write) {
