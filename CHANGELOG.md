@@ -1,3 +1,7 @@
+## v1.5.0
+
+- updates aws-sdk dependency to v2.915+ from v2.7+
+
 ## v1.4.2
 
 - pin event-stream to `3.3.4`
