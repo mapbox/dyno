@@ -24,7 +24,7 @@
     "minimist": "^1.1.0",
     "parallel-stream": "^1.1.2",
     "queue-async": "~1.0.7",
-    "underscore": "1.6.0"
+    "underscore": "^1.13.1"
   },
   "devDependencies": {
     "@mapbox/dynamodb-test": "^0.3.0",
