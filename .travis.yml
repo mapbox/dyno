@@ -4,6 +4,11 @@ node_js:
 - '8'
 - '10'
 sudo: false
+
+before_script:
+- if ! [ -x "$(command -v aws)" ]; then curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" ; unzip awscliv2.zip ; sudo ./aws/install ; fi
+- aws sts get-caller-identity
+
 env:
   global:
   - secure: gPUkYNSfqd4wxsyJ5ef4zpjHKcUBLq6TEVuOtWbFpXFfLJtGBucNbcm5x2QZrhilmcWeeIPRhv4TzAo7PIFeZfaGzWk6ETc8AdD54JQCKvW38kRIHp/WTx5eWYmUg28orLNynjvegOlotG8IQn8zutonTU2iLSjIMsWZUnmZrNI=
