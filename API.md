@@ -158,7 +158,7 @@ DynamoDB in an HTTP request.
 var item = {
  id: 'my-record',
  version: 2,
- data: new Buffer('Hello World!')
+ data: new Buffer.from('Hello World!')
 };
 console.log(Dyno.serialize(item));
 // {"id":{"S":"my-record"},"version":{"N":"2"},"data":{"B":"SGVsbG8gV29ybGQh"}}

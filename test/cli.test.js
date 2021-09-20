@@ -308,7 +308,7 @@ dynamodb.test('[cli] export complicated record', function(assert) {
   var record = {
     id: 'id:1',
     range: 1,
-    buffer: new Buffer('hello world!'),
+    buffer: new Buffer.from('hello world!'),
     array: [0, 1, 2],
     newline: '0\n1'
   };
@@ -331,7 +331,7 @@ dynamodb.test('[cli] import complicated record', function(assert) {
   var expected = {
     id: 'id:1',
     range: 1,
-    buffer: new Buffer('hello world!'),
+    buffer: new Buffer.from('hello world!'),
     array: [0, 1, 2],
     newline: '0\n1'
   };
