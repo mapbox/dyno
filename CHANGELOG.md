@@ -1,8 +1,9 @@
 ## v1.5.0
 
 - drop support for Node 6 & 8
-- add support for Node 12 & 14
+- add support for node 12
 - update critical severity dependencies including eslint, underscore, nyc, documentation, coveralls, minimist
+- remove .travis.yml tests and cloudformation template, run tests with codebuild
 
 ## v1.4.2
 
