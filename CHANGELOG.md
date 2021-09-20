@@ -1,3 +1,9 @@
+## v1.5.0
+
+- drop support for Node 6 & 8
+- add support for Node 12 & 14
+- update critical severity dependencies including eslint, underscore, nyc, documentation, coveralls, minimist
+
 ## v1.4.2
 
 - pin event-stream to `3.3.4`
