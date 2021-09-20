@@ -1,10 +1,6 @@
 language: node_js
 node_js:
-- '6'
-- '8'
 - '10'
+- '12'
+- '14'
 sudo: false
-env:
-  global:
-  - secure: gPUkYNSfqd4wxsyJ5ef4zpjHKcUBLq6TEVuOtWbFpXFfLJtGBucNbcm5x2QZrhilmcWeeIPRhv4TzAo7PIFeZfaGzWk6ETc8AdD54JQCKvW38kRIHp/WTx5eWYmUg28orLNynjvegOlotG8IQn8zutonTU2iLSjIMsWZUnmZrNI=
-  - secure: kfQPDoOevWzbqisNTiiqkF49cRhOXzfdmrA2BnuaiMIjxOxi2PQqjHMxV8vBLoGF6pYbBRQcVddESyW79nuQ7MbCb3Ig8cTHNPJrZFGz9sDLapSTp7B3/aRwFYcr0Fq2hCi4q+qe1D6+AMY9Gn8CZaUO9caDfNcZ1pfK+YZVANk=
