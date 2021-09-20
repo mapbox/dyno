@@ -28,7 +28,7 @@
     "underscore": "^1.13.1"
   },
   "devDependencies": {
-    "@mapbox/dynamodb-test": "^0.3.0",
+    "@mapbox/dynamodb-test": "^0.6.0",
     "documentation": "^13.2.5",
     "eslint": "^7.32.0",
     "nyc": "^15.1.0",
