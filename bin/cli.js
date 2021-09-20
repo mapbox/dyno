@@ -184,6 +184,7 @@ function Importer(withTable) {
       this.pause();
       data.TableName = params.table;
       delete data.TableArn;
+      delete data.TableId;
       dyno.createTable(data, function(err) {
         if (err) throw err;
         this.resume();
