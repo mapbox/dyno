@@ -10,7 +10,7 @@
     "pretest": "eslint bin lib test index.js",
     "test": "nyc tape test/*.test.js",
     "docs": "documentation build index.js -f md > API.md",
-    "coverage": "nyc --reporter=html tape test/*.test.js && open coverage/index.html"
+    "coverage": "nyc report --reporter html && open coverage/index.html"
   },
   "bin": {
     "dyno": "./bin/cli.js"
@@ -28,10 +28,10 @@
   },
   "devDependencies": {
     "@mapbox/dynamodb-test": "^0.3.0",
-    "coveralls": "^2.11.2",
+    "coveralls": "^3.1.1",
     "documentation": "^13.2.5",
     "eslint": "^7.32.0",
-    "nyc": "^3.2.2",
+    "nyc": "^15.1.0",
     "tape": "^4.2.0"
   },
   "repository": {
