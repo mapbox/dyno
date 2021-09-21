@@ -111,15 +111,15 @@ function Dyno(options) {
      * @returns {Request}
      */
     batchGetItem: tableFreeDocClient.batchGet.bind(tableFreeDocClient),
-     /**
-      * Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property).
-      *
-      * @instance
-      * @memberof client
-      * @param {object} params - request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
-      * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
-      * @returns {Request}
-      */
+    /**
+     * Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property).
+     *
+     * @instance
+     * @memberof client
+     * @param {object} params - request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
+     * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
+     * @returns {Request}
+     */
     batchWriteItem: tableFreeDocClient.batchWrite.bind(tableFreeDocClient),
     /**
      * Delete a single record. Passthrough to [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property).
@@ -420,7 +420,7 @@ Dyno.createSet = function(list) {
  * var item = {
  *  id: 'my-record',
  *  version: 2,
- *  data: new Buffer('Hello World!')
+ *  data: new Buffer.from('Hello World!')
  * };
  * console.log(Dyno.serialize(item));
  * // {"id":{"S":"my-record"},"version":{"N":"2"},"data":{"B":"SGVsbG8gV29ybGQh"}}

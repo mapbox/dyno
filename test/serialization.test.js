@@ -4,30 +4,30 @@ var test = require('tape');
 var original = {
   str: 'a string',
   num: 2,
-  bin: new Buffer('a binary'),
+  bin: new Buffer.from('a binary'),
   bool: true,
   nothin: null,
   strSet: Dyno.createSet(['a', 'b', 'c'], 'S'),
   numSet: Dyno.createSet([1, 2, 3], 'N'),
-  binSet: Dyno.createSet([new Buffer('a'), new Buffer('b'), new Buffer('c')], 'B'),
-  list: ['1', 2, new Buffer('three'), false],
+  binSet: Dyno.createSet([new Buffer.from('a'), new Buffer.from('b'), new Buffer.from('c')], 'B'),
+  list: ['1', 2, new Buffer.from('three'), false],
   B: 'a trap',
   map: {
     nested: {
       str: 'a string',
       num: 2,
-      bin: new Buffer('a binary'),
+      bin: new Buffer.from('a binary'),
       bool: true,
       nothin: null,
       strSet: Dyno.createSet(['a', 'b', 'c'], 'S'),
       numSet: Dyno.createSet([1, 2, 3], 'N'),
-      binSet: Dyno.createSet([new Buffer('a'), new Buffer('b'), new Buffer('c')], 'B'),
-      list: ['1', 2, new Buffer('three'), false]
+      binSet: Dyno.createSet([new Buffer.from('a'), new Buffer.from('b'), new Buffer.from('c')], 'B'),
+      list: ['1', 2, new Buffer.from('three'), false]
     }
   },
   trickyMap: {
     SS: [1, 2, 3],
-    BS: ['1', 2, new Buffer('three'), false],
+    BS: ['1', 2, new Buffer.from('three'), false],
     B: Dyno.createSet(['a', 'b', 'c'], 'S')
   }
 };

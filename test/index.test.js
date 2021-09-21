@@ -124,7 +124,7 @@ test('[index] Dyno.createSet always yields a typed set', function(assert) {
 
   assert.equal(Dyno.createSet(['a', 'b']).type, 'String', 'sets string type');
   assert.equal(Dyno.createSet([1, 2]).type, 'Number', 'sets number type');
-  assert.equal(Dyno.createSet([new Buffer('hello')]).type, 'Binary', 'sets buffer type');
+  assert.equal(Dyno.createSet([new Buffer.from('hello')]).type, 'Binary', 'sets buffer type');
   assert.equal(Dyno.createSet(['']).type, 'String', 'sets string type on falsy value');
   assert.equal(Dyno.createSet([0]).type, 'Number', 'sets number type on falsy value');
   assert.deepEqual(convert(Dyno.createSet([0])), { NS: [ '0' ] }, 'set with falsy number value converts to appropriate wire-formatted object');

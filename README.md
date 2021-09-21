@@ -14,7 +14,7 @@ Dyno operates as an extension to the [aws-sdk's DocumentClient](http://docs.aws.
 {
   id: { S: 'my-record' },
   numbers: { L: [{ N: '1' }, { N: '2' }, { N: '3' }] },
-  data: { B: new Buffer('Hello World!') },
+  data: { B: new Buffer.from('Hello World!') },
   version: { N: '5' },
 }
 ```
@@ -25,7 +25,7 @@ Using Dyno, you can represent the same data in a "native" object:
 {
   id: 'my-record',
   numbers: [1, 2, 3],
-  data: new Buffer('Hello World!'),
+  data: new Buffer.from('Hello World!'),
   version: 5
 }
 ```

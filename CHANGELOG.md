@@ -1,3 +1,13 @@
+## v1.5.0
+
+- drop support for Node 6 & 8
+- add support for node 12
+- update critical severity dependencies including eslint, underscore, nyc, documentation, coveralls, minimist
+- remove .travis.yml tests and cloudformation template, run tests with codebuild
+- update @mapbox/dynamodb-test to use the latest dynalite and leveldown packages
+- replace `Buffer()` with `Buffer.from()`
+- automatically remove `TableId` before createTable to support round-tripping requests from `export -> import`
+
 ## v1.4.2
 
 - pin event-stream to `3.3.4`

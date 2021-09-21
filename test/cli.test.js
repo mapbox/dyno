@@ -62,7 +62,8 @@ var expectedTable = {
     CreationDateTime: '[TIMESTAMP]',
     ItemCount: 0,
     TableSizeBytes: 0,
-    TableStatus: 'ACTIVE'
+    TableStatus: 'ACTIVE',
+    // TableId: 'random-hash'
   }
 };
 
@@ -74,7 +75,8 @@ var cleanedTable = _.omit(JSON.parse(JSON.stringify(expectedTable.Table)), [
   'TableSizeBytes',
   'TableStatus',
   'LastDecreaseDateTime',
-  'LastIncreaseDateTime'
+  'LastIncreaseDateTime',
+  'TableId'
 ]);
 
 delete cleanedTable.ProvisionedThroughput.NumberOfDecreasesToday;
@@ -130,6 +132,7 @@ dynamodb.test('[cli] describe table', function(assert) {
     var found = JSON.parse(stdout.trim());
     found.Table.CreationDateTime = '[TIMESTAMP]';
 
+    delete found.Table.TableId; // remove randomly generated TableId hash before testing
     assert.deepEqual(found, expectedTable, 'expected table information printed to stdout');
     assert.end();
   });
@@ -163,6 +166,7 @@ dynamodb.test('[cli] export table', function(assert) {
 
       var table = JSON.parse(results.shift());
 
+      delete table.TableId; // remove randomly generated TableId hash before testing
       assert.deepEqual(table, cleanedTable, 'printed cleaned table definition to stdout');
 
       var expectedRecords = records.map(function(record) {
@@ -308,7 +312,7 @@ dynamodb.test('[cli] export complicated record', function(assert) {
   var record = {
     id: 'id:1',
     range: 1,
-    buffer: new Buffer('hello world!'),
+    buffer: new Buffer.from('hello world!'),
     array: [0, 1, 2],
     newline: '0\n1'
   };
@@ -331,7 +335,7 @@ dynamodb.test('[cli] import complicated record', function(assert) {
   var expected = {
     id: 'id:1',
     range: 1,
-    buffer: new Buffer('hello world!'),
+    buffer: new Buffer.from('hello world!'),
     array: [0, 1, 2],
     newline: '0\n1'
   };
