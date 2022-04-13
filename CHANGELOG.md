@@ -1,3 +1,7 @@
+## v1.5.1
+
+- updates minimist dependency to v1.2.6 from v1.2.5
+
 ## v1.5.0
 
 - drop support for Node 6 & 8
