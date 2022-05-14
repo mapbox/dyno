@@ -1,3 +1,4 @@
+var AWS = require('aws-sdk');
 var test = require('tape');
 var Dyno = require('..');
 
@@ -8,8 +9,11 @@ test('[index] invalid config', function(assert) {
 
   assert.throws(function() {
     Dyno({ table: 'my-table' });
-  }, /region is required/, 'rejects config without region');
+  }, /region is required/, 'rejects config without region when awsConfig not set');
 
+  assert.doesNotThrow(function() {
+    Dyno({ table: 'my-table', awsConfig: new AWS.Config() });
+  }, 'accepts config without region when awsConfig is set');
   assert.end();
 });
 
@@ -157,6 +161,13 @@ test('[index] configuration', function(assert) {
   assert.equal(dyno.config.sessionToken, config.sessionToken, 'sets sessionToken');
   assert.deepEqual(dyno.config.logger, config.logger, 'sets logger');
   assert.equal(dyno.config.maxRetries, config.maxRetries, 'sets maxRetries');
+
+  var awsConfig = new AWS.Config();
+  var awsDyno = Dyno({
+    awsConfig: awsConfig,
+    table: 'my-table'
+  });
+  assert.strictEqual(awsDyno.config, awsConfig, 'uses awsConfig');
 
   var multi = Dyno.multi(
     { table: 'read-table', region: 'us-east-1' },

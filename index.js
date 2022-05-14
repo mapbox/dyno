@@ -6,9 +6,10 @@ module.exports = Dyno;
 
 /**
  * Creates a dyno client. You must provide a table name and the region where the
- * table resides. Where applicable, dyno will use this table as the default in
- * your requests. However you can override this when constructing any individual
- * request.
+ * table resides. Region can be supplied with either the `region` option, or as
+ * a property on the `awsConfig` option. Where applicable, dyno will use this
+ * table as the default in your requests. However you can override this when
+ * constructing any individual request.
  *
  * If you do not explicitly pass credentials when creating a dyno client, the
  * aws-sdk will look for credentials in a variety of places. See [the configuration guide](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html)
@@ -16,7 +17,8 @@ module.exports = Dyno;
  *
  * @param {object} options - configuration parameters
  * @param {string} options.table - the name of the table to interact with by default
- * @param {string} options.region - the region in which the default table resides
+ * @param {object} [options.awsConfig] - an instance of AWS.Config to use in lieu of setting individual options. See [AWS.Config docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html)
+ * @param {string} [options.region] - the region in which the default table resides
  * @param {string} [options.endpoint] - the dynamodb endpoint url
  * @param {object} [options.httpOptions] - httpOptions to provide the aws-sdk client. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {string} [options.accessKeyId] - credentials for the client to utilize
@@ -60,19 +62,24 @@ function Dyno(options) {
    */
 
   if (!options.table) throw new Error('table is required'); // Demand table be specified
-  if (!options.region) throw new Error('region is required');
 
   var config = {
-    region: options.region,
-    endpoint: options.endpoint,
-    params: { TableName: options.table }, // Sets `TableName` in every request
-    httpOptions: options.httpOptions || { timeout: 5000 }, // Default appears to be 2 min
-    accessKeyId: options.accessKeyId,
-    secretAccessKey: options.secretAccessKey,
-    sessionToken: options.sessionToken,
-    logger: options.logger,
-    maxRetries: options.maxRetries
+    params: {
+      TableName: options.table // Sets `TableName` in every request
+    },
+    httpOptions: {
+      timeout: 5000 // Default appears to be 2 min
+    }
   };
+
+  if (!options.awsConfig) {
+    if (!options.region) throw new Error('region is required');
+    Object.assign(config, options);
+  } else {
+    config = options.awsConfig;
+    config.params = config.params || {};
+    config.params.TableName = options.table;
+  }
 
   var client = new AWS.DynamoDB(config);
   var docClient = new AWS.DynamoDB.DocumentClient({ service: client });
