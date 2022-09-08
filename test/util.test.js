@@ -6,7 +6,9 @@ test('[reduceCapacity] parses new data format correctly', function (assert) {
   const src = [{
     TableName: 'db-staging',
     CapacityUnits: 8,
-    Table: { CapacityUnits: 4 },
+    ReadCapacityUnits: 3,
+    WriteCapacityUnits: 1,
+    Table: { CapacityUnits: 4, ReadCapacityUnits: 3, WriteCapacityUnits: 1 },
     GlobalSecondaryIndexes: { 'id-index': { CapacityUnits: 4 } }
   }];
   const dst = {};
@@ -55,5 +57,11 @@ test('[reduceCapacity] merges old data format correctly', function (assert) {
   assert.equal(dst.Table.CapacityUnits, 5);
   assert.equal(dst.GlobalSecondaryIndexes['id-index'].CapacityUnits, 4);
   assert.equal(dst.GlobalSecondaryIndexes['di-index'].CapacityUnits, 4);
+  assert.end();
+});
+
+
+test('[reduceCapacity] does not crash if dst is empty', function (assert) {
+  reduceCapacity(null, []);
   assert.end();
 });
