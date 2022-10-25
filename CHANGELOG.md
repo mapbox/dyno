@@ -1,3 +1,7 @@
+## v1.5.2
+
+- update reduceCapacity to support new data shape [#157](https://github.com/mapbox/dyno/pull/157)
+
 ## v1.5.1
 
 - updates minimist dependency to v1.2.6 from v1.2.5
