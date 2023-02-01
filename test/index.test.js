@@ -15,7 +15,6 @@ test('[index] invalid config', function(assert) {
 
 test('[index] expected properties', function(assert) {
   var dyno = Dyno({ table: 'my-table', region: 'us-east-1' });
-
   assert.equal(typeof dyno.config, 'object', 'exposes config object');
   assert.equal(typeof dyno.listTables, 'function', 'exposes listTables function');
   assert.equal(typeof dyno.describeTable, 'function', 'exposes describeTable function');

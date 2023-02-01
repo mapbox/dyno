@@ -1,6 +1,7 @@
 var AWS = require('aws-sdk');
 var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
 var _ = require('underscore');
+var util = require('./lib/util');
 
 module.exports = Dyno;
 
@@ -24,6 +25,7 @@ module.exports = Dyno;
  * @param {string} [options.sessionToken] - credentials for the client to utilize
  * @param {object} [options.logger] - a writable stream for detailed logging from the aws-sdk. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {number} [options.maxRetries] - number of times to retry on retryable errors. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
+ * @param {function} [options.costLogger] - a function that will be called with consumedCapacity
  * @returns {client} a dyno client
  * @example
  * var Dyno = require('dyno');
@@ -33,7 +35,6 @@ module.exports = Dyno;
  * });
  */
 function Dyno(options) {
-
   /**
    * A dyno client which extends the [aws-sdk's DocumentClient](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html).
    *
@@ -73,11 +74,10 @@ function Dyno(options) {
     logger: options.logger,
     maxRetries: options.maxRetries
   };
-
-  var client = new AWS.DynamoDB(config);
-  var docClient = new AWS.DynamoDB.DocumentClient({ service: client });
+  var client = util.wrapClient(new AWS.DynamoDB(config), options.costLogger);
+  var docClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: new AWS.DynamoDB(config) }), options.costLogger);
   var tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
-  var tableFreeDocClient = new AWS.DynamoDB.DocumentClient({ service: tableFreeClient });
+  var tableFreeDocClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: tableFreeClient }), options.costLogger);
 
   // Straight-up inherit several functions from aws-sdk so we can also inherit docs and tests
   var nativeFunctions = {
@@ -90,7 +90,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
      * @returns {Request}
      */
-    listTables: client.listTables.bind(client),
+    listTables: client.listTables,
     /**
      * Get table information. Passthrough to [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property).
      *
@@ -100,7 +100,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
      * @returns {Request}
      */
-    describeTable: client.describeTable.bind(client),
+    describeTable: client.describeTable,
     /**
      * Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property).
      *
@@ -110,7 +110,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
      * @returns {Request}
      */
-    batchGetItem: tableFreeDocClient.batchGet.bind(tableFreeDocClient),
+    batchGetItem: tableFreeDocClient.batchGet,
     /**
      * Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property).
      *
@@ -120,7 +120,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
      * @returns {Request}
      */
-    batchWriteItem: tableFreeDocClient.batchWrite.bind(tableFreeDocClient),
+    batchWriteItem: tableFreeDocClient.batchWrite,
     /**
      * Delete a single record. Passthrough to [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property).
      *
@@ -130,7 +130,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property) for details.
      * @returns {Request}
      */
-    deleteItem: docClient.delete.bind(docClient),
+    deleteItem: docClient.delete,
     /**
      * Get a single record. Passthrough to [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property).
      *
@@ -140,7 +140,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property) for details.
      * @returns {Request}
      */
-    getItem: docClient.get.bind(docClient),
+    getItem: docClient.get,
     /**
      * Put a single record. Passthrough to [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property).
      *
@@ -150,7 +150,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property) for details.
      * @returns {Request}
      */
-    putItem: docClient.put.bind(docClient),
+    putItem: docClient.put,
     /**
      * Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property).
      *
@@ -160,7 +160,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
      * @returns {Request}
      */
-    updateItem: docClient.update.bind(docClient)
+    updateItem: docClient.update,
   };
 
   /**
@@ -382,7 +382,7 @@ Dyno.multi = function(readOptions, writeOptions) {
   return _({}).extend(write, read, {
     config: { read: read.config, write: write.config },
     createTable: require('./lib/table')(read, write).multiCreate,
-    deleteTable: require('./lib/table')(read, write).multiDelete
+    deleteTable: require('./lib/table')(read, write).multiDelete,
   });
 };
 

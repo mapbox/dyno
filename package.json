@@ -31,6 +31,7 @@
     "documentation": "^13.2.5",
     "eslint": "^7.32.0",
     "nyc": "^15.1.0",
+    "sinon": "^15.0.1",
     "tape": "^4.2.0"
   },
   "repository": {
