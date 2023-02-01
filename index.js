@@ -160,7 +160,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
      * @returns {Request}
      */
-    updateItem: docClient.update,
+    updateItem: docClient.update
   };
 
   /**
@@ -382,7 +382,7 @@ Dyno.multi = function(readOptions, writeOptions) {
   return _({}).extend(write, read, {
     config: { read: read.config, write: write.config },
     createTable: require('./lib/table')(read, write).multiCreate,
-    deleteTable: require('./lib/table')(read, write).multiDelete,
+    deleteTable: require('./lib/table')(read, write).multiDelete
   });
 };
 
