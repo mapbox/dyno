@@ -266,7 +266,7 @@ dynamodb.test('[costLogger] scan', function(assert) {
   });
   const params = {
     TableName: dynamodb.tableName,
-    Page: 1
+    Pages: 1
   };
   dyno.putItem({
     TableName: dynamodb.tableName,
@@ -294,14 +294,13 @@ dynamodb.test('[costLogger] query', function(assert) {
     ExpressionAttributeNames: { '#id': 'id' },
     ExpressionAttributeValues: { ':id': item.id },
     KeyConditionExpression: '#id = :id',
-    // Pages: 1 
+    Pages: 1 
   };
   dyno.putItem({
     TableName: dynamodb.tableName,
     Item: item
   }, function() {
-    dyno.query(params, function(err, res) {
-      console.log(res);
+    dyno.query(params, function(err) {
       assert.notOk(err, 'no error');
       assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 0.5 } }, 'costLoggerStub is called');
       assert.end();
