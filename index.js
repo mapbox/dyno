@@ -74,8 +74,8 @@ function Dyno(options) {
     logger: options.logger,
     maxRetries: options.maxRetries
   };
-  var client = util.wrapClient(new AWS.DynamoDB(config), options.costLogger);
-  var docClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: new AWS.DynamoDB(config) }), options.costLogger);
+  var client = new AWS.DynamoDB(config);
+  var docClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: client }), options.costLogger);
   var tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
   var tableFreeDocClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: tableFreeClient }), options.costLogger);
 
@@ -90,7 +90,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
      * @returns {Request}
      */
-    listTables: client.listTables,
+    listTables: client.listTables.bind(client),
     /**
      * Get table information. Passthrough to [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property).
      *
@@ -100,7 +100,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
      * @returns {Request}
      */
-    describeTable: client.describeTable,
+    describeTable: client.describeTable.bind(client),
     /**
      * Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property).
      *

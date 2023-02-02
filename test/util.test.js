@@ -1,10 +1,26 @@
 /* eslint-env es6 */
 const test = require('tape');
+var _ = require('underscore');
+var crypto = require('crypto');
+
 const reduceCapacity = require('../lib/util').reduceCapacity;
 const requestHandler = require('../lib/util').requestHandler;
-const wrapClient = require('../lib/util').wrapClient;
-const wrapDocClient = require('../lib/util').wrapDocClient;
+// const wrapClient = require('../lib/util').wrapClient;
+// const wrapDocClient = require('../lib/util').wrapDocClient;
 const sinon = require('sinon');
+var Dyno = require('..');
+var testTables = require('./test-tables');
+var dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
+
+function randomItems(num) {
+  return _.range(num).map(function(i) {
+    return {
+      id: i.toString(),
+      range: i,
+      data: crypto.randomBytes(36)
+    };
+  });
+}
 
 test('[reduceCapacity] parses new data format correctly', function (assert) {
   const src = [{
@@ -97,18 +113,6 @@ test ('[requestHandler] ReturnConsumedCapacity param is set as INDEXES', functio
   assert.end();
 });
 
-test ('[requestHandler] costLogger is called with consumedCapacity', function (assert) {
-  const costLogger = sinon.stub();
-  const nativeMethod = function (params, callback) {
-    callback(null, {
-      ConsumedCapacity: 100
-    });
-  };
-  const wrappedMethod = requestHandler(costLogger, nativeMethod, 'Write');
-  wrappedMethod({}, function(){});
-  assert.ok(costLogger.calledOnceWith({ WriteConsumedCapacity: 100 }), 'Get correct consumedCapacity');
-  assert.end();
-});
 
 test ('[requestHandler] do not call costLogger if no consumedCapacity', function (assert) {
   const costLogger = sinon.stub();
@@ -123,103 +127,186 @@ test ('[requestHandler] do not call costLogger if no consumedCapacity', function
   assert.end();
 });
 
-test('[wrapClient] return correct method', function (assert) {
-  const client = {
-    listTables: function(param, callback) { callback(null, {ConsumedCapacity: 100}); },
-    describeTable: function(param, callback) { callback(null, {ConsumedCapacity: 200}); },
-    createTable: function(param, callback) { callback(null, {ConsumedCapacity: 300}); },
-    deleteTable: function(param, callback) { callback(null, {ConsumedCapacity: 400}); },
-    batchGetItem: function(param, callback) { callback(null, {ConsumedCapacity: 500}); },
-    batchWriteItem: function(param, callback) { callback(null, {ConsumedCapacity: 600}); },
-    deleteItem: function(param, callback) { callback(null, {ConsumedCapacity: 700}); },
-    getItem: function(param, callback) { callback(null, {ConsumedCapacity: 800}); },
-  };
+dynamodb.start();
+
+dynamodb.test('[costLogger] client batchGet', function(assert) {
   const costLoggerStub = sinon.stub();
-  const wrappedClient = wrapClient(client, costLoggerStub);
-  const callbackStub = sinon.stub();
-  
-  wrappedClient.listTables({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of listTables is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 100 }), 'costLoggerStub is called');
-
-  wrappedClient.describeTable({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of describeTable is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 200 }), 'costLoggerStub is called');
-
-  wrappedClient.createTable({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of createTable is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 300 }), 'costLoggerStub is called');
-  
-  wrappedClient.deleteTable({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of deleteTable is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 400 }), 'costLoggerStub is called');
-  
-  wrappedClient.batchGetItem({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of batchGetItem is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 500 }), 'costLoggerStub is called');
-  
-  wrappedClient.batchWriteItem({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of batchWriteItem is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 600 }), 'costLoggerStub is called');
-  
-  wrappedClient.deleteItem({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of deleteItem is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 700 }), 'costLoggerStub is called');
-
-  wrappedClient.getItem({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of getItem is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 800 }), 'costLoggerStub is called');
-
-  assert.end();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = {
+    Keys: _.range(10).map(function(i) {
+      return { id: i.toString() };
+    })
+  };
+  dyno.batchGetItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    console.log(costLoggerStub.getCall(0).args);
+    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { ReadCapacityUnits: 5 } }), 'costLoggerStub is called');
+    assert.end();
+  });
 });
 
-test('[wrapDocClient] return correct method', function (assert) {
-  const docClient = {
-    batchGet: function(param, callback) { callback(null, {ConsumedCapacity: 100}); },
-    batchWrite: function(param, callback) { callback(null, {ConsumedCapacity: 200}); },
-    get: function(param, callback) { callback(null, {ConsumedCapacity: 300}); },
-    update: function(param, callback) { callback(null, {ConsumedCapacity: 400}); },
-    put: function(param, callback) { callback(null, {ConsumedCapacity: 500}); },
-    delete: function(param, callback) { callback(null, {ConsumedCapacity: 600}); },
-    query: function(param, callback) { callback(null, {ConsumedCapacity: 700}); },
-    scan: function(param, callback) { callback(null, {ConsumedCapacity: 800}); },
-  };
+dynamodb.test('[costLogger] batchWrite', function(assert) {
   const costLoggerStub = sinon.stub();
-  const wrappedClient = wrapDocClient(docClient, costLoggerStub);
-  const callbackStub = sinon.stub();
-  
-  wrappedClient.batchGet({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of batchGet is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 100 }), 'costLoggerStub is called');
-
-  wrappedClient.batchWrite({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of batchWrite is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 200 }), 'costLoggerStub is called');
-
-  wrappedClient.get({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of get is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 300 }), 'costLoggerStub is called');
-  
-  wrappedClient.update({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of update is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 400 }), 'costLoggerStub is called');
-
-  wrappedClient.put({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of put is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 500 }), 'costLoggerStub is called');
-  
-  wrappedClient.delete({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of delete is called');
-  assert.ok(costLoggerStub.calledWith({ WriteConsumedCapacity: 600 }), 'costLoggerStub is called');
-  
-  
-  wrappedClient.query({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of query is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 700 }), 'costLoggerStub is called');
-  
-  wrappedClient.scan({}, callbackStub);
-  assert.ok(callbackStub.called, 'callback of scan is called');
-  assert.ok(costLoggerStub.calledWith({ ReadConsumedCapacity: 800 }), 'costLoggerStub is called');
-
-  assert.end();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  var records = randomItems(10);
+  var params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return {
+      PutRequest: { Item: item }
+    };
+  });
+  dyno.batchWriteItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    console.log(costLoggerStub.getCall(0).args);
+    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 10 } }), 'costLoggerStub is called');
+    assert.end();
+  });
 });
+
+dynamodb.test('[costLogger] get', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  const params = {
+    TableName: dynamodb.tableName,
+    Key: { id: '1' }
+  };
+  dyno.getItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    console.log(costLoggerStub.getCall(0).args);
+    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { ReadCapacityUnits: 0.5 } }), 'costLoggerStub is called');
+    assert.end();
+  });
+});
+
+dynamodb.test('[costLogger] delete', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  const params = {
+    TableName: dynamodb.tableName,
+    Key: { id: '1' }
+  };
+  dyno.deleteItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    console.log(costLoggerStub.getCall(0).args);
+    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 1 } }), 'costLoggerStub is called');
+    assert.end();
+  });
+});
+
+dynamodb.test('[costLogger] put', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  const params = {
+    TableName: dynamodb.tableName,
+    Item: randomItems(1)[0]
+  };
+  dyno.putItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    console.log(costLoggerStub.getCall(0).args);
+    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 1 } }), 'costLoggerStub is called');
+    assert.end();
+  });
+});
+
+dynamodb.test('[costLogger] update', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  const params = {
+    TableName: dynamodb.tableName,
+    Key: {
+      id: '0'
+    }
+  };
+  dyno.updateItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    console.log(costLoggerStub.getCall(0).args);
+    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 1 } }), 'costLoggerStub is called');
+    assert.end();
+  });
+});
+
+dynamodb.test('[costLogger] scan', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  const params = {
+    TableName: dynamodb.tableName,
+    Page: 1
+  };
+  dyno.putItem({
+    TableName: dynamodb.tableName,
+    Item: randomItems(1)[0]
+  }, function() {
+    dyno.scan(params, function(err) {
+      assert.notOk(err, 'no error');
+      assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 0.5 } }, 'costLoggerStub is called');
+      assert.end();
+    });
+  });
+});
+
+dynamodb.test('[costLogger] query', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  const item = randomItems(1)[0];
+  const params = {
+    TableName: dynamodb.tableName,
+    ExpressionAttributeNames: { '#id': 'id' },
+    ExpressionAttributeValues: { ':id': item.id },
+    KeyConditionExpression: '#id = :id',
+    // Pages: 1 
+  };
+  dyno.putItem({
+    TableName: dynamodb.tableName,
+    Item: item
+  }, function() {
+    dyno.query(params, function(err, res) {
+      console.log(res);
+      assert.notOk(err, 'no error');
+      assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 0.5 } }, 'costLoggerStub is called');
+      assert.end();
+    });
+  });
+});
+dynamodb.delete();
+dynamodb.close();
