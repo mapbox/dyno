@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-env es6 */
 const test = require('tape');
 var _ = require('underscore');
@@ -12,12 +13,12 @@ var Dyno = require('..');
 var testTables = require('./test-tables');
 var dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
 
-function randomItems(num) {
+function randomItems(num, bites) {
   return _.range(num).map(function(i) {
     return {
       id: i.toString(),
       range: i,
-      data: crypto.randomBytes(36)
+      data: crypto.randomBytes(bites || 36)
     };
   });
 }
@@ -145,8 +146,9 @@ dynamodb.test('[costLogger] client batchGet', function(assert) {
   };
   dyno.batchGetItem(params, function(err) {
     assert.notOk(err, 'no error');
-    console.log(costLoggerStub.getCall(0).args);
-    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { ReadCapacityUnits: 5 } }), 'costLoggerStub is called');
+    assert.ok(costLoggerStub.calledWith({ 
+      ConsumedCapacity: { ReadCapacityUnits: 5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+    }), 'costLoggerStub is called');
     assert.end();
   });
 });
@@ -168,8 +170,9 @@ dynamodb.test('[costLogger] batchWrite', function(assert) {
   });
   dyno.batchWriteItem(params, function(err) {
     assert.notOk(err, 'no error');
-    console.log(costLoggerStub.getCall(0).args);
-    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 10 } }), 'costLoggerStub is called');
+    assert.ok(costLoggerStub.calledWith({ 
+      ConsumedCapacity: { WriteCapacityUnits: 10, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+    }), 'costLoggerStub is called');
     assert.end();
   });
 });
@@ -188,8 +191,9 @@ dynamodb.test('[costLogger] get', function(assert) {
   };
   dyno.getItem(params, function(err) {
     assert.notOk(err, 'no error');
-    console.log(costLoggerStub.getCall(0).args);
-    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { ReadCapacityUnits: 0.5 } }), 'costLoggerStub is called');
+    assert.ok(costLoggerStub.calledWith({ 
+      ConsumedCapacity: { ReadCapacityUnits: 0.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+    }), 'costLoggerStub is called');
     assert.end();
   });
 });
@@ -208,8 +212,9 @@ dynamodb.test('[costLogger] delete', function(assert) {
   };
   dyno.deleteItem(params, function(err) {
     assert.notOk(err, 'no error');
-    console.log(costLoggerStub.getCall(0).args);
-    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 1 } }), 'costLoggerStub is called');
+    assert.ok(costLoggerStub.calledWith({ 
+      ConsumedCapacity: { WriteCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+    }), 'costLoggerStub is called');
     assert.end();
   });
 });
@@ -228,8 +233,9 @@ dynamodb.test('[costLogger] put', function(assert) {
   };
   dyno.putItem(params, function(err) {
     assert.notOk(err, 'no error');
-    console.log(costLoggerStub.getCall(0).args);
-    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 1 } }), 'costLoggerStub is called');
+    assert.ok(costLoggerStub.calledWith({ 
+      ConsumedCapacity: { WriteCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+    }), 'costLoggerStub is called');
     assert.end();
   });
 });
@@ -250,8 +256,9 @@ dynamodb.test('[costLogger] update', function(assert) {
   };
   dyno.updateItem(params, function(err) {
     assert.notOk(err, 'no error');
-    console.log(costLoggerStub.getCall(0).args);
-    assert.ok(costLoggerStub.calledWith({ ConsumedCapacity: { WriteCapacityUnits: 1 } }), 'costLoggerStub is called');
+    assert.ok(costLoggerStub.calledWith({ 
+      ConsumedCapacity: { WriteCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+    }), 'costLoggerStub is called');
     assert.end();
   });
 });
@@ -274,7 +281,9 @@ dynamodb.test('[costLogger] scan', function(assert) {
   }, function() {
     dyno.scan(params, function(err) {
       assert.notOk(err, 'no error');
-      assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 0.5 } }, 'costLoggerStub is called');
+      assert.deepEqual(costLoggerStub.getCall(1).args[0], 
+        { ConsumedCapacity: { ReadCapacityUnits: 0.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null  } }, 
+        'costLoggerStub is called');
       assert.end();
     });
   });
@@ -302,7 +311,40 @@ dynamodb.test('[costLogger] query', function(assert) {
   }, function() {
     dyno.query(params, function(err) {
       assert.notOk(err, 'no error');
-      assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 0.5 } }, 'costLoggerStub is called');
+      assert.deepEqual(costLoggerStub.getCall(1).args[0], 
+        { ConsumedCapacity: { ReadCapacityUnits: 0.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null  } }, 
+        'costLoggerStub is called');
+      assert.end();
+    });
+  });
+});
+
+dynamodb.test('[costLogger] scan', function(assert) {
+  const costLoggerStub = sinon.stub();
+  var dyno = Dyno({
+    table: dynamodb.tableName,
+    region: 'local',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLoggerStub
+  });
+  var records = randomItems(25, 50000);
+  var writeParams = { RequestItems: {} };
+  writeParams.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return {
+      PutRequest: { Item: item }
+    };
+  });
+  const scanParams = {
+    TableName: dynamodb.tableName,
+    Pages: 5
+  };
+  dyno.batchWriteItem(writeParams, function(writeError) {
+    assert.notOk(writeError, 'no write error');
+    dyno.scan(scanParams, function(err) {
+      assert.notOk(err, 'no scan error');
+      assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 128.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } }, 'costLoggerStub is called');
+      assert.deepEqual(costLoggerStub.getCall(2).args[0], { ConsumedCapacity: { ReadCapacityUnits: 24.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } }, 'costLoggerStub is called');
+      assert.notOk(costLoggerStub.getCall(3), 'not called');
       assert.end();
     });
   });
