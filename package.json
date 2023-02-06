@@ -8,7 +8,7 @@
   },
   "scripts": {
     "pretest": "eslint bin lib test index.js",
-    "test": "nyc tape test/util.test.js",
+    "test": "nyc tape test/*.test.js",
     "docs": "documentation build index.js -f md > API.md",
     "coverage": "nyc report --reporter html && open coverage/index.html"
   },

@@ -6,12 +6,18 @@ var crypto = require('crypto');
 
 const reduceCapacity = require('../lib/util').reduceCapacity;
 const requestHandler = require('../lib/util').requestHandler;
-// const wrapClient = require('../lib/util').wrapClient;
-// const wrapDocClient = require('../lib/util').wrapDocClient;
+const castIndexesCapacity = require('../lib/util').castIndexesCapacity;
 const sinon = require('sinon');
 var Dyno = require('..');
 var testTables = require('./test-tables');
 var dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
+var fixtures = _.range(500).map(function(i) {
+  return {
+    id: i.toString(),
+    range: i,
+    data: crypto.randomBytes(5 * 1024)
+  };
+});
 
 function randomItems(num, bites) {
   return _.range(num).map(function(i) {
@@ -128,9 +134,29 @@ test ('[requestHandler] do not call costLogger if no consumedCapacity', function
   assert.end();
 });
 
+test('[castIndexesCapacity] cast indexes correctly', function(assert) {
+  const indexes = {
+    'create-index': {
+      CapacityUnits: 100
+    },
+    'delete-index': {
+      WriteCapacityUnits: 200
+    }
+  };
+  assert.deepEqual(castIndexesCapacity(indexes, 'WriteCapacityUnits'), {
+    'create-index': {
+      WriteCapacityUnits: 100
+    },
+    'delete-index': {
+      WriteCapacityUnits: 200
+    }
+  }, 'Casted correctly');
+  assert.end();
+});
+
 dynamodb.start();
 
-dynamodb.test('[costLogger] client batchGet', function(assert) {
+dynamodb.test('[costLogger] client batchGet', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -147,7 +173,7 @@ dynamodb.test('[costLogger] client batchGet', function(assert) {
   dyno.batchGetItem(params, function(err) {
     assert.notOk(err, 'no error');
     assert.ok(costLoggerStub.calledWith({ 
-      ConsumedCapacity: { ReadCapacityUnits: 5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+      ConsumedCapacity: { ReadCapacityUnits: 10, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
     }), 'costLoggerStub is called');
     assert.end();
   });
@@ -177,7 +203,7 @@ dynamodb.test('[costLogger] batchWrite', function(assert) {
   });
 });
 
-dynamodb.test('[costLogger] get', function(assert) {
+dynamodb.test('[costLogger] get', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -192,13 +218,13 @@ dynamodb.test('[costLogger] get', function(assert) {
   dyno.getItem(params, function(err) {
     assert.notOk(err, 'no error');
     assert.ok(costLoggerStub.calledWith({ 
-      ConsumedCapacity: { ReadCapacityUnits: 0.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+      ConsumedCapacity: { ReadCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
     }), 'costLoggerStub is called');
     assert.end();
   });
 });
 
-dynamodb.test('[costLogger] delete', function(assert) {
+dynamodb.test('[costLogger] delete', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -213,13 +239,13 @@ dynamodb.test('[costLogger] delete', function(assert) {
   dyno.deleteItem(params, function(err) {
     assert.notOk(err, 'no error');
     assert.ok(costLoggerStub.calledWith({ 
-      ConsumedCapacity: { WriteCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+      ConsumedCapacity: { WriteCapacityUnits: 6, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
     }), 'costLoggerStub is called');
     assert.end();
   });
 });
 
-dynamodb.test('[costLogger] put', function(assert) {
+dynamodb.test('[costLogger] put', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -234,13 +260,13 @@ dynamodb.test('[costLogger] put', function(assert) {
   dyno.putItem(params, function(err) {
     assert.notOk(err, 'no error');
     assert.ok(costLoggerStub.calledWith({ 
-      ConsumedCapacity: { WriteCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+      ConsumedCapacity: { WriteCapacityUnits: 6, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
     }), 'costLoggerStub is called');
     assert.end();
   });
 });
 
-dynamodb.test('[costLogger] update', function(assert) {
+dynamodb.test('[costLogger] update', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -257,13 +283,13 @@ dynamodb.test('[costLogger] update', function(assert) {
   dyno.updateItem(params, function(err) {
     assert.notOk(err, 'no error');
     assert.ok(costLoggerStub.calledWith({ 
-      ConsumedCapacity: { WriteCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
+      ConsumedCapacity: { WriteCapacityUnits: 6, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } 
     }), 'costLoggerStub is called');
     assert.end();
   });
 });
 
-dynamodb.test('[costLogger] scan', function(assert) {
+dynamodb.test('[costLogger] scan 1 page', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -275,21 +301,17 @@ dynamodb.test('[costLogger] scan', function(assert) {
     TableName: dynamodb.tableName,
     Pages: 1
   };
-  dyno.putItem({
-    TableName: dynamodb.tableName,
-    Item: randomItems(1)[0]
-  }, function() {
-    dyno.scan(params, function(err) {
-      assert.notOk(err, 'no error');
-      assert.deepEqual(costLoggerStub.getCall(1).args[0], 
-        { ConsumedCapacity: { ReadCapacityUnits: 0.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null  } }, 
-        'costLoggerStub is called');
-      assert.end();
-    });
+  dyno.scan(params, function(err) {
+    assert.notOk(err, 'no error');
+    assert.deepEqual(costLoggerStub.getCall(0).args[0], 
+      { ConsumedCapacity: { ReadCapacityUnits: 127.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null  } }, 
+      'costLoggerStub is called');
+    assert.notOk(costLoggerStub.getCall(1), 'only called 1 time'); 
+    assert.end();
   });
 });
 
-dynamodb.test('[costLogger] query', function(assert) {
+dynamodb.test('[costLogger] query 1 page', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -305,21 +327,17 @@ dynamodb.test('[costLogger] query', function(assert) {
     KeyConditionExpression: '#id = :id',
     Pages: 1 
   };
-  dyno.putItem({
-    TableName: dynamodb.tableName,
-    Item: item
-  }, function() {
-    dyno.query(params, function(err) {
-      assert.notOk(err, 'no error');
-      assert.deepEqual(costLoggerStub.getCall(1).args[0], 
-        { ConsumedCapacity: { ReadCapacityUnits: 0.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null  } }, 
-        'costLoggerStub is called');
-      assert.end();
-    });
+  dyno.query(params, function(err) {
+    assert.notOk(err, 'no error');
+    assert.deepEqual(costLoggerStub.getCall(0).args[0], 
+      { ConsumedCapacity: { ReadCapacityUnits: 1, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null  } }, 
+      'costLoggerStub is called');
+    assert.notOk(costLoggerStub.getCall(1), 'only called 1 time'); 
+    assert.end();
   });
 });
 
-dynamodb.test('[costLogger] scan', function(assert) {
+dynamodb.test('[costLogger] scan', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   var dyno = Dyno({
     table: dynamodb.tableName,
@@ -327,26 +345,16 @@ dynamodb.test('[costLogger] scan', function(assert) {
     endpoint: 'http://localhost:4567',
     costLogger: costLoggerStub
   });
-  var records = randomItems(25, 50000);
-  var writeParams = { RequestItems: {} };
-  writeParams.RequestItems[dynamodb.tableName] = records.map(function(item) {
-    return {
-      PutRequest: { Item: item }
-    };
-  });
   const scanParams = {
     TableName: dynamodb.tableName,
     Pages: 5
   };
-  dyno.batchWriteItem(writeParams, function(writeError) {
-    assert.notOk(writeError, 'no write error');
-    dyno.scan(scanParams, function(err) {
-      assert.notOk(err, 'no scan error');
-      assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 128.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } }, 'costLoggerStub is called');
-      assert.deepEqual(costLoggerStub.getCall(2).args[0], { ConsumedCapacity: { ReadCapacityUnits: 24.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } }, 'costLoggerStub is called');
-      assert.notOk(costLoggerStub.getCall(3), 'not called');
-      assert.end();
-    });
+  dyno.scan(scanParams, function(err) {
+    assert.notOk(err, 'no scan error');
+    assert.deepEqual(costLoggerStub.getCall(1).args[0], { ConsumedCapacity: { ReadCapacityUnits: 127.5, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } }, 'costLoggerStub is called');
+    assert.deepEqual(costLoggerStub.getCall(2).args[0], { ConsumedCapacity: { ReadCapacityUnits: 59, GlobalSecondaryIndexes: null, LocalSecondaryIndexes: null } }, 'costLoggerStub is called');
+    assert.notOk(costLoggerStub.getCall(3), 'called 2 times');
+    assert.end();
   });
 });
 dynamodb.delete();
