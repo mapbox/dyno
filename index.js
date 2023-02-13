@@ -34,7 +34,7 @@ module.exports = Dyno;
  *   region: 'us-east-1'
  * });
  */
-function Dyno(options) {
+function Dyno(options, dynoInstance) {
   /**
    * A dyno client which extends the [aws-sdk's DocumentClient](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html).
    *
@@ -59,25 +59,44 @@ function Dyno(options) {
    * be present if the `ReturnConsumedCapacity` parameter was set on the initial
    * request.
    */
+  var client;
+  var docClient;
+  var tableFreeClient;
+  var tableFreeDocClient;
+  var config = {};
 
-  if (!options.table) throw new Error('table is required'); // Demand table be specified
-  if (!options.region) throw new Error('region is required');
+  // Reuse DynamoDB Client
+  if (dynoInstance && dynoInstance.client) {
+    client = dynoInstance.client;
+    docClient = dynoInstance.docClient;
+    tableFreeClient = dynoInstance.tableFreeClient;
+    tableFreeDocClient = dynoInstance.tableFreeDocClient;
+    config = dynoInstance.config;
+  } else {
+    if (!options.table) throw new Error('table is required'); // Demand table be specified
+    if (!options.region) throw new Error('region is required');
 
-  var config = {
-    region: options.region,
-    endpoint: options.endpoint,
-    params: { TableName: options.table }, // Sets `TableName` in every request
-    httpOptions: options.httpOptions || { timeout: 5000 }, // Default appears to be 2 min
-    accessKeyId: options.accessKeyId,
-    secretAccessKey: options.secretAccessKey,
-    sessionToken: options.sessionToken,
-    logger: options.logger,
-    maxRetries: options.maxRetries
-  };
-  var client = new AWS.DynamoDB(config);
-  var docClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: client }), options.costLogger);
-  var tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
-  var tableFreeDocClient = util.wrapDocClient(new AWS.DynamoDB.DocumentClient({ service: tableFreeClient }), options.costLogger);
+    config = {
+      region: options.region,
+      endpoint: options.endpoint,
+      params: { TableName: options.table }, // Sets `TableName` in every request
+      httpOptions: options.httpOptions || { timeout: 5000 }, // Default appears to be 2 min
+      accessKeyId: options.accessKeyId,
+      secretAccessKey: options.secretAccessKey,
+      sessionToken: options.sessionToken,
+      logger: options.logger,
+      maxRetries: options.maxRetries
+    };
+    
+    client = new AWS.DynamoDB(config);
+    docClient = new AWS.DynamoDB.DocumentClient({ service: client });
+    tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
+    tableFreeDocClient = new AWS.DynamoDB.DocumentClient({ service: tableFreeClient });
+
+  }
+  
+  var wrappedDocClient = util.wrapDocClient(docClient, options.costLogger);
+  var wrappedTableFreeDocClient = util.wrapDocClient(tableFreeDocClient, options.costLogger);
 
   // Straight-up inherit several functions from aws-sdk so we can also inherit docs and tests
   var nativeFunctions = {
@@ -110,7 +129,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
      * @returns {Request}
      */
-    batchGetItem: tableFreeDocClient.batchGet,
+    batchGetItem: wrappedTableFreeDocClient.batchGet,
     /**
      * Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property).
      *
@@ -120,7 +139,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
      * @returns {Request}
      */
-    batchWriteItem: tableFreeDocClient.batchWrite,
+    batchWriteItem: wrappedTableFreeDocClient.batchWrite,
     /**
      * Delete a single record. Passthrough to [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property).
      *
@@ -130,7 +149,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property) for details.
      * @returns {Request}
      */
-    deleteItem: docClient.delete,
+    deleteItem: wrappedDocClient.delete,
     /**
      * Get a single record. Passthrough to [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property).
      *
@@ -140,7 +159,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property) for details.
      * @returns {Request}
      */
-    getItem: docClient.get,
+    getItem: wrappedDocClient.get,
     /**
      * Put a single record. Passthrough to [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property).
      *
@@ -150,7 +169,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property) for details.
      * @returns {Request}
      */
-    putItem: docClient.put,
+    putItem: wrappedDocClient.put,
     /**
      * Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property).
      *
@@ -160,7 +179,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
      * @returns {Request}
      */
-    updateItem: docClient.update
+    updateItem: wrappedDocClient.update
   };
 
   /**
@@ -226,7 +245,7 @@ function Dyno(options) {
      * @param {object} params - unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
      * @returns {RequestSet}
      */
-    batchGetItemRequests: require('./lib/requests')(docClient).batchGetItemRequests,
+    batchGetItemRequests: require('./lib/requests')(wrappedDocClient).batchGetItemRequests,
     /**
      * Break a large batch of write operations into a set of requests that can be
      * sent individually or concurrently.
@@ -236,7 +255,7 @@ function Dyno(options) {
      * @param {object} params - unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
      * @returns {RequestSet}
      */
-    batchWriteItemRequests: require('./lib/requests')(docClient).batchWriteItemRequests,
+    batchWriteItemRequests: require('./lib/requests')(wrappedDocClient).batchWriteItemRequests,
     /**
      * Break a large batch of get operations into a set of requests that are intended
      * to be sent concurrently.
@@ -246,7 +265,7 @@ function Dyno(options) {
      * @param {object} params - unbounded batchGetItem request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
      * @returns {CompleteRequestSet}
      */
-    batchGetAll: require('./lib/requests')(docClient).batchGetAll,
+    batchGetAll: require('./lib/requests')(wrappedDocClient).batchGetAll,
     /**
      * Break a large batch of write operations into a set of requests that are intended
      * to be sent concurrently.
@@ -256,7 +275,7 @@ function Dyno(options) {
      * @param {object} params - unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
      * @returns {CompleteRequestSet}
      */
-    batchWriteAll: require('./lib/requests')(docClient).batchWriteAll,
+    batchWriteAll: require('./lib/requests')(wrappedDocClient).batchWriteAll,
     /**
      * Create a table. Passthrough to [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property),
      * except the function polls DynamoDB until the table is ready to accept
@@ -291,7 +310,7 @@ function Dyno(options) {
      * @param {object} params - query request parameters. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
      * @returns {ReadableStream}
      */
-    queryStream: require('./lib/stream')(docClient).query,
+    queryStream: require('./lib/stream')(wrappedDocClient).query,
     /**
      * Provide the results of a scan as a [Readable Stream](https://nodejs.org/api/stream.html#stream_class_stream_readable).
      * This function will paginate through query responses, making HTTP requests
@@ -302,7 +321,7 @@ function Dyno(options) {
      * @param {object} params - scan request parameters. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
      * @returns {ReadableStream}
      */
-    scanStream: require('./lib/stream')(docClient).scan,
+    scanStream: require('./lib/stream')(wrappedDocClient).scan,
     /**
      * Creates a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable).
      * Writing individual records to the stream will aggregate them into sets of
@@ -316,7 +335,7 @@ function Dyno(options) {
      * on outgoing BatchWriteItem requests.
      * @returns a [Writable stream](https://nodejs.org/api/stream.html#stream_class_stream_writable)
      */
-    putStream: require('./lib/stream')(docClient, options.table).put,
+    putStream: require('./lib/stream')(wrappedDocClient, options.table).put,
     /**
      * Query a table or secondary index. Passthrough to [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property).
      *
@@ -327,7 +346,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.query](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property) for details.
      * @returns a Request if not paginating, or a ReadableStream if multiple pages were requested
      */
-    query: require('./lib/paginated')(docClient).query,
+    query: require('./lib/paginated')(wrappedDocClient).query,
     /**
      * Scan a table or secondary index. Passthrough to [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property).
      *
@@ -338,7 +357,7 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DocumentClient.scan](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property) for details.
      * @returns a Request if not paginating, or a ReadableStream if multiple pages were requested
      */
-    scan: require('./lib/paginated')(docClient).scan
+    scan: require('./lib/paginated')(wrappedDocClient).scan
   };
 
   // Drop specific functions from read/write only clients
@@ -364,7 +383,14 @@ function Dyno(options) {
   }
 
   // Glue everything together
-  return _({ config: config, defaultTable: options.tableName }).extend(nativeFunctions, dynoExtensions);
+  return _({
+    config: config,
+    defaultTable: options.tableName,
+    client: client,
+    docClient: docClient,
+    tableFreeClient: tableFreeClient,
+    tableFreeDocClient: tableFreeDocClient,
+  }).extend(nativeFunctions, dynoExtensions);
 }
 
 /**

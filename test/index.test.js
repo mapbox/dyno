@@ -170,3 +170,24 @@ test('[index] configuration', function(assert) {
 
   assert.end();
 });
+
+test('[index] reuse client', function(assert) {
+  var config = {
+    table: 'my-table',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567',
+    httpOptions: { timeout: 1000 },
+    accessKeyId: 'access',
+    secretAccessKey: 'secret',
+    sessionToken: 'session',
+    logger: console,
+    maxRetries: 10,
+    extra: 'crap'
+  };
+
+  var dyno = Dyno(config);
+  var dyno2 = Dyno(config, dyno);
+  assert.equal(dyno.client, dyno2.client, 'client is reused');
+  assert.equal(dyno.config, dyno2.config, 'config is reused');
+  assert.end();
+});

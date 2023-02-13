@@ -1,6 +1,7 @@
 ## v1.6.0
 
-- Support to pass a `costLogger` which will be called with casted `ConsumedCapacity`
+- Support passing a `costLogger` which will be called with casted `ConsumedCapacity`
+- Support reusing DynamoDB Client by passing `dynoInstance` 
 
 ## v1.5.2
 

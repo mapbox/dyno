@@ -120,6 +120,7 @@ test('[cli] no table specified', function(assert) {
 dynamodb.test('[cli] list tables', function(assert) {
   runCli(['tables', 'local'], function(err, stdout) {
     assert.ifError(err, 'cli success');
+    console.log(err);
     assert.ok((new RegExp(dynamodb.tableName)).test(stdout), 'printed table name');
     assert.end();
   });

@@ -134,6 +134,49 @@ test ('[requestHandler] do not call costLogger if no consumedCapacity', function
   assert.end();
 });
 
+test ('[requestHandler] return correct Time - non Stream', function (assert) {
+  const costLogger = sinon.stub();
+  const timerStub = sinon.stub(Date, 'now');
+  timerStub.onFirstCall().returns(1000).onSecondCall().returns(1100);
+
+  const nativeMethod = function (params, callback) {
+    callback(null, {
+      ConsumedCapacity: 100
+    });
+  };
+  const wrappedMethod = requestHandler(costLogger, nativeMethod, 'Write');
+  wrappedMethod({}, function(){});
+  timerStub.restore();
+  assert.equal(costLogger.getCall(0).args[0].ConsumedCapacity.Time, 100, 'Consumed Time is 100');
+  assert.end();
+});
+
+test ('[requestHandler] return correct Time - Stream', function (assert) {
+  const costLogger = sinon.stub();
+  const timerStub = sinon.stub(Date, 'now');
+  timerStub
+    .onFirstCall()
+    .returns(1000)
+    .onSecondCall()
+    .returns(1100)
+    .onThirdCall()
+    .returns(1300);
+
+  const nativeMethod = function () {
+    return {
+      send: function (callback) {
+        callback(null, { ConsumedCapacity: 100 });
+      }
+    };
+  };
+  const wrappedMethod = requestHandler(costLogger, nativeMethod, 'Write');
+  wrappedMethod({}).send();
+  assert.equal(costLogger.getCall(0).args[0].ConsumedCapacity.Time, 200, 'Consumed Time is 200');
+  assert.end();
+  timerStub.restore();
+  
+});
+
 test('[castIndexesCapacity] cast indexes correctly', function(assert) {
   const indexes = {
     'create-index': {
