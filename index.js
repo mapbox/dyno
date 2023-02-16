@@ -26,6 +26,7 @@ module.exports = Dyno;
  * @param {object} [options.logger] - a writable stream for detailed logging from the aws-sdk. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {number} [options.maxRetries] - number of times to retry on retryable errors. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {function} [options.costLogger] - a function that will be called with consumedCapacity
+ * @param {Dyno} [dynoInstance] - a Dyno instance that will share the underlying AWS client with the this one
  * @returns {client} a dyno client
  * @example
  * var Dyno = require('dyno');
