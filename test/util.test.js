@@ -1,17 +1,16 @@
-/* eslint-disable no-unused-vars */
 /* eslint-env es6 */
 const test = require('tape');
-var _ = require('underscore');
-var crypto = require('crypto');
+const _ = require('underscore');
+const crypto = require('crypto');
 
 const reduceCapacity = require('../lib/util').reduceCapacity;
 const requestHandler = require('../lib/util').requestHandler;
 const castIndexesCapacity = require('../lib/util').castIndexesCapacity;
 const sinon = require('sinon');
-var Dyno = require('..');
-var testTables = require('./test-tables');
-var dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
-var fixtures = _.range(500).map(function(i) {
+const Dyno = require('..');
+const testTables = require('./test-tables');
+const dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
+const fixtures = _.range(500).map(function(i) {
   return {
     id: i.toString(),
     range: i,
@@ -202,13 +201,13 @@ dynamodb.start();
 dynamodb.test('[costLogger] client batchGet', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
     costLogger: costLoggerStub
   });
-  var params = { RequestItems: {} };
+  const params = { RequestItems: {} };
   params.RequestItems[dynamodb.tableName] = {
     Keys: _.range(10).map(function(i) {
       return { id: i.toString() };
@@ -227,14 +226,14 @@ dynamodb.test('[costLogger] client batchGet', fixtures, function(assert) {
 dynamodb.test('[costLogger] batchWrite', function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
     costLogger: costLoggerStub
   });
-  var records = randomItems(10);
-  var params = { RequestItems: {} };
+  const records = randomItems(10);
+  const params = { RequestItems: {} };
   params.RequestItems[dynamodb.tableName] = records.map(function(item) {
     return {
       PutRequest: { Item: item }
@@ -253,7 +252,7 @@ dynamodb.test('[costLogger] batchWrite', function(assert) {
 dynamodb.test('[costLogger] get', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
@@ -276,7 +275,7 @@ dynamodb.test('[costLogger] get', fixtures, function(assert) {
 dynamodb.test('[costLogger] delete', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
@@ -299,7 +298,7 @@ dynamodb.test('[costLogger] delete', fixtures, function(assert) {
 dynamodb.test('[costLogger] put', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
@@ -322,7 +321,7 @@ dynamodb.test('[costLogger] put', fixtures, function(assert) {
 dynamodb.test('[costLogger] update', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
@@ -347,7 +346,7 @@ dynamodb.test('[costLogger] update', fixtures, function(assert) {
 dynamodb.test('[costLogger] scan 1 page', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
@@ -371,7 +370,7 @@ dynamodb.test('[costLogger] scan 1 page', fixtures, function(assert) {
 dynamodb.test('[costLogger] query 1 page', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',
@@ -399,7 +398,7 @@ dynamodb.test('[costLogger] query 1 page', fixtures, function(assert) {
 dynamodb.test('[costLogger] scan', fixtures, function(assert) {
   const costLoggerStub = sinon.stub();
   const timeStub = sinon.stub(Date, 'now').returns(10000);
-  var dyno = Dyno({
+  const dyno = Dyno({
     table: dynamodb.tableName,
     region: 'local',
     endpoint: 'http://localhost:4567',

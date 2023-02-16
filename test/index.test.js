@@ -1,5 +1,11 @@
+/* eslint-env es6 */
 var test = require('tape');
 var Dyno = require('..');
+const _ = require('underscore');
+const crypto = require('crypto');
+const sinon = require('sinon');
+const testTables = require('./test-tables');
+const dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
 
 test('[index] invalid config', function(assert) {
   assert.throws(function() {
@@ -172,22 +178,64 @@ test('[index] configuration', function(assert) {
 });
 
 test('[index] reuse client', function(assert) {
-  var config = {
+  const costLogger1 = sinon.stub();
+  const costLogger2 = sinon.stub();
+  const options = {
     table: 'my-table',
     region: 'us-east-1',
     endpoint: 'http://localhost:4567',
-    httpOptions: { timeout: 1000 },
-    accessKeyId: 'access',
-    secretAccessKey: 'secret',
-    sessionToken: 'session',
-    logger: console,
-    maxRetries: 10,
-    extra: 'crap'
+    costLogger: costLogger1
   };
 
-  var dyno = Dyno(config);
-  var dyno2 = Dyno(config, dyno);
+  const dyno = Dyno(options);
+  const dyno2 = Dyno({costLogger: costLogger2}, dyno);
   assert.equal(dyno.client, dyno2.client, 'client is reused');
   assert.equal(dyno.config, dyno2.config, 'config is reused');
   assert.end();
 });
+
+dynamodb.start();
+dynamodb.test('different costLoggers are called', function(assert) {
+  const costLogger1 = sinon.stub();
+  const costLogger2 = sinon.stub();
+  const options = {
+    table: 'my-table',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLogger1
+  };
+  function randomItems(num, bites) {
+    return _.range(num).map(function(i) {
+      return {
+        id: i.toString(),
+        range: i,
+        data: crypto.randomBytes(bites || 36)
+      };
+    });
+  }
+  const records = randomItems(10);
+  const params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return {
+      PutRequest: { Item: item }
+    };
+  });
+  const dyno = Dyno(options);
+  const dyno2 = Dyno({costLogger: costLogger2}, dyno);
+  
+  dyno.batchWriteItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    assert.ok(costLogger1.called, 'costLoggerStub1 is called');
+    assert.notOk(costLogger2.called, 'costLoggerStub2 is not called');
+    dyno2.batchWriteItem(params, function() {
+      assert.notOk(err, 'no error');
+      assert.ok(costLogger2.called, 'costLoggerStub2 is called');
+      assert.ok(costLogger1.calledOnce, 'costLoggerStub1 is called only once');
+      assert.end();
+    });
+  });
+});
+
+dynamodb.delete();
+dynamodb.close();
+

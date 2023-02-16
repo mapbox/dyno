@@ -1,7 +1,8 @@
+/* eslint-env es6 */
 var AWS = require('aws-sdk');
 var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
 var _ = require('underscore');
-var util = require('./lib/util');
+const util = require('./lib/util');
 
 module.exports = Dyno;
 
@@ -60,11 +61,11 @@ function Dyno(options, dynoInstance) {
    * be present if the `ReturnConsumedCapacity` parameter was set on the initial
    * request.
    */
-  var client;
-  var docClient;
-  var tableFreeClient;
-  var tableFreeDocClient;
-  var config = {};
+  let client;
+  let docClient;
+  let tableFreeClient;
+  let tableFreeDocClient;
+  let config = {};
 
   // Reuse DynamoDB Client
   if (dynoInstance && dynoInstance.client) {
@@ -96,8 +97,8 @@ function Dyno(options, dynoInstance) {
 
   }
   
-  var wrappedDocClient = util.wrapDocClient(docClient, options.costLogger);
-  var wrappedTableFreeDocClient = util.wrapDocClient(tableFreeDocClient, options.costLogger);
+  const wrappedDocClient = util.wrapDocClient(docClient, options.costLogger);
+  const wrappedTableFreeDocClient = util.wrapDocClient(tableFreeDocClient, options.costLogger);
 
   // Straight-up inherit several functions from aws-sdk so we can also inherit docs and tests
   var nativeFunctions = {
