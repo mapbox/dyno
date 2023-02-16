@@ -194,6 +194,20 @@ test('[index] reuse client', function(assert) {
   assert.end();
 });
 
+test('[index] costLogger should be only option', function(assert) {
+  const options = {
+    table: 'my-table',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567'
+  };
+
+  const dyno = Dyno(options);
+  assert.throws(function() {
+    Dyno({table: 'my-table'}, dyno);
+  }, /costLogger should be only option when AWS client is reused/, 'rejects option other than costLogger');
+  assert.end();
+});
+
 dynamodb.start();
 dynamodb.test('different costLoggers are called', function(assert) {
   const costLogger1 = sinon.stub();

@@ -69,6 +69,9 @@ function Dyno(options, dynoInstance) {
 
   // Reuse DynamoDB Client
   if (dynoInstance && dynoInstance.client) {
+    if (Object.keys(options).length !== 1 || Object.keys(options)[0] !== 'costLogger') {
+      throw new Error('costLogger should be only option when AWS client is reused');
+    }
     client = dynoInstance.client;
     docClient = dynoInstance.docClient;
     tableFreeClient = dynoInstance.tableFreeClient;
