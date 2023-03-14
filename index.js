@@ -27,7 +27,7 @@ module.exports = Dyno;
  * @param {object} [options.logger] - a writable stream for detailed logging from the aws-sdk. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {number} [options.maxRetries] - number of times to retry on retryable errors. See [constructor docs for details](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property).
  * @param {function} [options.costLogger] - a function that will be called with consumedCapacity
- * @param {Dyno} [dynoInstance] - a Dyno instance that will share the underlying AWS client with the this one
+ * @param {Dyno} [options.dynoInstance] - a Dyno instance that will share the underlying AWS client with this one
  * @returns {client} a dyno client
  * @example
  * var Dyno = require('dyno');
@@ -36,7 +36,7 @@ module.exports = Dyno;
  *   region: 'us-east-1'
  * });
  */
-function Dyno(options, dynoInstance) {
+function Dyno(options) {
   /**
    * A dyno client which extends the [aws-sdk's DocumentClient](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html).
    *
@@ -61,6 +61,10 @@ function Dyno(options, dynoInstance) {
    * be present if the `ReturnConsumedCapacity` parameter was set on the initial
    * request.
    */
+  if (!options) {
+    throw new Error('options is required');
+  }
+
   let client;
   let docClient;
   let tableFreeClient;
@@ -68,9 +72,10 @@ function Dyno(options, dynoInstance) {
   let config = {};
 
   // Reuse DynamoDB Client
-  if (dynoInstance && dynoInstance.client) {
-    if (Object.keys(options).length !== 1 || Object.keys(options)[0] !== 'costLogger') {
-      throw new Error('costLogger should be only option when AWS client is reused');
+  if (options.dynoInstance && options.dynoInstance.client) {
+    const dynoInstance = options.dynoInstance;
+    if (Object.keys(options).some(o => ['region', 'endpoint', 'table'].includes(o))) {
+      throw new Error('No need to provide DynamoDB config when reusing Dynamodb client');
     }
     client = dynoInstance.client;
     docClient = dynoInstance.docClient;
@@ -412,6 +417,8 @@ Dyno.multi = function(readOptions, writeOptions) {
 
   return _({}).extend(write, read, {
     config: { read: read.config, write: write.config },
+    read: read,
+    write: write,
     createTable: require('./lib/table')(read, write).multiCreate,
     deleteTable: require('./lib/table')(read, write).multiDelete
   });
