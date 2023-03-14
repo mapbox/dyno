@@ -1,3 +1,8 @@
+## v1.6.0
+
+- Support passing a `costLogger` which will be called with casted `ConsumedCapacity`
+- Support reusing DynamoDB Client by passing `dynoInstance` 
+
 ## v1.5.2
 
 - update reduceCapacity to support new data shape [#157](https://github.com/mapbox/dyno/pull/157)

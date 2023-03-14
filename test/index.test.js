@@ -1,5 +1,11 @@
+/* eslint-env es6 */
 var test = require('tape');
 var Dyno = require('..');
+const _ = require('underscore');
+const crypto = require('crypto');
+const sinon = require('sinon');
+const testTables = require('./test-tables');
+const dynamodb = require('@mapbox/dynamodb-test')(test, 'dyno', testTables.idhash);
 
 test('[index] invalid config', function(assert) {
   assert.throws(function() {
@@ -170,3 +176,110 @@ test('[index] configuration', function(assert) {
 
   assert.end();
 });
+
+test('[index] reuse client', function(assert) {
+  const costLogger1 = sinon.stub();
+  const costLogger2 = sinon.stub();
+  const options = {
+    table: 'my-table',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLogger1
+  };
+
+  const dyno = Dyno(options);
+  const dyno2 = Dyno({costLogger: costLogger2, dynoInstance: dyno});
+  assert.equal(dyno._client, dyno2._client, 'client is reused');
+  assert.equal(dyno.config, dyno2.config, 'config is reused');
+  assert.end();
+});
+
+test('[index] reuse client in multi method', function(assert) {
+  const costLogger1 = sinon.stub();
+  const costLogger2 = sinon.stub();
+  const readOptions = {
+    table: 'my-table-read',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:1234',
+    costLogger: costLogger1
+  };
+
+  const writeOptions = {
+    table: 'my-table-write',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLogger1
+  };
+
+
+  const multiDyno = Dyno.multi(readOptions, writeOptions);
+  const multiDyno2 = Dyno.multi(
+    { costLogger: costLogger2, dynoInstance: multiDyno.read },
+    { costLogger: costLogger2, dynoInstance: multiDyno.write }
+  );
+  assert.equal(multiDyno.config.read, multiDyno2.config.read, 'read config is reused');
+  assert.equal(multiDyno.config.write, multiDyno2.config.write, 'write config is reused');
+  assert.equal(multiDyno.read._client, multiDyno2.read._client, 'read client is reused');
+  assert.equal(multiDyno.write.client, multiDyno2.write.client, 'write client is reused');
+  assert.end();
+});
+
+test('[index] reject DynamoDB config when reusing client', function(assert) {
+  const options = {
+    table: 'my-table',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567'
+  };
+
+  const dyno = Dyno(options);
+  assert.throws(function() {
+    Dyno({table: 'my-table', dynoInstance: dyno});
+  }, /No need to provide DynamoDB config when reusing Dynamodb client/, 'rejects dynamodb config');
+  assert.end();
+});
+
+dynamodb.start();
+dynamodb.test('different costLoggers are called', function(assert) {
+  const costLogger1 = sinon.stub();
+  const costLogger2 = sinon.stub();
+  const options = {
+    table: 'my-table',
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567',
+    costLogger: costLogger1
+  };
+  function randomItems(num, bites) {
+    return _.range(num).map(function(i) {
+      return {
+        id: i.toString(),
+        range: i,
+        data: crypto.randomBytes(bites || 36)
+      };
+    });
+  }
+  const records = randomItems(10);
+  const params = { RequestItems: {} };
+  params.RequestItems[dynamodb.tableName] = records.map(function(item) {
+    return {
+      PutRequest: { Item: item }
+    };
+  });
+  const dyno = Dyno(options);
+  const dyno2 = Dyno({costLogger: costLogger2, dynoInstance: dyno});
+  
+  dyno.batchWriteItem(params, function(err) {
+    assert.notOk(err, 'no error');
+    assert.ok(costLogger1.called, 'costLoggerStub1 is called');
+    assert.notOk(costLogger2.called, 'costLoggerStub2 is not called');
+    dyno2.batchWriteItem(params, function() {
+      assert.notOk(err, 'no error');
+      assert.ok(costLogger2.called, 'costLoggerStub2 is called');
+      assert.ok(costLogger1.calledOnce, 'costLoggerStub1 is called only once');
+      assert.end();
+    });
+  });
+});
+
+dynamodb.delete();
+dynamodb.close();
+
