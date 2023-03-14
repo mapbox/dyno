@@ -72,15 +72,15 @@ function Dyno(options) {
   let config = {};
 
   // Reuse DynamoDB Client
-  if (options.dynoInstance && options.dynoInstance.client) {
+  if (options.dynoInstance && options.dynoInstance._client) {
     const dynoInstance = options.dynoInstance;
     if (Object.keys(options).some(o => ['region', 'endpoint', 'table'].includes(o))) {
       throw new Error('No need to provide DynamoDB config when reusing Dynamodb client');
     }
-    client = dynoInstance.client;
-    docClient = dynoInstance.docClient;
-    tableFreeClient = dynoInstance.tableFreeClient;
-    tableFreeDocClient = dynoInstance.tableFreeDocClient;
+    client = dynoInstance._client;
+    docClient = dynoInstance._docClient;
+    tableFreeClient = dynoInstance._tableFreeClient;
+    tableFreeDocClient = dynoInstance._tableFreeDocClient;
     config = dynoInstance.config;
   } else {
     if (!options.table) throw new Error('table is required'); // Demand table be specified
@@ -396,10 +396,10 @@ function Dyno(options) {
   return _({
     config: config,
     defaultTable: options.tableName,
-    client: client,
-    docClient: docClient,
-    tableFreeClient: tableFreeClient,
-    tableFreeDocClient: tableFreeDocClient,
+    _client: client,
+    _docClient: docClient,
+    _tableFreeClient: tableFreeClient,
+    _tableFreeDocClient: tableFreeDocClient,
   }).extend(nativeFunctions, dynoExtensions);
 }
 

@@ -189,7 +189,7 @@ test('[index] reuse client', function(assert) {
 
   const dyno = Dyno(options);
   const dyno2 = Dyno({costLogger: costLogger2, dynoInstance: dyno});
-  assert.equal(dyno.client, dyno2.client, 'client is reused');
+  assert.equal(dyno._client, dyno2._client, 'client is reused');
   assert.equal(dyno.config, dyno2.config, 'config is reused');
   assert.end();
 });
@@ -219,7 +219,7 @@ test('[index] reuse client in multi method', function(assert) {
   );
   assert.equal(multiDyno.config.read, multiDyno2.config.read, 'read config is reused');
   assert.equal(multiDyno.config.write, multiDyno2.config.write, 'write config is reused');
-  assert.equal(multiDyno.read.client, multiDyno2.read.client, 'read client is reused');
+  assert.equal(multiDyno.read._client, multiDyno2.read._client, 'read client is reused');
   assert.equal(multiDyno.write.client, multiDyno2.write.client, 'write client is reused');
   assert.end();
 });
