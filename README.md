@@ -1,6 +1,16 @@
-## Dyno
+# Dyno
 
 [![Build Status](https://travis-ci.org/mapbox/dyno.svg?branch=master)](https://travis-ci.org/mapbox/dyno)
+
+- [Dyno](#dyno)
+  - [Overview](#overview)
+    - [Native JavaScript objects](#native-javascript-objects)
+    - [Streaming query and scan results](#streaming-query-and-scan-results)
+    - [Chunked batch getItem and writeItem requests](#chunked-batch-getitem-and-writeitem-requests)
+    - [Multi-table client](#multi-table-client)
+    - [De/serialization](#deserialization)
+    - [Command-line interface](#command-line-interface)
+  - [Documentation](#documentation)
 
 Dyno provides a DynamoDB client that adds additional functionality beyond what is provided by the
 [aws-sdk-js](https://github.com/aws/aws-sdk-js).
