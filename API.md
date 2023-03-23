@@ -16,46 +16,46 @@
     *   [deserialize][12]
         *   [Parameters][13]
         *   [Examples][14]
-*   [Request][15]
-*   [ReadableStream][16]
-    *   [Properties][17]
-*   [client][18]
-    *   [listTables][19]
-        *   [Parameters][20]
-    *   [describeTable][21]
-        *   [Parameters][22]
-    *   [batchGetItem][23]
-        *   [Parameters][24]
-    *   [batchWriteItem][25]
-        *   [Parameters][26]
-    *   [deleteItem][27]
-        *   [Parameters][28]
-    *   [getItem][29]
-        *   [Parameters][30]
-    *   [putItem][31]
-        *   [Parameters][32]
-    *   [updateItem][33]
-        *   [Parameters][34]
-    *   [batchGetItemRequests][35]
-        *   [Parameters][36]
-    *   [batchWriteItemRequests][37]
-        *   [Parameters][38]
-    *   [batchGetAll][39]
-        *   [Parameters][40]
-    *   [batchWriteAll][41]
-        *   [Parameters][42]
-    *   [createTable][43]
-        *   [Parameters][44]
-    *   [deleteTable][45]
-        *   [Parameters][46]
-    *   [queryStream][47]
-        *   [Parameters][48]
-    *   [scanStream][49]
-        *   [Parameters][50]
-    *   [query][51]
-        *   [Parameters][52]
-    *   [scan][53]
-        *   [Parameters][54]
+*   [client][15]
+    *   [listTables][16]
+        *   [Parameters][17]
+    *   [describeTable][18]
+        *   [Parameters][19]
+    *   [batchGetItem][20]
+        *   [Parameters][21]
+    *   [batchWriteItem][22]
+        *   [Parameters][23]
+    *   [deleteItem][24]
+        *   [Parameters][25]
+    *   [getItem][26]
+        *   [Parameters][27]
+    *   [putItem][28]
+        *   [Parameters][29]
+    *   [updateItem][30]
+        *   [Parameters][31]
+    *   [batchGetItemRequests][32]
+        *   [Parameters][33]
+    *   [batchWriteItemRequests][34]
+        *   [Parameters][35]
+    *   [batchGetAll][36]
+        *   [Parameters][37]
+    *   [batchWriteAll][38]
+        *   [Parameters][39]
+    *   [createTable][40]
+        *   [Parameters][41]
+    *   [deleteTable][42]
+        *   [Parameters][43]
+    *   [queryStream][44]
+        *   [Parameters][45]
+    *   [scanStream][46]
+        *   [Parameters][47]
+    *   [query][48]
+        *   [Parameters][49]
+    *   [scan][50]
+        *   [Parameters][51]
+*   [Request][52]
+*   [ReadableStream][53]
+    *   [Properties][54]
 *   [RequestSet][55]
     *   [sendAll][56]
         *   [Parameters][57]
@@ -66,6 +66,16 @@
     *   [Parameters][62]
 *   [reduceCapacity][63]
     *   [Parameters][64]
+*   [castIndexesCapacity][65]
+    *   [Parameters][66]
+*   [callCostLogger][67]
+    *   [Parameters][68]
+*   [requestHandler][69]
+    *   [Parameters][70]
+*   [getMethodType][71]
+    *   [Parameters][72]
+*   [wrapDocClient][73]
+    *   [Parameters][74]
 
 ## Dyno
 
@@ -75,22 +85,24 @@ your requests. However you can override this when constructing any individual
 request.
 
 If you do not explicitly pass credentials when creating a dyno client, the
-aws-sdk will look for credentials in a variety of places. See [the configuration guide][65]
+aws-sdk will look for credentials in a variety of places. See [the configuration guide][75]
 for details.
 
 ### Parameters
 
-*   `options` **[object][66]** configuration parameters
+*   `options` **[object][76]** configuration parameters
 
-    *   `options.table` **[string][67]** the name of the table to interact with by default
-    *   `options.region` **[string][67]** the region in which the default table resides
-    *   `options.endpoint` **[string][67]?** the dynamodb endpoint url
-    *   `options.httpOptions` **[object][66]?** httpOptions to provide the aws-sdk client. See [constructor docs for details][68].
-    *   `options.accessKeyId` **[string][67]?** credentials for the client to utilize
-    *   `options.secretAccessKey` **[string][67]?** credentials for the client to utilize
-    *   `options.sessionToken` **[string][67]?** credentials for the client to utilize
-    *   `options.logger` **[object][66]?** a writable stream for detailed logging from the aws-sdk. See [constructor docs for details][68].
-    *   `options.maxRetries` **[number][69]?** number of times to retry on retryable errors. See [constructor docs for details][68].
+    *   `options.table` **[string][77]** the name of the table to interact with by default
+    *   `options.region` **[string][77]** the region in which the default table resides
+    *   `options.endpoint` **[string][77]?** the dynamodb endpoint url
+    *   `options.httpOptions` **[object][76]?** httpOptions to provide the aws-sdk client. See [constructor docs for details][78].
+    *   `options.accessKeyId` **[string][77]?** credentials for the client to utilize
+    *   `options.secretAccessKey` **[string][77]?** credentials for the client to utilize
+    *   `options.sessionToken` **[string][77]?** credentials for the client to utilize
+    *   `options.logger` **[object][76]?** a writable stream for detailed logging from the aws-sdk. See [constructor docs for details][78].
+    *   `options.maxRetries` **[number][79]?** number of times to retry on retryable errors. See [constructor docs for details][78].
+    *   `options.costLogger` **[function][80]?** a function that will be called with consumedCapacity
+    *   `options.dynoInstance` **[Dyno][1]?** a Dyno instance that will share the underlying AWS client with this one
 
 ### Examples
 
@@ -102,7 +114,7 @@ var dyno = Dyno({
 });
 ```
 
-Returns **[client][70]** a dyno client
+Returns **[client][15]** a dyno client
 
 ### multi
 
@@ -110,8 +122,8 @@ Provides a dyno client capable of reading from one table and writing to another.
 
 #### Parameters
 
-*   `readOptions` **[object][66]** configuration parameters for the read table.
-*   `writeOptions` **[object][66]** configuration parameters for the write table.
+*   `readOptions` **[object][76]** configuration parameters for the read table.
+*   `writeOptions` **[object][76]** configuration parameters for the write table.
 
 Returns **dyno** a dyno client.
 
@@ -122,7 +134,7 @@ as `List` type attributes. Use this function to utilize a `Set` instead.
 
 #### Parameters
 
-*   `list` **[array][71]** an array of strings, numbers, or buffers to store in
+*   `list` **[array][81]** an array of strings, numbers, or buffers to store in
     DynamoDB as a set
 
 #### Examples
@@ -141,7 +153,7 @@ var asNumberSet = {
 };
 ```
 
-Returns **[object][66]** a DynamoDB set
+Returns **[object][76]** a DynamoDB set
 
 ### serialize
 
@@ -150,7 +162,7 @@ DynamoDB in an HTTP request.
 
 #### Parameters
 
-*   `item` **[object][66]** a JavaScript object representing a DynamoDB record
+*   `item` **[object][76]** a JavaScript object representing a DynamoDB record
 
 #### Examples
 
@@ -164,7 +176,7 @@ console.log(Dyno.serialize(item));
 // {"id":{"S":"my-record"},"version":{"N":"2"},"data":{"B":"SGVsbG8gV29ybGQh"}}
 ```
 
-Returns **[string][67]** the serialized representation of the record
+Returns **[string][77]** the serialized representation of the record
 
 ### deserialize
 
@@ -172,7 +184,7 @@ Convert a wire-formatted string into a JavaScript object
 
 #### Parameters
 
-*   `str` **[string][67]** the serialized representation of a DynamoDB record
+*   `str` **[string][77]** the serialized representation of a DynamoDB record
 
 #### Examples
 
@@ -186,117 +198,99 @@ console.log(Dyno.deserialize(str));
 // }
 ```
 
-Returns **[object][66]** a JavaScript object representing the record
-
-## Request
-
-An object representing an aws-sdk request. See [aws-sdk's documentation for details][72]
-
-## ReadableStream
-
-A Node.js Readable Stream. See [node.js documentation for details][73].
-This is an `objectMode = true` stream, where each object emitted is a single
-DynamoDB record.
-
-### Properties
-
-*   `ConsumedCapacity` **[object][66]** once the stream has begun making requests,
-    the `ConsumedCapacity` parameter will report the total capacity consumed by
-    the aggregate of all requests that have completed. This property will only
-    be present if the `ReturnConsumedCapacity` parameter was set on the initial
-    request.
+Returns **[object][76]** a JavaScript object representing the record
 
 ## client
 
-A dyno client which extends the [aws-sdk's DocumentClient][74].
+A dyno client which extends the [aws-sdk's DocumentClient][82].
 
 ### listTables
 
-List the tables available in a given region. Passthrough to [DynamoDB.listTables][75].
+List the tables available in a given region. Passthrough to [DynamoDB.listTables][83].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DynamoDB.listTables][75] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DynamoDB.listTables][75] for details.
+*   `params` **[object][76]** request parameters. See [DynamoDB.listTables][83] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DynamoDB.listTables][83] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### describeTable
 
-Get table information. Passthrough to [DynamoDB.describeTable][78].
+Get table information. Passthrough to [DynamoDB.describeTable][84].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DynamoDB.describeTable][79] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DynamoDB.describeTable][79] for details.
+*   `params` **[object][76]** request parameters. See [DynamoDB.describeTable][85] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DynamoDB.describeTable][85] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### batchGetItem
 
-Perform a batch of get operations. Passthrough to [DocumentClient.batchGet][80].
+Perform a batch of get operations. Passthrough to [DocumentClient.batchGet][86].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.batchGet][80] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.batchGet][80] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.batchGet][86] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.batchGet][86] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### batchWriteItem
 
-Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite][81].
+Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite][87].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.batchWrite][81] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.batchWrite][81] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.batchWrite][87] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.batchWrite][87] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### deleteItem
 
-Delete a single record. Passthrough to [DocumentClient.delete][82].
+Delete a single record. Passthrough to [DocumentClient.delete][88].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.delete][82] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.delete][82] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.delete][88] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.delete][88] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### getItem
 
-Get a single record. Passthrough to [DocumentClient.get][83].
+Get a single record. Passthrough to [DocumentClient.get][89].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.get][83] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.get][83] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.get][89] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.get][89] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### putItem
 
-Put a single record. Passthrough to [DocumentClient.put][84].
+Put a single record. Passthrough to [DocumentClient.put][90].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.put][84] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.put][84] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.put][90] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.put][90] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### updateItem
 
-Update a single record. Passthrough to [DocumentClient.update][85].
+Update a single record. Passthrough to [DocumentClient.update][91].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.update][85] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.update][85] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.update][91] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.update][91] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### batchGetItemRequests
 
@@ -305,9 +299,9 @@ sent individually or concurrently.
 
 #### Parameters
 
-*   `params` **[object][66]** unbounded batchGetItem request parameters. See [DocumentClient.batchGet][80] for details.
+*   `params` **[object][76]** unbounded batchGetItem request parameters. See [DocumentClient.batchGet][86] for details.
 
-Returns **[RequestSet][86]** 
+Returns **[RequestSet][55]**&#x20;
 
 ### batchWriteItemRequests
 
@@ -316,9 +310,9 @@ sent individually or concurrently.
 
 #### Parameters
 
-*   `params` **[object][66]** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite][81] for details.
+*   `params` **[object][76]** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite][87] for details.
 
-Returns **[RequestSet][86]** 
+Returns **[RequestSet][55]**&#x20;
 
 ### batchGetAll
 
@@ -327,9 +321,9 @@ to be sent concurrently.
 
 #### Parameters
 
-*   `params` **[object][66]** unbounded batchGetItem request parameters. See [DocumentClient.batchGet][80] for details.
+*   `params` **[object][76]** unbounded batchGetItem request parameters. See [DocumentClient.batchGet][86] for details.
 
-Returns **[CompleteRequestSet][87]** 
+Returns **[CompleteRequestSet][58]**&#x20;
 
 ### batchWriteAll
 
@@ -338,89 +332,107 @@ to be sent concurrently.
 
 #### Parameters
 
-*   `params` **[object][66]** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite][81] for details.
+*   `params` **[object][76]** unbounded batchWriteItem request parameters. See [DocumentClient.batchWrite][87] for details.
 
-Returns **[CompleteRequestSet][87]** 
+Returns **[CompleteRequestSet][58]**&#x20;
 
 ### createTable
 
-Create a table. Passthrough to [DynamoDB.createTable][88],
+Create a table. Passthrough to [DynamoDB.createTable][92],
 except the function polls DynamoDB until the table is ready to accept
 reads and writes, at which point the callback function is called.
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DynamoDB.createTable][88] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DynamoDB.createTable][88] for details.
+*   `params` **[object][76]** request parameters. See [DynamoDB.createTable][92] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DynamoDB.createTable][92] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### deleteTable
 
-Delete a table. Passthrough to [DynamoDB.deleteTable][89],
+Delete a table. Passthrough to [DynamoDB.deleteTable][93],
 except the function polls DynamoDB until the table is ready to accept
 reads and writes, at which point the callback function is called.
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DynamoDB.deleteTable][89] for details.
-*   `callback` **[function][76]?** a function to handle the response. See [DynamoDB.deleteTable][89] for details.
+*   `params` **[object][76]** request parameters. See [DynamoDB.deleteTable][93] for details.
+*   `callback` **[function][80]?** a function to handle the response. See [DynamoDB.deleteTable][93] for details.
 
-Returns **[Request][77]** 
+Returns **[Request][52]**&#x20;
 
 ### queryStream
 
-Provide the results of a query as a [Readable Stream][73].
+Provide the results of a query as a [Readable Stream][94].
 This function will paginate through query responses, making HTTP requests
 as the caller reads from the stream.
 
 #### Parameters
 
-*   `params` **[object][66]** query request parameters. See [DocumentClient.query][90] for details.
+*   `params` **[object][76]** query request parameters. See [DocumentClient.query][95] for details.
 
-Returns **[ReadableStream][91]** 
+Returns **[ReadableStream][53]**&#x20;
 
 ### scanStream
 
-Provide the results of a scan as a [Readable Stream][73].
+Provide the results of a scan as a [Readable Stream][94].
 This function will paginate through query responses, making HTTP requests
 as the caller reads from the stream.
 
 #### Parameters
 
-*   `params` **[object][66]** scan request parameters. See [DocumentClient.scan][92] for details.
+*   `params` **[object][76]** scan request parameters. See [DocumentClient.scan][96] for details.
 
-Returns **[ReadableStream][91]** 
+Returns **[ReadableStream][53]**&#x20;
 
 ### query
 
-Query a table or secondary index. Passthrough to [DocumentClient.query][90].
+Query a table or secondary index. Passthrough to [DocumentClient.query][95].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.query][90] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.query][95] for details.
 
-    *   `params.Pages` **[number][69]** maximum number of pages of query results to request. Set to `Infinity` to return all available data. (optional, default `1`)
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.query][90] for details.
+    *   `params.Pages` **[number][79]** maximum number of pages of query results to request. Set to `Infinity` to return all available data. (optional, default `1`)
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.query][95] for details.
 
 Returns **any** a Request if not paginating, or a ReadableStream if multiple pages were requested
 
 ### scan
 
-Scan a table or secondary index. Passthrough to [DocumentClient.scan][92].
+Scan a table or secondary index. Passthrough to [DocumentClient.scan][96].
 
 #### Parameters
 
-*   `params` **[object][66]** request parameters. See [DocumentClient.scan][92] for details.
+*   `params` **[object][76]** request parameters. See [DocumentClient.scan][96] for details.
 
-    *   `params.Pages` **[number][69]** maximum number of pages of scan results to request. Set to `Infinity` to return all available data. (optional, default `1`)
-*   `callback` **[function][76]?** a function to handle the response. See [DocumentClient.scan][92] for details.
+    *   `params.Pages` **[number][79]** maximum number of pages of scan results to request. Set to `Infinity` to return all available data. (optional, default `1`)
+*   `callback` **[function][80]?** a function to handle the response. See [DocumentClient.scan][96] for details.
 
 Returns **any** a Request if not paginating, or a ReadableStream if multiple pages were requested
 
+## Request
+
+An object representing an aws-sdk request. See [aws-sdk's documentation for details][97]
+
+## ReadableStream
+
+A Node.js Readable Stream. See [node.js documentation for details][94].
+This is an `objectMode = true` stream, where each object emitted is a single
+DynamoDB record.
+
+### Properties
+
+*   `ConsumedCapacity` **[object][76]** once the stream has begun making requests,
+    the `ConsumedCapacity` parameter will report the total capacity consumed by
+    the aggregate of all requests that have completed. This property will only
+    be present if the `ReturnConsumedCapacity` parameter was set on the initial
+    request.
+
 ## RequestSet
 
-An array of [AWS.Requests][72]
+An array of [AWS.Requests][97]
 
 ### sendAll
 
@@ -431,28 +443,23 @@ request in the set.
 The callback function will be passed arguments in this order:
 
 *   error: set to null if no errors occurred, otherwise an array of errors with
-
-indexes that correspond to the indexes of the original request set
-
+    indexes that correspond to the indexes of the original request set
 *   responses: always an array of responses equal with indexes corresponding
-
-to the original request set. If a particular request encountered an error,
-that index in the `responses` array will be set to `null`.
-
+    to the original request set. If a particular request encountered an error,
+    that index in the `responses` array will be set to `null`.
 *   unprocessed: set to null if no unprocessed results were detected, otherwise
-
-a new set of requests with its own .sendAll function bound to it. Again,
-indexes correspond to those in the original request set.
+    a new set of requests with its own .sendAll function bound to it. Again,
+    indexes correspond to those in the original request set.
 
 #### Parameters
 
-*   `concurrency` **[number][69]?** the concurrency with which to make requests.
+*   `concurrency` **[number][79]?** the concurrency with which to make requests.
     Default value is `1`.
-*   `callback` **[function][76]** a function to handle the response.
+*   `callback` **[function][80]** a function to handle the response.
 
 ## CompleteRequestSet
 
-An array of [AWS.Requests][72]
+An array of [AWS.Requests][97]
 
 ### sendAll
 
@@ -467,37 +474,89 @@ the outcome from successful requests.
 
 #### Parameters
 
-*   `concurrency` **[number][69]?** the concurrency with which to make requests.
+*   `concurrency` **[number][79]?** the concurrency with which to make requests.
     Default value is `1`.
-*   `callback` **[function][76]** a function to handle the response.
+*   `callback` **[function][80]** a function to handle the response.
 
 ## putStream
 
-Creates a [Writable stream][93].
+Creates a [Writable stream][98].
 Writing individual records to the stream will aggregate them into sets of
 25 items and submit them as `BatchWriteItem` requests.
 
 ### Parameters
 
-*   `options` **[object][66]** stream options. See [Writable stream documentation][94]
+*   `options` **[object][76]** stream options. See [Writable stream documentation][99]
     for available options. The stream **will always** set `objectMode: true` for you.
 
-    *   `options.concurrency` **[number][69]** set the maximum desired concurrency for
+    *   `options.concurrency` **[number][79]** set the maximum desired concurrency for
         outgoing BatchWriteItem requests. (optional, default `1`)
-    *   `options.retry` **[function][76]?** sets the provided function as a [retry event listener][95]
+    *   `options.retry` **[function][80]?** sets the provided function as a [retry event listener][100]
         on outgoing BatchWriteItem requests.
 
-Returns **any** a [Writable stream][93]
+Returns **any** a [Writable stream][98]
 
 ## reduceCapacity
 
 Reduce two sets of consumed capacity metrics into a single object
+This should be in sync with Callback Parameters section of
+[https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property][101]
 
 ### Parameters
 
-*   `existing` **[object][66]** capacity. This object will be updated.
-*   `incoming`  
-*   `new` **[object][66]** capacity object to be added to the existing object.
+*   `existing` **[object][76]** capacity. This object will be updated.
+*   `incoming` &#x20;
+*   `new` **([object][76] | [array][81])** capacity object(s) to be added to the existing object.
+
+## castIndexesCapacity
+
+Cast CapacityUnits to ReadCapacityUnits or WriteCapacityUnits based on the cast type
+
+### Parameters
+
+*   `indexes` **[Object][76]** GlobalSecondaryIndexes or LocalSecondaryIndexes see [https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API\_ConsumedCapacity.html#DDB-Type-ConsumedCapacity-GlobalSecondaryIndexes][102]
+*   `castKey` **[string][77]** ReadCapacityUnits | WriteCapacityUnits
+
+## callCostLogger
+
+Call the costLogger function configured in the options with consumed CapacityUnits
+
+### Parameters
+
+*   `res` **[object][76]** The response of dynamoDB request
+*   `type` **[string][77]** Read | Write
+*   `costLogger` **[function][80]** configured in the options
+*   `Time` **[number][79]** the time consumed
+
+## requestHandler
+
+Wrap the native method of DynamoDB to call the costLogger in the callback.
+If no costLogger is provided, just return the native method directly
+
+### Parameters
+
+*   `costLogger` **[function][80]** The function that will be called with casted consumedCapacity
+*   `nativeMethod` **[function][80]** The native method of dynamoDB
+*   `type` **[string][77]** Indicate the method consumes Read or Write capacity
+
+## getMethodType
+
+Get if a method is a write or read method
+
+### Parameters
+
+*   `fnName` **[string][77]**&#x20;
+
+Returns **any** Write|Read
+
+## wrapDocClient
+
+Wrap all methods used of DynamoDB DocumentClient with requestHandler
+
+### Parameters
+
+*   `client` **[object][76]** DynamoDB DocumentClient
+*   `costLogger` **[function][80]** The function that will be called with casted consumedCapacity
 
 [1]: #dyno
 
@@ -527,85 +586,85 @@ Reduce two sets of consumed capacity metrics into a single object
 
 [14]: #examples-3
 
-[15]: #request
+[15]: #client
 
-[16]: #readablestream
+[16]: #listtables
 
-[17]: #properties
+[17]: #parameters-5
 
-[18]: #client
+[18]: #describetable
 
-[19]: #listtables
+[19]: #parameters-6
 
-[20]: #parameters-5
+[20]: #batchgetitem
 
-[21]: #describetable
+[21]: #parameters-7
 
-[22]: #parameters-6
+[22]: #batchwriteitem
 
-[23]: #batchgetitem
+[23]: #parameters-8
 
-[24]: #parameters-7
+[24]: #deleteitem
 
-[25]: #batchwriteitem
+[25]: #parameters-9
 
-[26]: #parameters-8
+[26]: #getitem
 
-[27]: #deleteitem
+[27]: #parameters-10
 
-[28]: #parameters-9
+[28]: #putitem
 
-[29]: #getitem
+[29]: #parameters-11
 
-[30]: #parameters-10
+[30]: #updateitem
 
-[31]: #putitem
+[31]: #parameters-12
 
-[32]: #parameters-11
+[32]: #batchgetitemrequests
 
-[33]: #updateitem
+[33]: #parameters-13
 
-[34]: #parameters-12
+[34]: #batchwriteitemrequests
 
-[35]: #batchgetitemrequests
+[35]: #parameters-14
 
-[36]: #parameters-13
+[36]: #batchgetall
 
-[37]: #batchwriteitemrequests
+[37]: #parameters-15
 
-[38]: #parameters-14
+[38]: #batchwriteall
 
-[39]: #batchgetall
+[39]: #parameters-16
 
-[40]: #parameters-15
+[40]: #createtable
 
-[41]: #batchwriteall
+[41]: #parameters-17
 
-[42]: #parameters-16
+[42]: #deletetable
 
-[43]: #createtable
+[43]: #parameters-18
 
-[44]: #parameters-17
+[44]: #querystream
 
-[45]: #deletetable
+[45]: #parameters-19
 
-[46]: #parameters-18
+[46]: #scanstream
 
-[47]: #querystream
+[47]: #parameters-20
 
-[48]: #parameters-19
+[48]: #query
 
-[49]: #scanstream
+[49]: #parameters-21
 
-[50]: #parameters-20
+[50]: #scan
 
-[51]: #query
+[51]: #parameters-22
 
-[52]: #parameters-21
+[52]: #request
 
-[53]: #scan
+[53]: #readablestream
 
-[54]: #parameters-22
+[54]: #properties
 
 [55]: #requestset
 
@@ -627,64 +686,78 @@ Reduce two sets of consumed capacity metrics into a single object
 
 [64]: #parameters-26
 
-[65]: http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html
+[65]: #castindexescapacity
 
-[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[66]: #parameters-27
 
-[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[67]: #callcostlogger
 
-[68]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property
+[68]: #parameters-28
 
-[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[69]: #requesthandler
 
-[70]: #client
+[70]: #parameters-29
 
-[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[71]: #getmethodtype
 
-[72]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html
+[72]: #parameters-30
 
-[73]: https://nodejs.org/api/stream.html#stream_class_stream_readable
+[73]: #wrapdocclient
 
-[74]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html
+[74]: #parameters-31
 
-[75]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property
+[75]: http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html
 
-[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[77]: #request
+[77]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[78]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property
+[78]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#constructor-property
 
-[79]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property
+[79]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
-[80]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property
+[80]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[81]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property
+[81]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[82]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property
+[82]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html
 
-[83]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
+[83]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property
 
-[84]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
+[84]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property
 
-[85]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property
+[85]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property
 
-[86]: #requestset
+[86]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property
 
-[87]: #completerequestset
+[87]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property
 
-[88]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property
+[88]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property
 
-[89]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property
+[89]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
 
-[90]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
+[90]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
 
-[91]: #readablestream
+[91]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property
 
-[92]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
+[92]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property
 
-[93]: https://nodejs.org/api/stream.html#stream_class_stream_writable
+[93]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property
 
-[94]: https://nodejs.org/api/stream.html#stream_class_stream_writable_1
+[94]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 
-[95]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#retry-event
+[95]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
+
+[96]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
+
+[97]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html
+
+[98]: https://nodejs.org/api/stream.html#stream_class_stream_writable
+
+[99]: https://nodejs.org/api/stream.html#stream_class_stream_writable_1
+
+[100]: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Request.html#retry-event
+
+[101]: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#query-property
+
+[102]: https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ConsumedCapacity.html#DDB-Type-ConsumedCapacity-GlobalSecondaryIndexes
