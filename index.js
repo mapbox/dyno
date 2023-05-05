@@ -1,6 +1,6 @@
 /* eslint-env es6 */
-var AWS = require('aws-sdk');
 var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
+var AWS = require('aws-sdk');
 var _ = require('underscore');
 const util = require('./lib/util');
 
