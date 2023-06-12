@@ -47,44 +47,85 @@ test('[index] expected properties', function(assert) {
 
   assert.equal(typeof read.config, 'object', 'read-only client exposes config object');
   assert.equal(typeof read.listTables, 'function', 'read-only client exposes listTables function');
+  assert.equal(typeof read.listTablesAsync, 'function', 'read-only client exposes listTablesAsync function');
+
   assert.equal(typeof read.describeTable, 'function', 'read-only client exposes describeTable function');
+  assert.equal(typeof read.describeTableAsync, 'function', 'read-only client exposes describeTableAsync function');
+  
   assert.equal(typeof read.batchGetItem, 'function', 'read-only client exposes batchGetItem function');
+  assert.equal(typeof read.batchGetItemAsync, 'function', 'read-only client exposes batchGetItemAsync function');
+  
   assert.equal(typeof read.batchWriteItem, 'undefined', 'read-only client does not expose batchWriteItem function');
+  
   assert.equal(typeof read.deleteItem, 'undefined', 'read-only client does not expose deleteItem function');
+  
   assert.equal(typeof read.getItem, 'function', 'read-only client exposes getItem function');
+  assert.equal(typeof read.getItemAsync, 'function', 'read-only client exposes getItemAsync function');
+  
   assert.equal(typeof read.putItem, 'undefined', 'read-only client does not expose putItem function');
+  
   assert.equal(typeof read.query, 'function', 'read-only client exposes query function');
+  assert.equal(typeof read.queryAsync, 'function', 'read-only client exposes queryAsync function');
+  
   assert.equal(typeof read.scan, 'function', 'read-only client exposes scan function');
+  assert.equal(typeof read.scanAsync, 'function', 'read-only client exposes scanAsync function');
+  
   assert.equal(typeof read.updateItem, 'undefined', 'read-only client does not expose updateItem function');
+  
   assert.equal(typeof read.batchGetItemRequests, 'function', 'read-only client exposes batchGetItemRequests function');
   assert.equal(typeof read.batchWriteItemRequests, 'undefined', 'read-only client does not expose batchWriteItemRequests function');
   assert.equal(typeof read.batchGetAll, 'function', 'read-only client exposes batchGetAll function');
   assert.equal(typeof read.batchWriteAll, 'undefined', 'read-only client does not expose batchWriteAll function');
+  
   assert.equal(typeof read.createTable, 'function', 'read-only client exposes createTable function');
+  assert.equal(typeof read.createTableAsync, 'function', 'read-only client exposes createTableAsync function');
+  
   assert.equal(typeof read.deleteTable, 'function', 'read-only client exposes deleteTable function');
+  assert.equal(typeof read.deleteTableAsync, 'function', 'read-only client exposes deleteTableAsync function');
+  
   assert.equal(typeof read.queryStream, 'function', 'read-only client exposes queryStream function');
   assert.equal(typeof read.scanStream, 'function', 'read-only client exposes scanStream function');
   assert.equal(typeof read.putStream, 'undefined', 'read-only client does not expose putStream function');
+  
 
   var write = Dyno({ table: 'my-table', region: 'us-east-1', write: true });
 
   assert.equal(typeof write.config, 'object', 'write-only client exposes config object');
   assert.equal(typeof write.listTables, 'function', 'write-only client exposes listTables function');
+  assert.equal(typeof write.listTablesAsync, 'function', 'write-only client exposes listTablesAsync function');
+
   assert.equal(typeof write.describeTable, 'function', 'write-only client exposes describeTable function');
+  assert.equal(typeof write.describeTableAsync, 'function', 'write-only client exposes describeTableAsync function');
+
   assert.equal(typeof write.batchGetItem, 'undefined', 'write-only client does not expose batchGetItem function');
   assert.equal(typeof write.batchWriteItem, 'function', 'write-only client exposes batchWriteItem function');
+
   assert.equal(typeof write.deleteItem, 'function', 'write-only client exposes deleteItem function');
+  assert.equal(typeof write.deleteItemAsync, 'function', 'write-only client exposes deleteItemAsync function');
+
   assert.equal(typeof write.getItem, 'undefined', 'write-only client does not expose getItem function');
+
   assert.equal(typeof write.putItem, 'function', 'write-only client exposes putItem function');
+  assert.equal(typeof write.putItemAsync, 'function', 'write-only client exposes putItemAsync function');
+
   assert.equal(typeof write.query, 'undefined', 'write-only client does not expose query function');
   assert.equal(typeof write.scan, 'undefined', 'write-only client does not expose scan function');
+
   assert.equal(typeof write.updateItem, 'function', 'write-only client exposes updateItem function');
+  assert.equal(typeof write.updateItemAsync, 'function', 'write-only client exposes updateItemAsync function');
+
   assert.equal(typeof write.batchGetItemRequests, 'undefined', 'write-only client does not expose batchGetItemRequests function');
+
   assert.equal(typeof write.batchWriteItemRequests, 'function', 'write-only client exposes batchWriteItemRequests function');
   assert.equal(typeof write.batchGetAll, 'undefined', 'write-only client does not expose batchGetAll function');
   assert.equal(typeof write.batchWriteAll, 'function', 'write-only client exposes batchWriteAll function');
+
   assert.equal(typeof write.createTable, 'function', 'write-only client exposes createTable function');
+  assert.equal(typeof write.createTableAsync, 'function', 'write-only client exposes createTableAsync function');
+
   assert.equal(typeof write.deleteTable, 'function', 'write-only client exposes deleteTable function');
+  assert.equal(typeof write.deleteTableAsync, 'function', 'write-only client exposes deleteTableAsync function');
+
   assert.equal(typeof write.queryStream, 'undefined', 'write-only client does not expose queryStream function');
   assert.equal(typeof write.scanStream, 'undefined', 'write-only client does not expose scanStream function');
   assert.equal(typeof write.putStream, 'function', 'write-only client exposes putStream function');
@@ -220,7 +261,7 @@ test('[index] reuse client in multi method', function(assert) {
   assert.equal(multiDyno.config.read, multiDyno2.config.read, 'read config is reused');
   assert.equal(multiDyno.config.write, multiDyno2.config.write, 'write config is reused');
   assert.equal(multiDyno.read._client, multiDyno2.read._client, 'read client is reused');
-  assert.equal(multiDyno.write.client, multiDyno2.write.client, 'write client is reused');
+  assert.equal(multiDyno.write._client, multiDyno2.write._client, 'write client is reused');
   assert.end();
 });
 

@@ -1,3 +1,6 @@
+## v1.6.1
+- Add asynchronous versions of existing methods that support callbacks
+
 ## v1.6.0
 
 - Support passing a `costLogger` which will be called with casted `ConsumedCapacity`

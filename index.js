@@ -3,6 +3,7 @@ var AWS = require('aws-sdk');
 var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
 var _ = require('underscore');
 const util = require('./lib/util');
+const { promisify } = require('util');
 
 module.exports = Dyno;
 
@@ -391,6 +392,18 @@ function Dyno(options) {
     delete dynoExtensions.queryStream;
     delete dynoExtensions.scanStream;
   }
+  
+  Object.entries(nativeFunctions).forEach(function ([k, v]) {
+    if (typeof v === 'function') {
+      nativeFunctions[`${k}Async`] = promisify(v);
+    }
+  });
+
+  ['createTable', 'deleteTable', 'query', 'scan'].forEach(function(method) {
+    if (typeof dynoExtensions[method] === 'function') {
+      dynoExtensions[`${method}Async`] = promisify(dynoExtensions[method]);
+    }
+  });
 
   // Glue everything together
   return _({
