@@ -1,4 +1,4 @@
-## v1.6.1
+## v1.6.2
 - Add asynchronous versions of existing methods that support callbacks
 
 ## v1.6.0

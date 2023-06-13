@@ -136,22 +136,48 @@ test('[index] expected properties', function(assert) {
   );
 
   assert.equal(typeof multi.config, 'object', 'multi-client exposes config object');
+
   assert.equal(typeof multi.listTables, 'function', 'multi-client exposes listTables function');
+  assert.equal(typeof multi.listTablesAsync, 'function', 'multi-client exposes listTablesAsync function');
+
   assert.equal(typeof multi.describeTable, 'function', 'multi-client exposes describeTable function');
+  assert.equal(typeof multi.describeTableAsync, 'function', 'multi-client exposes describeTableAsync function');
+
   assert.equal(typeof multi.batchGetItem, 'function', 'multi-client exposes batchGetItem function');
+  assert.equal(typeof multi.batchGetItemAsync, 'function', 'multi-client exposes batchGetItemAsync function');
+
   assert.equal(typeof multi.batchWriteItem, 'function', 'multi-client exposes batchWriteItem function');
+  assert.equal(typeof multi.batchWriteItemAsync, 'function', 'multi-client exposes batchWriteItemAsync function');
+
   assert.equal(typeof multi.deleteItem, 'function', 'multi-client exposes deleteItem function');
+  assert.equal(typeof multi.deleteItemAsync, 'function', 'multi-client exposes deleteItemAsync function');
+
   assert.equal(typeof multi.getItem, 'function', 'multi-client exposes getItem function');
+  assert.equal(typeof multi.getItemAsync, 'function', 'multi-client exposes getItemAsync function');
+
   assert.equal(typeof multi.putItem, 'function', 'multi-client exposes putItem function');
+  assert.equal(typeof multi.putItemAsync, 'function', 'multi-client exposes putItemAsync function');
+
   assert.equal(typeof multi.query, 'function', 'multi-client exposes query function');
+  assert.equal(typeof multi.queryAsync, 'function', 'multi-client exposes queryAsync function');
+
   assert.equal(typeof multi.scan, 'function', 'multi-client exposes scan function');
+  assert.equal(typeof multi.scanAsync, 'function', 'multi-client exposes scanAsync function');
+
   assert.equal(typeof multi.updateItem, 'function', 'multi-client exposes updateItem function');
+  assert.equal(typeof multi.updateItemAsync, 'function', 'multi-client exposes updateItemAsync function');
+
   assert.equal(typeof multi.batchGetItemRequests, 'function', 'exposes batchGetItemRequests function');
   assert.equal(typeof multi.batchWriteItemRequests, 'function', 'exposes batchWriteItemRequests function');
   assert.equal(typeof multi.batchGetAll, 'function', 'exposes batchGetAll function');
   assert.equal(typeof multi.batchWriteAll, 'function', 'exposes batchWriteAll function');
+
   assert.equal(typeof multi.createTable, 'function', 'multi-client exposes createTable function');
+  assert.equal(typeof multi.createTableAsync, 'function', 'multi-client exposes createTableAsync function');
+
   assert.equal(typeof multi.deleteTable, 'function', 'multi-client exposes deleteTable function');
+  assert.equal(typeof multi.deleteTableAsync, 'function', 'multi-client exposes deleteTableAsync function');
+
   assert.equal(typeof multi.queryStream, 'function', 'multi-client exposes queryStream function');
   assert.equal(typeof multi.scanStream, 'function', 'multi-client exposes scanStream function');
   assert.equal(typeof multi.putStream, 'function', 'multi-client exposes putStream function');
