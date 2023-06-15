@@ -286,6 +286,8 @@ test('[index] reuse client in multi method', function(assert) {
   );
   assert.equal(multiDyno.config.read, multiDyno2.config.read, 'read config is reused');
   assert.equal(multiDyno.config.write, multiDyno2.config.write, 'write config is reused');
+  assert.ok(multiDyno.read._client, 'read client is not empty');
+  assert.ok(multiDyno.write._client, 'write client is not empty');
   assert.equal(multiDyno.read._client, multiDyno2.read._client, 'read client is reused');
   assert.equal(multiDyno.write._client, multiDyno2.write._client, 'write client is reused');
   assert.end();
@@ -306,6 +308,107 @@ test('[index] reject DynamoDB config when reusing client', function(assert) {
 });
 
 dynamodb.start();
+
+dynamodb.test('[index] promisified methods work', async function (assert) {
+  const tableName = 'promisify-table';
+  const dyno = Dyno({
+    table: tableName,
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4567',
+  });
+  const table = await dyno.createTableAsync(
+    _({ TableName: tableName }).extend(testTables.idhash)
+  );
+  assert.ok(table.TableDefinition.TableArn, 'createTableAsync - table is created');
+  const describedTable = await dyno.describeTableAsync({
+    TableName: tableName,
+  });
+  assert.equal(
+    describedTable.Table.TableId,
+    table.TableDefinition.TableId,
+    'describeTableAsync - table is described'
+  );
+  const tables = await dyno.listTablesAsync();
+  assert.ok(tables.TableNames.includes(tableName), 'listTablesAsync - list the created table');
+  const putResult = await dyno.putItemAsync({
+    Item: {
+      id: 'itemA',
+    },
+  });
+  assert.ok(putResult, 'putItemAsync - item is created');
+  const { Item } = await dyno.getItemAsync({ Key: { id: 'itemA' } });
+  assert.equal(Item.id, 'itemA', 'getItemAsync - get the item');
+  const updatedItem = await dyno.updateItemAsync({
+    Key: { id: 'itemA' },
+    UpdateExpression: 'set #name = :new',
+    ExpressionAttributeNames: { '#name': 'name' },
+    ExpressionAttributeValues: {
+      ':new': 'new name',
+    },
+    ReturnValues: 'ALL_NEW',
+  });
+  assert.equal(updatedItem.Attributes.name, 'new name', 'updateItemAsync - item is updated');
+  await dyno.putItemAsync({
+    Item: {
+      id: 'itemB',
+    },
+  });
+  const batchGetResult = await dyno.batchGetItemAsync({
+    RequestItems: {
+      [tableName]: {
+        Keys: [
+          {
+            id: 'itemA',
+          },
+          {
+            id: 'itemB',
+          },
+        ],
+      },
+    },
+  });
+  assert.equal(
+    batchGetResult.Responses[tableName].length,
+    2,
+    'batchGetItemAsync - get two items'
+  );
+  const batchWriteResult = await dyno.batchWriteItemAsync({
+    RequestItems: {
+      [tableName]: [
+        {
+          DeleteRequest: {
+            Key: { id: 'itemA' },
+          },
+        },
+        {
+          PutRequest: {
+            Item: { id: 'itemC' },
+          },
+        },
+      ],
+    },
+    ReturnConsumedCapacity: 'INDEXES',
+  });
+  assert.equal(
+    batchWriteResult.ConsumedCapacity[0].CapacityUnits,
+    2,
+    'batchWriteItemAsync - deleted 1 item and crated 1 item'
+  );
+  const queryResult = await dyno.queryAsync({
+    KeyConditionExpression: 'id = :id',
+    ExpressionAttributeValues: {
+      ':id': 'itemC',
+    }
+  });
+  assert.equal(queryResult.Items.length, 1, 'queryAsync - 1 item matched');
+  const scanResult = await dyno.scanAsync();
+  assert.equal(scanResult.Items.length, 2, 'scanResult - 2 items in the db');
+  await dyno.deleteTableAsync({TableName: tableName});
+  const afterDeletion = await dyno.listTablesAsync();
+  assert.notOk(tables.TableNames.includes(afterDeletion), 'deleteTableAsync - table is deleted');
+  assert.end();
+});
+
 dynamodb.test('different costLoggers are called', function(assert) {
   const costLogger1 = sinon.stub();
   const costLogger2 = sinon.stub();
