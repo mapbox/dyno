@@ -393,17 +393,15 @@ function Dyno(options) {
     delete dynoExtensions.scanStream;
   }
   
-  Object.entries(nativeFunctions).forEach(function ([k, v]) {
-    if (typeof v === 'function') {
-      nativeFunctions[`${k}Async`] = promisify(v);
-    }
-  });
+  for (const name of Object.keys(nativeFunctions)) {
+    nativeFunctions[`${name}Async`] = promisify(nativeFunctions[name]);
+  }
 
-  ['createTable', 'deleteTable', 'query', 'scan'].forEach(function(method) {
-    if (typeof dynoExtensions[method] === 'function') {
-      dynoExtensions[`${method}Async`] = promisify(dynoExtensions[method]);
+  for(const name of ['createTable', 'deleteTable', 'query', 'scan']) {
+    if (dynoExtensions[name]) {
+      dynoExtensions[`${name}Async`] = promisify(dynoExtensions[name]);
     }
-  });
+  }
 
   // Glue everything together
   return _({
