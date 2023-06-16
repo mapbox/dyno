@@ -6,7 +6,11 @@
     "semi": [2, "always"]
   },
   "env": {
-      "node": true
+      "node": true,
+      "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8
   },
   "globals": {
       "process": true,
