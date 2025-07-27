@@ -51,42 +51,42 @@ test('[index] expected properties', function(assert) {
 
   assert.equal(typeof read.describeTable, 'function', 'read-only client exposes describeTable function');
   assert.equal(typeof read.describeTableAsync, 'function', 'read-only client exposes describeTableAsync function');
-  
+
   assert.equal(typeof read.batchGetItem, 'function', 'read-only client exposes batchGetItem function');
   assert.equal(typeof read.batchGetItemAsync, 'function', 'read-only client exposes batchGetItemAsync function');
-  
+
   assert.equal(typeof read.batchWriteItem, 'undefined', 'read-only client does not expose batchWriteItem function');
-  
+
   assert.equal(typeof read.deleteItem, 'undefined', 'read-only client does not expose deleteItem function');
-  
+
   assert.equal(typeof read.getItem, 'function', 'read-only client exposes getItem function');
   assert.equal(typeof read.getItemAsync, 'function', 'read-only client exposes getItemAsync function');
-  
+
   assert.equal(typeof read.putItem, 'undefined', 'read-only client does not expose putItem function');
-  
+
   assert.equal(typeof read.query, 'function', 'read-only client exposes query function');
   assert.equal(typeof read.queryAsync, 'function', 'read-only client exposes queryAsync function');
-  
+
   assert.equal(typeof read.scan, 'function', 'read-only client exposes scan function');
   assert.equal(typeof read.scanAsync, 'function', 'read-only client exposes scanAsync function');
-  
+
   assert.equal(typeof read.updateItem, 'undefined', 'read-only client does not expose updateItem function');
-  
+
   assert.equal(typeof read.batchGetItemRequests, 'function', 'read-only client exposes batchGetItemRequests function');
   assert.equal(typeof read.batchWriteItemRequests, 'undefined', 'read-only client does not expose batchWriteItemRequests function');
   assert.equal(typeof read.batchGetAll, 'function', 'read-only client exposes batchGetAll function');
   assert.equal(typeof read.batchWriteAll, 'undefined', 'read-only client does not expose batchWriteAll function');
-  
+
   assert.equal(typeof read.createTable, 'function', 'read-only client exposes createTable function');
   assert.equal(typeof read.createTableAsync, 'function', 'read-only client exposes createTableAsync function');
-  
+
   assert.equal(typeof read.deleteTable, 'function', 'read-only client exposes deleteTable function');
   assert.equal(typeof read.deleteTableAsync, 'function', 'read-only client exposes deleteTableAsync function');
-  
+
   assert.equal(typeof read.queryStream, 'function', 'read-only client exposes queryStream function');
   assert.equal(typeof read.scanStream, 'function', 'read-only client exposes scanStream function');
   assert.equal(typeof read.putStream, 'undefined', 'read-only client does not expose putStream function');
-  
+
 
   var write = Dyno({ table: 'my-table', region: 'us-east-1', write: true });
 
@@ -193,15 +193,15 @@ test('[index] module exposes static functions', function(assert) {
 });
 
 test('[index] Dyno.createSet always yields a typed set', function(assert) {
-  var convert = require('aws-sdk/lib/dynamodb/converter').input;
+  var { marshall } = require('@aws-sdk/util-dynamodb');
 
   assert.equal(Dyno.createSet(['a', 'b']).type, 'String', 'sets string type');
   assert.equal(Dyno.createSet([1, 2]).type, 'Number', 'sets number type');
   assert.equal(Dyno.createSet([new Buffer.from('hello')]).type, 'Binary', 'sets buffer type');
   assert.equal(Dyno.createSet(['']).type, 'String', 'sets string type on falsy value');
   assert.equal(Dyno.createSet([0]).type, 'Number', 'sets number type on falsy value');
-  assert.deepEqual(convert(Dyno.createSet([0])), { NS: [ '0' ] }, 'set with falsy number value converts to appropriate wire-formatted object');
-  assert.deepEqual(convert(Dyno.createSet([''])), { SS: [ '' ] }, 'set with falsy string value converts to appropriate wire-formatted object');
+  assert.deepEqual(marshall(Dyno.createSet([0])), { NS: [ '0' ] }, 'set with falsy number value converts to appropriate wire-formatted object');
+  assert.deepEqual(marshall(Dyno.createSet([''])), { SS: [ '' ] }, 'set with falsy string value converts to appropriate wire-formatted object');
   assert.end();
 });
 
@@ -436,7 +436,7 @@ dynamodb.test('different costLoggers are called', function(assert) {
   });
   const dyno = Dyno(options);
   const dyno2 = Dyno({costLogger: costLogger2, dynoInstance: dyno});
-  
+
   dyno.batchWriteItem(params, function(err) {
     assert.notOk(err, 'no error');
     assert.ok(costLogger1.called, 'costLoggerStub1 is called');
@@ -452,4 +452,3 @@ dynamodb.test('different costLoggers are called', function(assert) {
 
 dynamodb.delete();
 dynamodb.close();
-
