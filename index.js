@@ -1,7 +1,8 @@
 /* eslint-env es6 */
-var AWS = require('aws-sdk');
-var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
+var { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+var { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 var _ = require('underscore');
+const { ListTablesCommand, DescribeTableCommand } = require('@aws-sdk/client-dynamodb');
 const util = require('./lib/util');
 const { promisify } = require('util');
 
@@ -88,24 +89,62 @@ function Dyno(options) {
     if (!options.region) throw new Error('region is required');
 
     config = {
-      region: options.region,
-      endpoint: options.endpoint,
+      region: options.region === 'local' ? 'us-east-1' : options.region,
       params: { TableName: options.table }, // Sets `TableName` in every request
-      httpOptions: options.httpOptions || { timeout: 5000 }, // Default appears to be 2 min
-      accessKeyId: options.accessKeyId,
-      secretAccessKey: options.secretAccessKey,
-      sessionToken: options.sessionToken,
+      requestHandler: options.httpOptions ? {
+        requestTimeout: options.httpOptions.timeout || 5000
+      } : { requestTimeout: 5000 },
       logger: options.logger,
-      maxRetries: options.maxRetries
+      maxAttempts: options.maxRetries ? options.maxRetries + 1 : undefined
     };
-    
-    client = new AWS.DynamoDB(config);
-    docClient = new AWS.DynamoDB.DocumentClient({ service: client });
-    tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
-    tableFreeDocClient = new AWS.DynamoDB.DocumentClient({ service: tableFreeClient });
+
+    if (options.accessKeyId) {
+      config.credentials = {
+        accessKeyId: options.accessKeyId,
+        secretAccessKey: options.secretAccessKey,
+        sessionToken: options.sessionToken
+      };
+    } else if (options.region === 'local') {
+      config.credentials = {
+        accessKeyId: 'fake',
+        secretAccessKey: 'fake'
+      };
+    }
+
+    if (options.region === 'local') {
+      config.endpoint = options.endpoint || 'http://localhost:4567';
+      config.disableHostPrefix = true;
+    } else if (options.endpoint) {
+      config.endpoint = options.endpoint;
+    }
+
+    client = new DynamoDBClient(config);
+    docClient = DynamoDBDocumentClient.from(client, {
+      marshallOptions: {
+        convertEmptyValues: false,
+        removeUndefinedValues: false,
+        convertClassInstanceToMap: false
+      },
+      unmarshallOptions: {
+        wrapNumbers: false
+      }
+    });
+
+    const tableFreeConfig = _(config).omit('params');
+    tableFreeClient = new DynamoDBClient(tableFreeConfig);
+    tableFreeDocClient = DynamoDBDocumentClient.from(tableFreeClient, {
+      marshallOptions: {
+        convertEmptyValues: false,
+        removeUndefinedValues: false,
+        convertClassInstanceToMap: false
+      },
+      unmarshallOptions: {
+        wrapNumbers: false
+      }
+    });
 
   }
-  
+
   const wrappedDocClient = util.wrapDocClient(docClient, options.costLogger);
   const wrappedTableFreeDocClient = util.wrapDocClient(tableFreeDocClient, options.costLogger);
 
@@ -120,7 +159,13 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
      * @returns {Request}
      */
-    listTables: client.listTables.bind(client),
+    listTables: function(params, callback) {
+      const command = new ListTablesCommand(params);
+      if (callback) {
+        return client.send(command, callback);
+      }
+      return client.send(command);
+    },
     /**
      * Get table information. Passthrough to [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property).
      *
@@ -130,7 +175,13 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
      * @returns {Request}
      */
-    describeTable: client.describeTable.bind(client),
+    describeTable: function(params, callback) {
+      const command = new DescribeTableCommand(params);
+      if (callback) {
+        return client.send(command, callback);
+      }
+      return client.send(command);
+    },
     /**
      * Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property).
      *
@@ -392,7 +443,7 @@ function Dyno(options) {
     delete dynoExtensions.queryStream;
     delete dynoExtensions.scanStream;
   }
-  
+
   for (const name of Object.keys(nativeFunctions)) {
     nativeFunctions[`${name}Async`] = promisify(nativeFunctions[name]);
   }
@@ -456,7 +507,46 @@ Dyno.multi = function(readOptions, writeOptions) {
  * };
  */
 Dyno.createSet = function(list) {
-  return new DynamoDBSet(list);
+  // Create a compatible DynamoDBSet-like object for AWS SDK v3
+  if (!Array.isArray(list)) {
+    throw new Error('DynamoDB set must be created from an array');
+  }
+
+  if (list.length === 0) {
+    throw new Error('DynamoDB set cannot be empty');
+  }
+
+  // Determine the type based on the first element
+  let type;
+  const firstElement = list[0];
+
+  if (typeof firstElement === 'string') {
+    type = 'String';
+  } else if (typeof firstElement === 'number') {
+    type = 'Number';
+  } else if (Buffer.isBuffer(firstElement)) {
+    type = 'Binary';
+  } else {
+    throw new Error('DynamoDB set must contain strings, numbers, or buffers');
+  }
+
+  // Validate all elements are the same type
+  for (let i = 1; i < list.length; i++) {
+    const element = list[i];
+    if (type === 'String' && typeof element !== 'string') {
+      throw new Error('All elements in a DynamoDB set must be the same type');
+    } else if (type === 'Number' && typeof element !== 'number') {
+      throw new Error('All elements in a DynamoDB set must be the same type');
+    } else if (type === 'Binary' && !Buffer.isBuffer(element)) {
+      throw new Error('All elements in a DynamoDB set must be the same type');
+    }
+  }
+
+  return {
+    wrapperName: 'Set',
+    type: type,
+    values: list
+  };
 };
 
 /**
