@@ -2,6 +2,7 @@
 var { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 var { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 var _ = require('underscore');
+const { ListTablesCommand, DescribeTableCommand } = require('@aws-sdk/client-dynamodb');
 const util = require('./lib/util');
 const { promisify } = require('util');
 
@@ -88,20 +89,34 @@ function Dyno(options) {
     if (!options.region) throw new Error('region is required');
 
     config = {
-      region: options.region,
-      endpoint: options.endpoint,
+      region: options.region === 'local' ? 'us-east-1' : options.region,
       params: { TableName: options.table }, // Sets `TableName` in every request
       requestHandler: options.httpOptions ? {
         requestTimeout: options.httpOptions.timeout || 5000
       } : { requestTimeout: 5000 },
-      credentials: options.accessKeyId ? {
-        accessKeyId: options.accessKeyId,
-        secretAccessKey: options.secretAccessKey,
-        sessionToken: options.sessionToken
-      } : undefined,
       logger: options.logger,
       maxAttempts: options.maxRetries ? options.maxRetries + 1 : undefined
     };
+
+    if (options.accessKeyId) {
+      config.credentials = {
+        accessKeyId: options.accessKeyId,
+        secretAccessKey: options.secretAccessKey,
+        sessionToken: options.sessionToken
+      };
+    } else if (options.region === 'local') {
+      config.credentials = {
+        accessKeyId: 'fake',
+        secretAccessKey: 'fake'
+      };
+    }
+
+    if (options.region === 'local') {
+      config.endpoint = options.endpoint || 'http://localhost:4567';
+      config.disableHostPrefix = true;
+    } else if (options.endpoint) {
+      config.endpoint = options.endpoint;
+    }
 
     client = new DynamoDBClient(config);
     docClient = DynamoDBDocumentClient.from(client, {
@@ -144,7 +159,13 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
      * @returns {Request}
      */
-    listTables: client.listTables.bind(client),
+    listTables: function(params, callback) {
+      const command = new ListTablesCommand(params);
+      if (callback) {
+        return client.send(command, callback);
+      }
+      return client.send(command);
+    },
     /**
      * Get table information. Passthrough to [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property).
      *
@@ -154,7 +175,13 @@ function Dyno(options) {
      * @param {function} [callback] - a function to handle the response. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
      * @returns {Request}
      */
-    describeTable: client.describeTable.bind(client),
+    describeTable: function(params, callback) {
+      const command = new DescribeTableCommand(params);
+      if (callback) {
+        return client.send(command, callback);
+      }
+      return client.send(command);
+    },
     /**
      * Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property).
      *
