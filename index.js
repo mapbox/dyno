@@ -1,6 +1,7 @@
 /* eslint-env es6 */
-var AWS = require('aws-sdk');
-var DynamoDBSet = require('aws-sdk/lib/dynamodb/set');
+var { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+var { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
+var { DynamoDBSet } = require('@aws-sdk/util-dynamodb');
 var _ = require('underscore');
 const util = require('./lib/util');
 const { promisify } = require('util');
@@ -90,19 +91,30 @@ function Dyno(options) {
     config = {
       region: options.region,
       endpoint: options.endpoint,
-      params: { TableName: options.table }, // Sets `TableName` in every request
-      httpOptions: options.httpOptions || { timeout: 5000 }, // Default appears to be 2 min
-      accessKeyId: options.accessKeyId,
-      secretAccessKey: options.secretAccessKey,
-      sessionToken: options.sessionToken,
+      requestHandler: {
+        requestTimeout: (options.httpOptions && options.httpOptions.timeout) || 5000
+      },
+      credentials: (options.accessKeyId && options.secretAccessKey) ? {
+        accessKeyId: options.accessKeyId,
+        secretAccessKey: options.secretAccessKey,
+        sessionToken: options.sessionToken
+      } : undefined,
       logger: options.logger,
-      maxRetries: options.maxRetries
+      maxAttempts: options.maxRetries ? options.maxRetries + 1 : undefined
     };
     
-    client = new AWS.DynamoDB(config);
-    docClient = new AWS.DynamoDB.DocumentClient({ service: client });
-    tableFreeClient = new AWS.DynamoDB(_(config).omit('params')); // no TableName in batch requests
-    tableFreeDocClient = new AWS.DynamoDB.DocumentClient({ service: tableFreeClient });
+    client = new DynamoDBClient(config);
+    docClient = DynamoDBDocumentClient.from(client, {
+      marshallOptions: {
+        removeUndefinedValues: true
+      }
+    });
+    tableFreeClient = new DynamoDBClient(_(config).omit('params'));
+    tableFreeDocClient = DynamoDBDocumentClient.from(tableFreeClient, {
+      marshallOptions: {
+        removeUndefinedValues: true
+      }
+    });
 
   }
   
@@ -112,82 +124,82 @@ function Dyno(options) {
   // Straight-up inherit several functions from aws-sdk so we can also inherit docs and tests
   var nativeFunctions = {
     /**
-     * List the tables available in a given region. Passthrough to [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property).
+     * List the tables available in a given region. Passthrough to DynamoDB.listTables.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DynamoDB.listTables](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#listTables-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
-    listTables: client.listTables.bind(client),
+    listTables: util.wrapCommand(client, 'listTables', options.table),
     /**
-     * Get table information. Passthrough to [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describTable-property).
+     * Get table information. Passthrough to DynamoDB.describeTable.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DynamoDB.describeTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#describeTable-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
-    describeTable: client.describeTable.bind(client),
+    describeTable: util.wrapCommand(client, 'describeTable', options.table),
     /**
-     * Perform a batch of get operations. Passthrough to [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property).
+     * Perform a batch of get operations. Passthrough to DocumentClient.batchGet.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchGet](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchGet-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     batchGetItem: wrappedTableFreeDocClient.batchGet,
     /**
-     * Perform a batch of write operations. Passthrough to [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property).
+     * Perform a batch of write operations. Passthrough to DocumentClient.batchWrite.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.batchWrite](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#batchWrite-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     batchWriteItem: wrappedTableFreeDocClient.batchWrite,
     /**
-     * Delete a single record. Passthrough to [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property).
+     * Delete a single record. Passthrough to DocumentClient.delete.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.delete](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#delete-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     deleteItem: wrappedDocClient.delete,
     /**
-     * Get a single record. Passthrough to [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property).
+     * Get a single record. Passthrough to DocumentClient.get.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.get](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     getItem: wrappedDocClient.get,
     /**
-     * Put a single record. Passthrough to [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property).
+     * Put a single record. Passthrough to DocumentClient.put.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.put](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     putItem: wrappedDocClient.put,
     /**
-     * Update a single record. Passthrough to [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property).
+     * Update a single record. Passthrough to DocumentClient.update.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DocumentClient.update](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#update-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     updateItem: wrappedDocClient.update
@@ -288,26 +300,26 @@ function Dyno(options) {
      */
     batchWriteAll: require('./lib/requests')(wrappedDocClient).batchWriteAll,
     /**
-     * Create a table. Passthrough to [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property),
+     * Create a table. Passthrough to DynamoDB.createTable,
      * except the function polls DynamoDB until the table is ready to accept
      * reads and writes, at which point the callback function is called.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DynamoDB.createTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     createTable: require('./lib/table')(client, null).create,
     /**
-     * Delete a table. Passthrough to [DynamoDB.deleteTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property),
+     * Delete a table. Passthrough to DynamoDB.deleteTable,
      * except the function polls DynamoDB until the table is ready to accept
      * reads and writes, at which point the callback function is called.
      *
      * @instance
      * @memberof client
-     * @param {object} params - request parameters. See [DynamoDB.deleteTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property) for details.
-     * @param {function} [callback] - a function to handle the response. See [DynamoDB.deleteTable](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#deleteTable-property) for details.
+     * @param {object} params - request parameters.
+     * @param {function} [callback] - a function to handle the response.
      * @returns {Request}
      */
     deleteTable: require('./lib/table')(client).delete,
