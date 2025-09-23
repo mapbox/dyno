@@ -96,7 +96,8 @@ function Dyno(options) {
       secretAccessKey: options.secretAccessKey,
       sessionToken: options.sessionToken,
       logger: options.logger,
-      maxRetries: options.maxRetries
+      maxRetries: options.maxRetries,
+      retryDelayOptions: options.retryDelayOptions, // Custom retry options
     };
     
     client = new AWS.DynamoDB(config);
