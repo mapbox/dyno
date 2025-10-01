@@ -216,6 +216,11 @@ test('[index] configuration', function(assert) {
     sessionToken: 'session',
     logger: console,
     maxRetries: 10,
+    retryDelayOptions: {
+      customBackoff: function() {
+        return 1000;
+      }
+    },
     extra: 'crap'
   };
 
@@ -230,6 +235,7 @@ test('[index] configuration', function(assert) {
   assert.equal(dyno.config.sessionToken, config.sessionToken, 'sets sessionToken');
   assert.deepEqual(dyno.config.logger, config.logger, 'sets logger');
   assert.equal(dyno.config.maxRetries, config.maxRetries, 'sets maxRetries');
+  assert.deepEqual(dyno.config.retryDelayOptions, config.retryDelayOptions, 'sets retryDelayOptions');
 
   var multi = Dyno.multi(
     { table: 'read-table', region: 'us-east-1' },

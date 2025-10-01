@@ -1,3 +1,7 @@
+## v1.6.3
+
+- Add possibility to pass retryDelayOptions in the config
+
 ## v1.6.2
 - Add asynchronous versions of existing methods that support callbacks
 
