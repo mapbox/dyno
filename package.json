@@ -7,6 +7,7 @@
     "node": ">=16"
   },
   "scripts": {
+    "build": "echo 'No build step required'",
     "pretest": "eslint bin lib test index.js",
     "test": "nyc tape test/*.test.js",
     "docs": "documentation build index.js -f md > API.md",

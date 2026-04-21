@@ -76,3 +76,12 @@ a DynamoDB table.
 ## Documentation
 
 See API.md for documentation of the JavaScript client, and use `dyno --help` for details on CLI usage.
+
+## Releasing
+
+The `@mapbox/dyno` NPM package is released automatically via GitHub Actions using a label-based workflow.
+
+To release a new version:
+1. Open a pull request with your changes.
+2. Add a label (`patch`, `minor`, `major`, `prerelease`, or `no-release`) to control the version bump.
+3. Once the PR is merged to `master`, the `NPM release` workflow will automatically bump the version, update the CHANGELOG, publish to CodeArtifact, and create a GitHub Release.
